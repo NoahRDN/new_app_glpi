@@ -52,7 +52,7 @@ export function UserList(){
             title="Ajouter un utilisateur"
             onClose={() => setIsModalOpen(false)}
         >
-            <UserAdd />
+            <UserAdd onClose={() => setIsModalOpen(false)}/>
         </Modal>
     </>
 }

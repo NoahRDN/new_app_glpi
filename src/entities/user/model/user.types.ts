@@ -13,3 +13,9 @@ export type GlpiUser = {
   realname?: string;
   firstname?: string;
 };
+
+export type CreateUser = {
+  username?: string;
+  realname?: string;
+  firstname?: string;
+};

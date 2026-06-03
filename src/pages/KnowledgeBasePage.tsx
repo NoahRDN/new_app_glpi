@@ -3,6 +3,8 @@ import { ordersRows } from "../features/orders/model/orders.mock";
 import { DataTable } from "../shared/ui/DataTable";
 import { OrderRow } from "../shared/ui/OrderRow";
 import { PillFilter } from "../shared/ui/PillFilter";
+import { Input } from "../shared/ui/Input";
+import { Search } from "lucide-react";
 
 type OrderItem = {
   active: boolean;
@@ -126,9 +128,10 @@ export function KnowledgeBasePage() {
         }
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
-            <input
+            <Search color="var(--text-secondary)" />
+            <Input
               className="w-full bg-transparent outline-none placeholder:text-[var(--text-secondary)]"
-              placeholder="🔍 Search by order, customer, date..."
+              placeholder="Search by order, customer, date..."
               style={{ color: "var(--text-primary)" }}
               value={search}
               onChange={(event) => setSearch(event.target.value)}

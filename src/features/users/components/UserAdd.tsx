@@ -1,26 +1,76 @@
+import type { ComponentPropsWithoutRef } from "react";
 import { Button } from "../../../shared/ui/Button";
 import { Input } from "../../../shared/ui/Input";
+import { Label } from "../../../shared/ui/Label";
+import { useAddUser } from "../hooks/useAddUser";
 
-export function UserAdd(){
+type UserAddProps = {
+    onClose: () => void;
+}
+
+type FormSubmitHandler = NonNullable<ComponentPropsWithoutRef<"form">["onSubmit"]>;
+
+export function UserAdd({onClose} : UserAddProps){
+    const {user, setUser, isAdding, addUser} = useAddUser();
+
+    const handleSubmit: FormSubmitHandler = (event) => {
+        event.preventDefault();
+        addUser();
+    };
+
     return(<>
     <div className="flex items-center gap-3 flex-col">
-        <h1>Création Utilisateur</h1>
-        <form className="flex gap-3 flex-col" action="">
+        <form className="flex gap-3 flex-col w-full " onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1">
-                <label htmlFor="username">Username: </label>
-                <Input type="text" id="username" />
+                <Label htmlFor="username">Username: </Label>
+                <Input type="text" id="username" value={user?.username}
+                onChange={(event) =>
+                    setUser({
+                        ...user,
+                        username: event.target.value,
+                    })
+                }/>
             </div>
             <div className="flex flex-col gap-1">
-                <label htmlFor="firstname">First Name: </label>
-                <Input type="text" id="firstname"/>
+                <Label htmlFor="firstname">First Name: </Label>
+                <Input type="text" id="firstname" value={user?.firstname}
+                    onChange={(event) =>
+                    setUser({
+                        ...user,
+                        firstname: event.target.value,
+                    })
+                    }
+                />
             </div>
             <div className="flex flex-col gap-1">
-                <label htmlFor="email">Email: </label>
-                <Input type="email" id="email" />
+                <Label htmlFor="realname">Real Name: </Label>
+                <Input type="text" id="realname" value={user?.realname}
+                    onChange={(event) =>
+                    setUser({
+                        ...user,
+                        realname: event.target.value,
+                    })
+                    }
+                />
             </div>
-            <div className="flex justify-between">
-                <Button isWithBackground={false}>Annuler</Button>  
-                <Button>Ajouter</Button>  
+            <div className="flex flex-col gap-1">
+                <Label htmlFor="email">Email: </Label>
+                <Input type="email" id="email" 
+                />
+            </div>
+            <div className="flex gap-3 justify-between">
+                <Button
+                    otherClassName="w-full flex items-center flex-col" 
+                    isWithBackground={false}
+                    onClick={onClose}
+                >Annuler</Button>  
+                <Button 
+                    type="submit"
+                    otherClassName="w-full flex items-center flex-col" 
+                    disabled={isAdding}
+                >
+                    {isAdding ? "Ajout...." : "Ajouter" }    
+                </Button>  
             </div>
         </form>
     </div>

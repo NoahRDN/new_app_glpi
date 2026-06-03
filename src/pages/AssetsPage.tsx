@@ -4,6 +4,8 @@ import { DataTable } from "../shared/ui/DataTable";
 import { Modal1 } from "../shared/ui/Modal1";
 import { PillFilter } from "../shared/ui/PillFilter";
 import { ProductRow } from "../shared/ui/ProductRow";
+import { Input } from "../shared/ui/Input";
+import { Search } from "lucide-react";
 
 type ProductItem = {
   brand: string;
@@ -162,9 +164,10 @@ export function AssetsPage() {
         }
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
-            <input
+            <Search color="var(--text-secondary)" />
+            <Input
               className="w-full bg-transparent outline-none placeholder:text-[var(--text-secondary)]"
-              placeholder="🔍 Search by Name, Brand, Variant etc..."
+              placeholder="Search by Name, Brand, Variant etc..."
               style={{ color: "var(--text-primary)" }}
               value={search}
               onChange={(event) => setSearch(event.target.value)}

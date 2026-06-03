@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import {CircleX} from "lucide-react";
 
 type ModalProps = {
   isOpen: boolean;
@@ -37,13 +38,8 @@ export function Modal({ isOpen, title, children, onClose }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-3 py-2 text-sm font-semibold"
-            style={{
-              backgroundColor: "var(--panel-soft)",
-              color: "var(--text-primary)",
-            }}
           >
-            Fermer
+            <CircleX color="var(--text-primary)" />
           </button>
         </header>
 
