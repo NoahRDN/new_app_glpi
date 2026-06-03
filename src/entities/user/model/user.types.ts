@@ -5,6 +5,7 @@ export type User = {
   username: string,
   realname: string,
   firstname: string,
+  is_deleted: boolean
 };
 
 export type GlpiUser = {
@@ -12,10 +13,15 @@ export type GlpiUser = {
   username?: string;
   realname?: string;
   firstname?: string;
+  is_deleted?: boolean;
 };
 
 export type CreateUser = {
   username?: string;
   realname?: string;
   firstname?: string;
+};
+
+export type UpdateUser = CreateUser & {
+  id: number;
 };

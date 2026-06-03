@@ -4,8 +4,8 @@ type ErrorProps = {
     children: ReactNode,
 }
 
-export function Error({children} : ErrorProps){
-    return <span className="text-red-500 bg-red-100">
+export function Success({children} : ErrorProps){
+    return <span className="text-green-600 bg-green-100">
         {children}
     </span>
 }

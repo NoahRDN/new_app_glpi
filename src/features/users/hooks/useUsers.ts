@@ -1,34 +1,36 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { User } from "../../../entities/user/model/user.types";
 import { getUsers } from "../../../entities/user/api/user.api";
 
-export function useUsers(){
+export function useUsers() {
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [errors, setErrors] = useState<string>("");
 
-    useEffect( () => {
-        
+    const refreshUsers = useCallback(async () => {
+        try {
+            const users = await getUsers();
 
-        async function loadingUsers() {
-            try {
-                const usersRslt = await getUsers();
-                setUsers(usersRslt);
-            } catch (error) {
-                console.log(error);
-                setErrors("erreur")
-            } finally {
-                setIsLoading(false);
-            }
+            setUsers(users);
+            setErrors("");
+        } catch (error) {
+            console.error(error);
+            setErrors("Erreur pendant le chargement des utilisateurs.");
+        } finally {
+            setIsLoading(false);
         }
+    }, []);
 
-        loadingUsers();
-        
-    },[])
+    useEffect(() => {
+        queueMicrotask(() => {
+            void refreshUsers();
+        });
+    }, [refreshUsers]);
 
     return {
         users,
-        isLoading, 
+        isLoading,
         errors,
-    }
+        refreshUsers,
+    };
 }

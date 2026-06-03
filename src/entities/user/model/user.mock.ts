@@ -5,4 +5,5 @@ export const currentUserMock: User = {
   realname: "Noah Razafindrakoto",
   username: "noahRDN",
   firstname: "Noah",
+  is_deleted: false
 };

@@ -5,4 +5,5 @@ export const defaultUser: User = {
   username: "",
   realname: "",
   firstname: "",
+  is_deleted: false
 };
