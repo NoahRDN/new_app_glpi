@@ -17,12 +17,14 @@ export function UserList(){
                 </tr>
             </thead>}       
         >
-            <tr>
-                <td className="px-4 py-4">1</td>
-                <td className="px-4 py-4">admin</td>
-                <td className="px-4 py-4">Doe</td>
-                <td className="px-4 py-4">John</td>
-            </tr>             
+            <tbody>
+                <tr>
+                    <td className="px-4 py-4">1</td>
+                    <td className="px-4 py-4">admin</td>
+                    <td className="px-4 py-4">Doe</td>
+                    <td className="px-4 py-4">John</td>
+                </tr>  
+            </tbody>
         </DataTable>    
     </>
 }
