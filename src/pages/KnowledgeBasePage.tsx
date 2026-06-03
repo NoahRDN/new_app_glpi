@@ -93,7 +93,7 @@ export function KnowledgeBasePage() {
           Show: {showMode === "all" ? "All Orders" : showMode === "selected" ? "Selected Orders" : "Recent Orders"}
         </PillFilter>
         <div className="flex items-center gap-3">
-          <button className="rounded-[18px] bg-[var(--accent-blue)] px-5 py-3 text-sm font-semibold text-white" onClick={addOrder}>+ New Product</button>
+          <button className="rounded-[18px] bg-(--accent-blue) px-5 py-3 text-sm font-semibold text-white" onClick={addOrder}>+ New Product</button>
           <PillFilter onClick={() => setSelectedIds([])}>Clear</PillFilter>
           <PillFilter active onClick={() => setSortBy((current) => current === "default" ? "date" : current === "date" ? "customer" : "default")}>
             Sort by: {sortBy === "default" ? "Default" : sortBy === "date" ? "Date" : "Customer"}
@@ -106,12 +106,12 @@ export function KnowledgeBasePage() {
         tableHead={
           <thead>
             <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-              <th className="w-[34px] px-4 py-4">
+              <th className="w-8.5 px-4 py-4">
                 <label className="flex items-center justify-center">
                   <input
                     aria-label="Select all orders"
                     checked={allVisibleSelected}
-                    className="h-4 w-4 accent-[var(--accent-blue)]"
+                    className="h-4 w-4 accent-(--accent-blue)"
                     type="checkbox"
                     onChange={(event) => toggleAllVisible(event.target.checked)}
                   />
@@ -130,7 +130,7 @@ export function KnowledgeBasePage() {
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
             <Search color="var(--text-secondary)" />
             <Input
-              className="w-full bg-transparent outline-none placeholder:text-[var(--text-secondary)]"
+              className="w-full bg-transparent outline-none placeholder:text-(--text-secondary)"
               placeholder="Search by order, customer, date..."
               style={{ color: "var(--text-primary)" }}
               value={search}

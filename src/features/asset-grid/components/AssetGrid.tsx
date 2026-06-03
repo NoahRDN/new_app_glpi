@@ -16,7 +16,7 @@ export function AssetGrid() {
             <Badge tone={asset.status === "in_service" ? "success" : "warning"}>
               {asset.status}
             </Badge>
-            <p className="text-sm text-[var(--text-secondary)]">Assigne a {asset.assignedTo}</p>
+            <p className="text-sm text-(--text-secondary)">Assigne a {asset.assignedTo}</p>
           </div>
         </Card>
       ))}

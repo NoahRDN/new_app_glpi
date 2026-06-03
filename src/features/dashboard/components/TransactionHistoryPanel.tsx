@@ -7,7 +7,7 @@ export function TransactionHistoryPanel() {
   const visibleTransactions = showAll ? dashboardTransactions : dashboardTransactions.slice(0, 2);
 
   return (
-    <SectionPanel className="xl:col-span-7" title="Transaction History" trailing={<span className="text-3xl text-[var(--text-secondary)]">...</span>}>
+    <SectionPanel className="xl:col-span-7" title="Transaction History" trailing={<span className="text-3xl text-(--text-secondary)">...</span>}>
       <div className="overflow-hidden rounded-[30px]" style={{ backgroundColor: "var(--panel-bg)" }}>
         <div
           className="grid grid-cols-[1.6fr_1fr_0.8fr] px-8 py-5 text-sm font-semibold uppercase tracking-[0.18em]"

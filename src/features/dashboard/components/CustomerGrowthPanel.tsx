@@ -69,7 +69,7 @@ export function CustomerGrowthPanel() {
                       <p className="mt-1 font-semibold">New: {activeMonth.fresh}</p>
                     </div>
                     <div className="absolute left-1/2 top-[182px] z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_20px_rgba(90,69,197,0.18)]">
-                      <div className="h-4 w-4 rounded-full bg-[var(--accent-purple)]" />
+                      <div className="h-4 w-4 rounded-full bg-(--accent-purple)" />
                     </div>
                   </>
                 ) : null}

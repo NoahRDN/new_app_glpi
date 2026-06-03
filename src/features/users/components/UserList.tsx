@@ -3,7 +3,7 @@ import { Button } from "../../../shared/ui/Button";
 import { DataTable } from "../../../shared/ui/DataTable";
 import { Loader } from "../../../shared/ui/Loader";
 import { useUsers } from "../hooks/useUsers";
-import { Plus } from "lucide-react";
+import { Plus, PenLine, Trash2 } from "lucide-react";
 import { Modal } from "../../../shared/ui/Modal";
 import { UserAdd } from "./UserAdd";
 
@@ -24,6 +24,7 @@ export function UserList(){
                         <th className="px-4 py-4">Username</th>
                         <th className="px-4 py-4">realname</th>
                         <th className="px-4 py-4">firstname</th>
+                        <th className="px-4 py-4">Action</th>
                     </tr>
                 </thead>}
                 toolbar={
@@ -34,10 +35,18 @@ export function UserList(){
             >
                 {users.length > 0 && users.map((user) =>
                     <tr key={user.id} >
-                        <td className="px-4 py-4">{user.id}</td>
-                        <td className="px-4 py-4">{user.username}</td>
-                        <td className="px-4 py-4">{user.realname}</td>
-                        <td className="px-4 py-4">{user.firstname}</td>
+                        <td className="px-4">{user.id}</td>
+                        <td className="px-4">{user.username}</td>
+                        <td className="px-4">{user.realname}</td>
+                        <td className="px-4">{user.firstname}</td>
+                        <td className="px-4 flex gap-3 "> 
+                            <Button>
+                                <PenLine />
+                            </Button>
+                            <Button otherClassName="bg-red-500">
+                                <Trash2 />
+                            </Button>
+                        </td>
                     </tr>  
                 )}
             </DataTable>   

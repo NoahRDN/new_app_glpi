@@ -36,7 +36,7 @@ export function OrderRow({
           <input
             aria-label={`Select ${id}`}
             checked={checked}
-            className="h-4 w-4 accent-[var(--accent-blue)]"
+            className="h-4 w-4 accent-(--accent-blue)"
             type="checkbox"
             onChange={(event) => {
               event.stopPropagation();

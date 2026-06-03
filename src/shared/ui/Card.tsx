@@ -32,8 +32,8 @@ export function Card({
     >
       <header className="mb-4">
         <div>
-          <h3 className="mb-1 text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
-          <p className="text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
+          <h3 className="mb-1 text-lg font-semibold text-(--text-primary)">{title}</h3>
+          <p className="text-sm leading-6 text-(--text-secondary)">{description}</p>
         </div>
       </header>
       <div>{children}</div>

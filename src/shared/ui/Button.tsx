@@ -9,7 +9,7 @@ type ButtonProps = ComponentPropsWithoutRef<"button"> & {
 export function Button({children,isWithBackground=true,otherClassName,  ...props} : ButtonProps){
     return <button 
         className={` inline-flex items-center gap-3 rounded-[18px]  px-5 py-4 text-sm font-semibold *:**: ${otherClassName}
-            ${isWithBackground ? "text-white bg-[var(--accent-blue)]" : "text-[var(--text-primary)] bg-[var(--panel-soft)]" }`}
+            ${isWithBackground ? "text-white bg-(--accent-blue)" : "text-(--text-primary) bg-(--panel-soft)" }`}
         {...props}
     >
         {children}

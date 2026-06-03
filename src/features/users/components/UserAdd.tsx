@@ -3,6 +3,7 @@ import { Button } from "../../../shared/ui/Button";
 import { Input } from "../../../shared/ui/Input";
 import { Label } from "../../../shared/ui/Label";
 import { useAddUser } from "../hooks/useAddUser";
+import { Error } from "../../../shared/ui/Error";
 
 type UserAddProps = {
     onClose: () => void;
@@ -11,7 +12,7 @@ type UserAddProps = {
 type FormSubmitHandler = NonNullable<ComponentPropsWithoutRef<"form">["onSubmit"]>;
 
 export function UserAdd({onClose} : UserAddProps){
-    const {user, setUser, isAdding, addUser} = useAddUser();
+    const {user, setUser, isAdding, addUser, error} = useAddUser();
 
     const handleSubmit: FormSubmitHandler = (event) => {
         event.preventDefault();
@@ -20,6 +21,9 @@ export function UserAdd({onClose} : UserAddProps){
 
     return(<>
     <div className="flex items-center gap-3 flex-col">
+        {
+            error && <Error>{error}</Error>
+        }
         <form className="flex gap-3 flex-col w-full " onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1">
                 <Label htmlFor="username">Username: </Label>

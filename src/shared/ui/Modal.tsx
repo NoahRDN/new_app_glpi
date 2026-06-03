@@ -31,7 +31,7 @@ export function Modal({ isOpen, title, children, onClose }: ModalProps) {
         }}
       >
         <header className="mb-4 flex items-center justify-between gap-4">
-          <h2 id="modal-title" className="text-xl font-semibold text-[var(--text-primary)]">
+          <h2 id="modal-title" className="text-xl font-semibold text-(--text-primary)">
             {title}
           </h2>
 
