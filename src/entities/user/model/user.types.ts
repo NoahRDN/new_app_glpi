@@ -6,3 +6,10 @@ export type User = {
   realname: string,
   firstname: string,
 };
+
+export type GlpiUser = {
+  id: number;
+  username?: string;
+  realname?: string;
+  firstname?: string;
+};
