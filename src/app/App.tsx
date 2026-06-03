@@ -5,6 +5,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { TicketsPage } from "../pages/TicketsPage";
 import { AssetsPage } from "../pages/AssetsPage";
 import { KnowledgeBasePage } from "../pages/KnowledgeBasePage";
+import { UsersPage } from "../pages/UsersPage";
 
 type ThemeMode = "light" | "dark";
 
@@ -20,6 +21,8 @@ function renderSection(section: AppSectionId) {
       return <AssetsPage />;
     case "knowledge-base":
       return <KnowledgeBasePage />;
+    case "users":
+      return <UsersPage />;
     default:
       return <DashboardPage />;
   }

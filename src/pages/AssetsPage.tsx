@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { inventoryRows, productTabs } from "../features/catalog/model/catalog.mock";
 import { DataTable } from "../shared/ui/DataTable";
-import { Modal } from "../shared/ui/Modal";
+import { Modal1 } from "../shared/ui/Modal1";
 import { PillFilter } from "../shared/ui/PillFilter";
 import { ProductRow } from "../shared/ui/ProductRow";
+import { Input } from "../shared/ui/Input";
+import { Search } from "lucide-react";
 
 type ProductItem = {
   brand: string;
@@ -123,7 +125,7 @@ export function AssetsPage() {
         </PillFilter>
         <div className="flex items-center gap-3">
           <button
-            className="rounded-[18px] bg-[var(--accent-blue)] px-5 py-3 text-sm font-semibold text-white"
+            className="rounded-[18px] bg-(--accent-blue) px-5 py-3 text-sm font-semibold text-white"
             onClick={() => openInventoryModal()}
           >
             + New Product
@@ -136,11 +138,36 @@ export function AssetsPage() {
       </div>
 
       <DataTable
+        tableHead={
+          <thead>
+            <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)"}}>
+              <th>
+                <label className="flex items-center justify-center">
+                  <input
+                    aria-label="Select all products"
+                    checked={allVisibleSelected}
+                    className="h-4 w-4 accent-(--accent-blue)"
+                    type="checkbox"
+                    onChange={(event) => toggleAllVisible(event.target.checked)}
+                  />
+                </label>
+              </th>
+              <th>Payment</th>
+              <th>Brand</th>
+              <th>Code</th>
+              <th>Stock</th>
+              <th>Var</th>
+              <th>Price</th>
+              <th>...</th>
+            </tr>
+          </thead>
+        }
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
-            <input
-              className="w-full bg-transparent outline-none placeholder:text-[var(--text-secondary)]"
-              placeholder="🔍 Search by Name, Brand, Variant etc..."
+            <Search color="var(--text-secondary)" />
+            <Input
+              className="w-full bg-transparent outline-none placeholder-(--text-secondary)"
+              placeholder="Search by Name, Brand, Variant etc..."
               style={{ color: "var(--text-primary)" }}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -155,25 +182,7 @@ export function AssetsPage() {
           </div>
         }
       >
-        <div className="grid grid-cols-[34px_70px_1.4fr_1fr_0.8fr_0.7fr_0.7fr_0.8fr_40px] items-center px-4 py-4 text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-          <label className="flex items-center justify-center">
-            <input
-              aria-label="Select all products"
-              checked={allVisibleSelected}
-              className="h-4 w-4 accent-[var(--accent-blue)]"
-              type="checkbox"
-              onChange={(event) => toggleAllVisible(event.target.checked)}
-            />
-          </label>
-          <span />
-          <span>Payment</span>
-          <span>Brand</span>
-          <span>Code</span>
-          <span>Stock</span>
-          <span>Var</span>
-          <span>Price</span>
-          <span>...</span>
-        </div>
+        
         {visibleRows.map((row) => (
           <ProductRow
             key={row.sku}
@@ -183,11 +192,21 @@ export function AssetsPage() {
             onClick={() => openInventoryModal(row.sku)}
             onToggle={(checked) => toggleSku(row.sku, checked)}
           />
+          // <tr>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          // </tr>
         ))}
       </DataTable>
 
-      <Modal isOpen={isInventoryModalOpen} onClose={() => setIsInventoryModalOpen(false)}>
-        <div className="w-full max-w-[820px] rounded-[34px] border shadow-2xl" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+      <Modal1 isOpen={isInventoryModalOpen} onClose={() => setIsInventoryModalOpen(false)}>
+        <div className="w-full max-w-205 rounded-[34px] border shadow-2xl" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
           <div className="flex items-center justify-between border-b px-10 py-6" style={{ borderColor: "var(--panel-border)" }}>
             <div className="flex gap-10 overflow-auto">
               {productTabs.map((tab) => (
@@ -199,7 +218,7 @@ export function AssetsPage() {
                 >
                   {tab}
                   {tab === activeTab ? (
-                    <span className="absolute bottom-0 left-0 h-[3px] w-full rounded-full bg-[var(--accent-blue)]" />
+                    <span className="absolute bottom-0 left-0 h-0.75 w-full rounded-full bg-(--accent-blue)" />
                   ) : null}
                 </button>
               ))}
@@ -286,13 +305,13 @@ export function AssetsPage() {
               >
                 Cancel
               </button>
-              <button className="w-full rounded-[18px] bg-[var(--accent-blue)] px-5 py-4 text-sm font-semibold text-white" onClick={nextTab}>
+              <button className="w-full rounded-[18px] bg-(--accent-blue) px-5 py-4 text-sm font-semibold text-white" onClick={nextTab}>
                 {activeTab === productTabs[productTabs.length - 1] ? "Save" : "Next"}
               </button>
             </div>
           </div>
         </div>
-      </Modal>
+      </Modal1>
     </>
   );
 }

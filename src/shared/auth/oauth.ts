@@ -1,24 +1,23 @@
-import { env } from "../config/env";
+type Env = {
+  glpiApiBaseUrl: string;
+  glpiOAuthTokenUrl: string;
+  glpiOAuthAuthorizeUrl: string;
+  glpiOAuthRedirectUri: string;
+  glpiOAuthClientId: string;
+  glpiOAuthClientSecret: string;
+  glpiOAuthUsername: string;
+  glpiOAuthPassword: string;
+  glpiOAuthScope: string;
+};
 
-function buildScope() {
-  return env.glpiOAuthScope
-    .split(" ")
-    .map((scope: string) => scope.trim())
-    .filter(Boolean)
-    .join(" ");
-}
-
-export function buildGlpiAuthorizationUrl() {
-  if (!env.glpiClientId || !env.glpiRedirectUri) {
-    return null;
-  }
-
-  const params = new URLSearchParams({
-    client_id: env.glpiClientId,
-    redirect_uri: env.glpiRedirectUri,
-    response_type: "code",
-    scope: buildScope(),
-  });
-
-  return `${env.glpiAuthorizeUrl}?${params.toString()}`;
-}
+export const env: Env = {
+  glpiApiBaseUrl: import.meta.env.VITE_GLPI_API_BASE_URL ?? "/glpi-api",
+  glpiOAuthTokenUrl: import.meta.env.VITE_GLPI_OAUTH_TOKEN_URL ?? "/glpi-api/token",
+  glpiOAuthAuthorizeUrl: import.meta.env.VITE_GLPI_OAUTH_AUTHORIZE_URL ?? "",
+  glpiOAuthRedirectUri: import.meta.env.VITE_GLPI_OAUTH_REDIRECT_URI ?? "",
+  glpiOAuthClientId: import.meta.env.VITE_GLPI_OAUTH_CLIENT_ID ?? "",
+  glpiOAuthClientSecret: import.meta.env.VITE_GLPI_OAUTH_CLIENT_SECRET ?? "",
+  glpiOAuthUsername: import.meta.env.VITE_GLPI_OAUTH_USERNAME ?? "",
+  glpiOAuthPassword: import.meta.env.VITE_GLPI_OAUTH_PASSWORD ?? "",
+  glpiOAuthScope: import.meta.env.VITE_GLPI_OAUTH_SCOPE ?? "",
+};

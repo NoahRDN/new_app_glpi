@@ -20,8 +20,8 @@ export function TicketList() {
             }}
           >
             <div>
-              <strong className="text-[var(--text-primary)]">{ticket.title}</strong>
-              <p className="text-sm text-[var(--text-secondary)]">
+              <strong className="text-(--text-primary)">{ticket.title}</strong>
+              <p className="text-sm text-(--text-secondary)">
                 #{ticket.id} • {ticket.requester}
               </p>
             </div>
@@ -31,7 +31,7 @@ export function TicketList() {
             <Badge tone={ticket.status === "resolved" ? "success" : "warning"}>
               {ticket.status}
             </Badge>
-            <span className="text-sm text-[var(--text-secondary)]">{formatRelativeDate(ticket.updatedAt)}</span>
+            <span className="text-sm text-(--text-secondary)">{formatRelativeDate(ticket.updatedAt)}</span>
           </article>
         ))}
       </div>

@@ -200,13 +200,13 @@ export function TicketsPage() {
           {(showAllCustomers ? overviewMiniCustomers : overviewMiniCustomers.slice(0, 3)).map((customer, index) => (
             <div key={customer.name} className="flex items-center justify-between gap-4 px-2 py-4" style={{ borderTop: index === 0 ? "none" : "1px solid var(--panel-border)" }}>
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--avatar-bg)] text-lg">🧔</div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--avatar-bg) text-lg">🧔</div>
                 <div>
                   <p className="font-semibold" style={{ color: "var(--text-primary)" }}>{customer.name}</p>
                   <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{customer.handle}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-[var(--text-secondary)]">
+              <div className="flex items-center gap-3 text-(--text-secondary)">
                 <span>◔</span>
                 <span>⊘</span>
               </div>

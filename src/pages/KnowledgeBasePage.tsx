@@ -3,6 +3,8 @@ import { ordersRows } from "../features/orders/model/orders.mock";
 import { DataTable } from "../shared/ui/DataTable";
 import { OrderRow } from "../shared/ui/OrderRow";
 import { PillFilter } from "../shared/ui/PillFilter";
+import { Input } from "../shared/ui/Input";
+import { Search } from "lucide-react";
 
 type OrderItem = {
   active: boolean;
@@ -91,7 +93,7 @@ export function KnowledgeBasePage() {
           Show: {showMode === "all" ? "All Orders" : showMode === "selected" ? "Selected Orders" : "Recent Orders"}
         </PillFilter>
         <div className="flex items-center gap-3">
-          <button className="rounded-[18px] bg-[var(--accent-blue)] px-5 py-3 text-sm font-semibold text-white" onClick={addOrder}>+ New Product</button>
+          <button className="rounded-[18px] bg-(--accent-blue) px-5 py-3 text-sm font-semibold text-white" onClick={addOrder}>+ New Product</button>
           <PillFilter onClick={() => setSelectedIds([])}>Clear</PillFilter>
           <PillFilter active onClick={() => setSortBy((current) => current === "default" ? "date" : current === "date" ? "customer" : "default")}>
             Sort by: {sortBy === "default" ? "Default" : sortBy === "date" ? "Date" : "Customer"}
@@ -100,11 +102,36 @@ export function KnowledgeBasePage() {
       </div>
 
       <DataTable
+        tableClassName="min-w-full"
+        tableHead={
+          <thead>
+            <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+              <th className="w-8.5 px-4 py-4">
+                <label className="flex items-center justify-center">
+                  <input
+                    aria-label="Select all orders"
+                    checked={allVisibleSelected}
+                    className="h-4 w-4 accent-(--accent-blue)"
+                    type="checkbox"
+                    onChange={(event) => toggleAllVisible(event.target.checked)}
+                  />
+                </label>
+              </th>
+              <th className="px-4 py-4">Order</th>
+              <th className="px-4 py-4">Date</th>
+              <th className="px-4 py-4">Customer</th>
+              <th className="px-4 py-4">Payment</th>
+              <th className="px-4 py-4">Status</th>
+              <th className="px-4 py-4">Price</th>
+            </tr>
+          </thead>
+        }
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
-            <input
-              className="w-full bg-transparent outline-none placeholder:text-[var(--text-secondary)]"
-              placeholder="🔍 Search by order, customer, date..."
+            <Search color="var(--text-secondary)" />
+            <Input
+              className="w-full bg-transparent outline-none placeholder:text-(--text-secondary)"
+              placeholder="Search by order, customer, date..."
               style={{ color: "var(--text-primary)" }}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -119,23 +146,6 @@ export function KnowledgeBasePage() {
           </div>
         }
       >
-        <div className="grid grid-cols-[34px_1fr_1fr_1fr_1fr_1fr_0.8fr] items-center px-4 py-4 text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-          <label className="flex items-center justify-center">
-            <input
-              aria-label="Select all orders"
-              checked={allVisibleSelected}
-              className="h-4 w-4 accent-[var(--accent-blue)]"
-              type="checkbox"
-              onChange={(event) => toggleAllVisible(event.target.checked)}
-            />
-          </label>
-          <span>Order</span>
-          <span>Date</span>
-          <span>Customer</span>
-          <span>Payment</span>
-          <span>Status</span>
-          <span>Price</span>
-        </div>
         {visibleOrders.map((order) => (
           <OrderRow
             key={order.id}

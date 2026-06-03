@@ -14,16 +14,16 @@ export function SessionStatus() {
       }}
     >
       <div>
-        <p className="mb-2 text-[0.72rem] uppercase tracking-[0.18em] text-[var(--sidebar-text-muted)]">
+        <p className="mb-2 text-[0.72rem] uppercase tracking-[0.18em] text-(--sidebar-text-muted)">
           Session
         </p>
-        <strong className="text-sm text-[var(--sidebar-text)]">{currentUserMock.fullName}</strong>
+        <strong className="text-sm text-(--sidebar-text)">{currentUserMock.realname}</strong>
       </div>
       <Badge tone={isConnected ? "success" : "warning"}>
-        {isConnected ? currentUserMock.role : "oauth pending"}
+        {isConnected ? currentUserMock.username : "oauth pending"}
       </Badge>
-      <p className="mt-3 text-xs text-[var(--sidebar-text-muted)]">
-        {isConnected ? currentUserMock.email : "Aucun access token detecte"}
+      <p className="mt-3 text-xs text-(--sidebar-text-muted)">
+        {isConnected ? currentUserMock.username : "Aucun access token detecte"}
       </p>
     </section>
   );

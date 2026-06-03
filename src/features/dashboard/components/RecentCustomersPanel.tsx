@@ -34,7 +34,7 @@ export function RecentCustomersPanel() {
   const visibleCustomers = showAll ? recentCustomers : recentCustomers.slice(0, 3);
 
   return (
-    <SectionPanel className="xl:col-span-5" title="Recent Customers" trailing={<span className="text-3xl text-[var(--text-secondary)]">...</span>}>
+    <SectionPanel className="xl:col-span-5" title="Recent Customers" trailing={<span className="text-3xl text-(--text-secondary)">...</span>}>
       <div className="rounded-[30px] px-6 py-3" style={{ backgroundColor: "var(--panel-bg)" }}>
         {visibleCustomers.map((customer, index) => (
           <div

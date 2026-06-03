@@ -9,7 +9,7 @@ type BadgeProps = {
 
 export function Badge({ children, tone = "default" }: BadgeProps) {
   const toneClass = {
-    default: "border-[var(--panel-border)] bg-[var(--panel-soft)] text-[var(--text-secondary)]",
+    default: "border-(--panel-border) bg-(--panel-soft) text-(--text-secondary)",
     danger: "border-rose-200/50 bg-rose-500/10 text-rose-500",
     success: "border-emerald-200/50 bg-emerald-500/10 text-emerald-500",
     warning: "border-amber-200/50 bg-amber-500/10 text-amber-500",
