@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import type { AppSectionId, NavigationItem } from "../config/navigation";
-import { SessionStatus } from "../../features/session-status/components/SessionStatus";
 
 type AppShellProps = {
   activeDescription: string;
@@ -9,7 +8,86 @@ type AppShellProps = {
   children: ReactNode;
   navigation: NavigationItem[];
   onNavigate: (section: AppSectionId) => void;
+  onToggleTheme: () => void;
+  theme: "light" | "dark";
 };
+
+function DashboardXLogo() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative h-8 w-8">
+        <span className="absolute left-0 top-3 h-2.5 w-2.5 rounded-full bg-[var(--accent-blue)]" />
+        <span className="absolute left-2.5 top-0 h-3.5 w-3.5 rounded-full bg-[var(--accent-blue)]" />
+        <span className="absolute right-0 top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--accent-green)]" />
+        <span className="absolute left-3 top-4 h-3.5 w-3.5 rounded-full bg-[var(--accent-purple)]" />
+      </div>
+      <span className="text-[2rem] font-semibold tracking-tight">DashboardX</span>
+    </div>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
+      <path d="M16 16L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 4C9.5 4 8 5.8 8 8.5V10.2C8 11.1 7.6 12.3 7.1 13L6 14.8C5.3 16 5.8 17.3 7.2 17.8C11.8 19.3 12.2 19.3 16.8 17.8C18.2 17.3 18.7 16 18 14.8L16.9 13C16.4 12.3 16 11.1 16 10.2V8.5C16 5.8 14.5 4 12 4Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path d="M10.5 20C11.4 21 12.8 21 13.7 20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SettingsIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 8.8A3.2 3.2 0 1 0 12 15.2A3.2 3.2 0 1 0 12 8.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M4 12L5.8 11.4C6.1 10.7 6.2 10.4 6.5 9.8L5.9 8L7.9 6L9.7 6.6C10.3 6.3 10.6 6.2 11.3 5.9L12 4H12.1L12.8 5.9C13.5 6.2 13.8 6.3 14.4 6.6L16.2 6L18.2 8L17.6 9.8C17.9 10.4 18 10.7 18.3 11.4L20 12L18.3 12.6C18 13.3 17.9 13.6 17.6 14.2L18.2 16L16.2 18L14.4 17.4C13.8 17.7 13.5 17.8 12.8 18.1L12.1 20H12L11.3 18.1C10.6 17.8 10.3 17.7 9.7 17.4L7.9 18L5.9 16L6.5 14.2C6.2 13.6 6.1 13.3 5.8 12.6L4 12Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 4V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M8 10L12 14L16 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 19H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SidebarIcon({ index }: { index: number }) {
+  const icons = [
+    <svg key="1" width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.7"/><circle cx="13" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.7"/><circle cx="5" cy="13" r="2.2" stroke="currentColor" strokeWidth="1.7"/><circle cx="13" cy="13" r="2.2" stroke="currentColor" strokeWidth="1.7"/></svg>,
+    <svg key="2" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2.5 14.5H15.5" stroke="currentColor" strokeWidth="1.7"/><path d="M4 14V7.5H7V14" stroke="currentColor" strokeWidth="1.7"/><path d="M7.75 14V3.5H10.75V14" stroke="currentColor" strokeWidth="1.7"/><path d="M11.5 14V9H14.5V14" stroke="currentColor" strokeWidth="1.7"/></svg>,
+    <svg key="3" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="3" width="13" height="3" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="2.5" y="7.5" width="13" height="3" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="2.5" y="12" width="13" height="3" rx="1.2" stroke="currentColor" strokeWidth="1.7"/></svg>,
+    <svg key="4" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="10.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="2.5" y="10.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="10.5" y="10.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/></svg>,
+    <svg key="5" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 3.5H14V14.5H4V3.5Z" stroke="currentColor" strokeWidth="1.7"/><path d="M6 6.5H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><path d="M6 9H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>,
+    <svg key="6" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M3 7H15" stroke="currentColor" strokeWidth="1.7"/></svg>,
+  ];
+  return icons[index] ?? icons[0];
+}
 
 export function AppShell({
   activeDescription,
@@ -18,109 +96,137 @@ export function AppShell({
   children,
   navigation,
   onNavigate,
+  onToggleTheme,
+  theme,
 }: AppShellProps) {
   const activeNav = navigation.find((item) => item.id === activeSection);
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
-      <aside className="flex flex-col bg-[#31456f] text-white">
-        <div className="border-b border-white/10 px-6 py-5">
-          <p className="text-[2.2rem] font-semibold italic tracking-tight">New App GLPI</p>
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text-primary)] transition-colors duration-300 lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
+      <aside className="flex flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] transition-colors duration-300">
+        <div className="px-6 pb-8 pt-8">
+          <DashboardXLogo />
         </div>
 
-        <div className="px-4 py-4">
-          <button
-            type="button"
-            className="flex w-full items-center rounded-md px-3 py-2 text-left text-[15px] text-white/90 transition hover:bg-white/8"
-          >
-            Chercher dans le menu
-          </button>
-        </div>
-
-        <nav className="flex flex-1 flex-col gap-1 px-2 pb-6" aria-label="Sections principales">
-          <div className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-            Configuration
-          </div>
-
-          {navigation.map((item) => {
+        <nav className="flex flex-1 flex-col gap-2 px-4" aria-label="Sections principales">
+          {navigation.map((item, index) => {
             const isActive = item.id === activeSection;
 
             return (
               <button
                 key={item.id}
                 type="button"
-                className={`flex items-center gap-3 rounded-md px-3 py-3 text-left text-sm transition ${
-                  isActive ? "bg-[#3b5182] text-white" : "text-white/85 hover:bg-white/8"
+                className={`flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-[15px] transition ${
+                  isActive
+                    ? "bg-[var(--sidebar-active)] text-[var(--accent-blue)]"
+                    : "text-[var(--sidebar-text-soft)] hover:bg-[var(--sidebar-soft)]"
                 }`}
                 onClick={() => onNavigate(item.id)}
               >
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded bg-white/10 text-[11px] font-semibold text-white/90">
-                  {item.shortKey}
+                <span className="shrink-0">
+                  <SidebarIcon index={index} />
                 </span>
-                <span>
-                  <strong className="block font-semibold">{item.label}</strong>
-                  <small className="block text-xs leading-5 text-white/55">{item.description}</small>
-                </span>
+                <span className="font-semibold">{item.label}</span>
               </button>
             );
           })}
+
+          <div className="mt-10 px-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--sidebar-text-muted)]">
+            Teams
+          </div>
+
+          <button className="mt-2 flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-[15px] text-[var(--sidebar-text-soft)] hover:bg-[var(--sidebar-soft)]">
+            <span className="text-xl">◔</span>
+            <span className="font-semibold">Message</span>
+          </button>
+          <button className="flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-[15px] text-[var(--sidebar-text-soft)] hover:bg-[var(--sidebar-soft)]">
+            <span className="text-xl">◜</span>
+            <span className="font-semibold">Support</span>
+          </button>
         </nav>
 
-        <div className="mt-auto px-4 pb-4">
-          <SessionStatus />
+        <div className="px-4 pb-6 pt-8">
+          <div className="relative rounded-[30px] bg-[var(--upgrade-bg)] px-5 pb-6 pt-10 text-center">
+            <div className="absolute left-1/2 top-0 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-[var(--accent-blue)] text-2xl text-white shadow-lg">
+              ↑
+            </div>
+            <p className="mx-auto max-w-[170px] text-[15px] font-medium leading-7 text-[var(--upgrade-text)]">
+              Upgrade to Pro for more resources
+            </p>
+            <button className="mt-6 w-full rounded-2xl bg-[var(--accent-blue)] px-4 py-3 text-sm font-semibold text-white">
+              Upgrade
+            </button>
+          </div>
         </div>
       </aside>
 
       <main className="min-w-0">
-        <header className="border-b border-slate-200 bg-white px-4 py-4 lg:px-6">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <span>Accueil</span>
-              <span>/</span>
-              <span>Configuration</span>
-              <span>/</span>
-              <span className="font-medium text-slate-700">{activeNav?.label ?? activeTitle}</span>
+        <header className="bg-[var(--panel-bg)] px-5 py-7 transition-colors duration-300 lg:px-10">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="text-3xl">📈</div>
+              <div>
+                <p className="text-[2rem] font-semibold tracking-tight text-[var(--text-primary)]">
+                  {activeNav?.label ?? activeTitle}
+                </p>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">{activeDescription}</p>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex h-10 min-w-[280px] items-center rounded-md border border-slate-200 bg-slate-50 px-3">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex h-14 min-w-[300px] items-center gap-3 rounded-[20px] bg-[var(--panel-soft)] px-5 text-[var(--text-secondary)]">
                 <input
-                  className="w-full border-0 bg-transparent text-sm text-slate-700 placeholder:text-slate-400"
-                  placeholder="Rechercher"
+                  className="w-full border-0 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
+                  placeholder="Search..."
                 />
+                <SearchIcon />
               </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-slate-700">Super-Admin</p>
-                  <p className="text-xs text-slate-500">Entite racine</p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#ef7e56] font-semibold text-white">
-                  GL
+
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={onToggleTheme}
+                  className="flex h-14 items-center rounded-[20px] bg-[var(--panel-soft)] px-4 text-sm font-semibold text-[var(--text-primary)]"
+                >
+                  {theme === "light" ? "Dark" : "Light"}
+                </button>
+
+                <button className="relative flex h-12 w-12 items-center justify-center rounded-full text-[var(--text-secondary)]">
+                  <BellIcon />
+                  <span className="absolute right-1 top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[var(--accent-blue)] text-[10px] font-semibold text-white">
+                    1
+                  </span>
+                </button>
+
+                <button className="flex h-12 w-12 items-center justify-center rounded-full text-[var(--text-secondary)]">
+                  <SettingsIcon />
+                </button>
+
+                <div className="flex h-13 w-13 items-center justify-center rounded-full bg-[var(--avatar-bg)] text-lg">
+                  🧔
                 </div>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="px-4 py-5 lg:px-6">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="inline-flex items-center rounded-md bg-slate-200 px-3 py-1 text-sm text-slate-600">
-                Client OAuth - {activeTitle}
-              </div>
-              <p className="mt-2 text-sm text-slate-500">{activeDescription}</p>
+        <div className="px-5 pb-10 pt-2 lg:px-10">
+          <div className="mb-7 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+              <span>Configuration</span>
+              <span>/</span>
+              <span>Analytics</span>
+              <span>/</span>
+              <span className="font-semibold text-[var(--text-primary)]">{activeTitle}</span>
             </div>
-            <div className="flex items-center gap-3">
-              <button className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600">
-                Actions
-              </button>
-              <button className="rounded-md bg-[#f7bf56] px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm">
-                + Ajouter
-              </button>
-            </div>
+
+            <button className="inline-flex items-center gap-3 rounded-[18px] bg-[var(--accent-blue)] px-5 py-4 text-sm font-semibold text-white shadow-sm">
+              <DownloadIcon />
+              Generate Report
+            </button>
           </div>
 
-          <section className="grid grid-cols-12 gap-5">{children}</section>
+          <section className="grid grid-cols-12 gap-7">{children}</section>
         </div>
       </main>
     </div>

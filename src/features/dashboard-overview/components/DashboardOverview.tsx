@@ -27,7 +27,13 @@ export function DashboardOverview() {
           description="Valeur de demonstration"
           tone={metric.tone}
         >
-          <p className="text-4xl leading-none font-semibold text-slate-800">{metric.value}</p>
+          <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--panel-soft)] text-lg">
+            {metric.tone === "danger" ? "↓" : "↑"}
+          </div>
+          <p className="text-4xl leading-none font-semibold text-[var(--text-primary)]">{metric.value}</p>
+          <p className="mt-3 text-sm text-[var(--text-secondary)]">
+            {metric.tone === "danger" ? "20.15 %" : "105.23 %"}
+          </p>
         </Card>
       ))}
     </>

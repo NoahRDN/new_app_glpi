@@ -25,12 +25,15 @@ export function Card({
 
   return (
     <article
-      className={`col-span-12 rounded-2xl border bg-white p-5 shadow-sm md:col-span-6 xl:col-span-4 ${toneClass} ${className}`}
+      className={`col-span-12 rounded-[28px] border p-5 shadow-[var(--shadow-soft)] transition-colors duration-300 md:col-span-6 xl:col-span-4 ${toneClass} ${className}`}
+      style={{
+        backgroundColor: "var(--panel-bg)",
+      }}
     >
       <header className="mb-4">
         <div>
-          <h3 className="mb-1 text-lg font-semibold text-slate-800">{title}</h3>
-          <p className="text-sm leading-6 text-slate-500">{description}</p>
+          <h3 className="mb-1 text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
+          <p className="text-sm leading-6 text-[var(--text-secondary)]">{description}</p>
         </div>
       </header>
       <div>{children}</div>

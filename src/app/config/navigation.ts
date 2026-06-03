@@ -14,26 +14,26 @@ export type NavigationItem = {
 export const appNavigation: NavigationItem[] = [
   {
     id: "dashboard",
-    label: "Clients OAuth",
-    description: "Configuration des connexions et des redirections",
+    label: "Administration",
+    description: "Vue analytique et configuration avancee",
     shortKey: "01",
   },
   {
     id: "tickets",
-    label: "Tickets",
-    description: "Suivi des incidents, urgences et SLA",
+    label: "Overview",
+    description: "Synthese globale et activite recente",
     shortKey: "02",
   },
   {
     id: "assets",
-    label: "Parc",
-    description: "Inventaire postes, reseau et peripheriques",
+    label: "Sales",
+    description: "Commandes, flux et operations de vente",
     shortKey: "03",
   },
   {
     id: "knowledge-base",
-    label: "Base de connaissances",
-    description: "Documentation interne et procedures support",
+    label: "Schedule",
+    description: "Organisation, process et documentation",
     shortKey: "04",
   },
 ];

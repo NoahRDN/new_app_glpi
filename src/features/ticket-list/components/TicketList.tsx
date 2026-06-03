@@ -14,11 +14,14 @@ export function TicketList() {
         {ticketsMock.map((ticket) => (
           <article
             key={ticket.id}
-            className="grid gap-3 border-b border-slate-200 pb-3 last:border-b-0 last:pb-0 md:grid-cols-[minmax(0,1.6fr)_auto_auto_auto] md:items-center"
+            className="grid gap-3 pb-3 last:pb-0 md:grid-cols-[minmax(0,1.6fr)_auto_auto_auto] md:items-center"
+            style={{
+              borderBottom: "1px solid var(--panel-border)",
+            }}
           >
             <div>
-              <strong className="text-slate-800">{ticket.title}</strong>
-              <p className="text-sm text-slate-500">
+              <strong className="text-[var(--text-primary)]">{ticket.title}</strong>
+              <p className="text-sm text-[var(--text-secondary)]">
                 #{ticket.id} • {ticket.requester}
               </p>
             </div>
@@ -28,7 +31,7 @@ export function TicketList() {
             <Badge tone={ticket.status === "resolved" ? "success" : "warning"}>
               {ticket.status}
             </Badge>
-            <span className="text-sm text-slate-500">{formatRelativeDate(ticket.updatedAt)}</span>
+            <span className="text-sm text-[var(--text-secondary)]">{formatRelativeDate(ticket.updatedAt)}</span>
           </article>
         ))}
       </div>
