@@ -1,6 +1,20 @@
 import { glpiGet } from "../../../shared/api/glpiClient";
 import type { User } from "../model/user.types";
 
-export async function fetchCurrentUser(): Promise<User> {
-  return glpiGet<User>("/me");
+type GlpiUser = {
+  id: number;
+  name?: string;
+  realname?: string;
+  firstname?: string;
+};
+
+export async function getUsers(): Promise<User[]> {
+  const glpiUsers = await glpiGet<GlpiUser[]>("/User");
+
+  return glpiUsers.map((user) => ({
+    id: user.id,
+    username: user.name ?? "",
+    realname: user.realname ?? "",
+    firstname: user.firstname ?? "",
+  }));
 }

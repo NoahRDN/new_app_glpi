@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { User } from "../../../entities/user/model/user.types";
-import { defaultUser } from "../../../entities/user/model/user.configs";
+import { getUsers } from "../../../entities/user/api/user.api";
 
 export function useUsers(){
     const [users, setUsers] = useState<User[]>([]);
@@ -8,10 +8,7 @@ export function useUsers(){
     const [errors, setErrors] = useState<string>("");
 
     useEffect( () => {
-        async function getUsers() : Promise<User[]>{
-            const defaultUserRslt : User = defaultUser;
-            return [defaultUserRslt]
-        }
+        
 
         async function loadingUsers() {
             try {

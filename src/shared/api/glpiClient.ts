@@ -1,5 +1,4 @@
 import { env } from "../config/env";
-import { getAccessToken } from "../auth/tokenStorage";
 
 type RequestMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
@@ -7,14 +6,17 @@ function buildUrl(path: string) {
   return `${env.glpiApiBaseUrl}${path}`;
 }
 
-async function request<T>(path: string, method: RequestMethod, body?: unknown): Promise<T> {
-  const accessToken = getAccessToken();
+async function request<T>(
+  path: string,
+  method: RequestMethod,
+  body?: unknown
+): Promise<T> {
   const response = await fetch(buildUrl(path), {
     method,
     headers: {
       Accept: "application/json",
+      Authorization: `Bearer ${env.glpiAccessToken}`,
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -22,7 +24,7 @@ async function request<T>(path: string, method: RequestMethod, body?: unknown): 
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `GLPI API ${method} ${path} failed: ${response.status} ${response.statusText} ${errorText}`.trim()
+      `GLPI API ${method} ${path} failed: ${response.status} ${response.statusText} ${errorText}`.trim(),
     );
   }
 
