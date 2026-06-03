@@ -136,6 +136,27 @@ export function AssetsPage() {
       </div>
 
       <DataTable
+        tableHead={
+          <thead>
+            <label className="flex items-center justify-center">
+              <input
+                aria-label="Select all products"
+                checked={allVisibleSelected}
+                className="h-4 w-4 accent-[var(--accent-blue)]"
+                type="checkbox"
+                onChange={(event) => toggleAllVisible(event.target.checked)}
+              />
+            </label>
+            <span />
+            <span>Payment</span>
+            <span>Brand</span>
+            <span>Code</span>
+            <span>Stock</span>
+            <span>Var</span>
+            <span>Price</span>
+            <span>...</span>
+          </thead>
+        }
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
             <input
@@ -155,25 +176,7 @@ export function AssetsPage() {
           </div>
         }
       >
-        <div className="grid grid-cols-[34px_70px_1.4fr_1fr_0.8fr_0.7fr_0.7fr_0.8fr_40px] items-center px-4 py-4 text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-          <label className="flex items-center justify-center">
-            <input
-              aria-label="Select all products"
-              checked={allVisibleSelected}
-              className="h-4 w-4 accent-[var(--accent-blue)]"
-              type="checkbox"
-              onChange={(event) => toggleAllVisible(event.target.checked)}
-            />
-          </label>
-          <span />
-          <span>Payment</span>
-          <span>Brand</span>
-          <span>Code</span>
-          <span>Stock</span>
-          <span>Var</span>
-          <span>Price</span>
-          <span>...</span>
-        </div>
+        
         {visibleRows.map((row) => (
           <ProductRow
             key={row.sku}

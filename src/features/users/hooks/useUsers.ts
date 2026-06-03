@@ -15,7 +15,7 @@ export function useUsers(){
 
         async function loadingUsers() {
             try {
-            const usersRslt = await getUsers();
+                const usersRslt = await getUsers();
                 setUsers(usersRslt);
             } catch (error) {
                 console.log(error);
