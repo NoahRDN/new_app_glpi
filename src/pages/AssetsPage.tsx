@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { inventoryRows, productTabs } from "../features/catalog/model/catalog.mock";
 import { DataTable } from "../shared/ui/DataTable";
-import { Modal } from "../shared/ui/Modal";
+import { Modal1 } from "../shared/ui/Modal1";
 import { PillFilter } from "../shared/ui/PillFilter";
 import { ProductRow } from "../shared/ui/ProductRow";
 
@@ -189,7 +189,7 @@ export function AssetsPage() {
         ))}
       </DataTable>
 
-      <Modal isOpen={isInventoryModalOpen} onClose={() => setIsInventoryModalOpen(false)}>
+      <Modal1 isOpen={isInventoryModalOpen} onClose={() => setIsInventoryModalOpen(false)}>
         <div className="w-full max-w-[820px] rounded-[34px] border shadow-2xl" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
           <div className="flex items-center justify-between border-b px-10 py-6" style={{ borderColor: "var(--panel-border)" }}>
             <div className="flex gap-10 overflow-auto">
@@ -295,7 +295,7 @@ export function AssetsPage() {
             </div>
           </div>
         </div>
-      </Modal>
+      </Modal1>
     </>
   );
 }

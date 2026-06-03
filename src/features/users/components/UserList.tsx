@@ -1,10 +1,15 @@
+import { useState } from "react";
+import { Button } from "../../../shared/ui/Button";
 import { DataTable } from "../../../shared/ui/DataTable";
 import { Loader } from "../../../shared/ui/Loader";
 import { useUsers } from "../hooks/useUsers";
+import { Plus } from "lucide-react";
+import { Modal } from "../../../shared/ui/Modal";
 
 
 export function UserList(){
     const {users, isLoading, errors} = useUsers();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     return <>
 
@@ -19,7 +24,12 @@ export function UserList(){
                         <th className="px-4 py-4">realname</th>
                         <th className="px-4 py-4">firstname</th>
                     </tr>
-                </thead>}       
+                </thead>}
+                toolbar={
+                    <Button
+                        onClick={() => setIsModalOpen(true)}
+                    ><Plus />Ajouter</Button>
+                }       
             >
                 {users.length > 0 && users.map((user) =>
                     <tr key={user.id} >
@@ -35,5 +45,15 @@ export function UserList(){
         {
             errors !== "" && <span>{errors}</span>
         }
+
+        <Modal
+            isOpen={isModalOpen}
+            title="Ajouter un utilisateur"
+            onClose={() => setIsModalOpen(false)}
+        >
+            <p className="text-[var(--text-secondary)]">
+            Ici tu peux mettre ton formulaire de création utilisateur.
+            </p>
+        </Modal>
     </>
 }
