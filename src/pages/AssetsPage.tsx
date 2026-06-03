@@ -138,23 +138,26 @@ export function AssetsPage() {
       <DataTable
         tableHead={
           <thead>
-            <label className="flex items-center justify-center">
-              <input
-                aria-label="Select all products"
-                checked={allVisibleSelected}
-                className="h-4 w-4 accent-[var(--accent-blue)]"
-                type="checkbox"
-                onChange={(event) => toggleAllVisible(event.target.checked)}
-              />
-            </label>
-            <span />
-            <span>Payment</span>
-            <span>Brand</span>
-            <span>Code</span>
-            <span>Stock</span>
-            <span>Var</span>
-            <span>Price</span>
-            <span>...</span>
+            <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)"}}>
+              <th>
+                <label className="flex items-center justify-center">
+                  <input
+                    aria-label="Select all products"
+                    checked={allVisibleSelected}
+                    className="h-4 w-4 accent-[var(--accent-blue)]"
+                    type="checkbox"
+                    onChange={(event) => toggleAllVisible(event.target.checked)}
+                  />
+                </label>
+              </th>
+              <th>Payment</th>
+              <th>Brand</th>
+              <th>Code</th>
+              <th>Stock</th>
+              <th>Var</th>
+              <th>Price</th>
+              <th>...</th>
+            </tr>
           </thead>
         }
         toolbar={
@@ -186,6 +189,16 @@ export function AssetsPage() {
             onClick={() => openInventoryModal(row.sku)}
             onToggle={(checked) => toggleSku(row.sku, checked)}
           />
+          // <tr>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          //   <td>{row.sku}</td>
+          // </tr>
         ))}
       </DataTable>
 

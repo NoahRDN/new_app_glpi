@@ -5,6 +5,7 @@ import { Loader } from "../../../shared/ui/Loader";
 import { useUsers } from "../hooks/useUsers";
 import { Plus } from "lucide-react";
 import { Modal } from "../../../shared/ui/Modal";
+import { UserAdd } from "./UserAdd";
 
 
 export function UserList(){
@@ -51,9 +52,7 @@ export function UserList(){
             title="Ajouter un utilisateur"
             onClose={() => setIsModalOpen(false)}
         >
-            <p className="text-[var(--text-secondary)]">
-            Ici tu peux mettre ton formulaire de création utilisateur.
-            </p>
+            <UserAdd />
         </Modal>
     </>
 }

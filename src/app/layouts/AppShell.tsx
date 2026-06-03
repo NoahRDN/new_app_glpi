@@ -80,7 +80,7 @@ export function AppShell({
   theme,
 }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text-primary)] transition-colors duration-300 lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text-primary)] transition-colors duration-2000 lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
       <aside className="flex flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] transition-colors duration-300">
         <div className="px-6 pb-8 pt-8">
           <DashboardXLogo />
