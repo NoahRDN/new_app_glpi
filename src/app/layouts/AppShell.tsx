@@ -21,7 +21,7 @@ function DashboardXLogo() {
         <span className="absolute right-0 top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--accent-green)]" />
         <span className="absolute left-3 top-4 h-3.5 w-3.5 rounded-full bg-[var(--accent-purple)]" />
       </div>
-      <span className="text-[2rem] font-semibold tracking-tight">DashboardX</span>
+      <span className="text-[2rem] font-semibold tracking-tight">GLPI New App</span>
     </div>
   );
 }
@@ -77,18 +77,6 @@ function DownloadIcon() {
   );
 }
 
-function SidebarIcon({ index }: { index: number }) {
-  const icons = [
-    <svg key="1" width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.7"/><circle cx="13" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.7"/><circle cx="5" cy="13" r="2.2" stroke="currentColor" strokeWidth="1.7"/><circle cx="13" cy="13" r="2.2" stroke="currentColor" strokeWidth="1.7"/></svg>,
-    <svg key="2" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2.5 14.5H15.5" stroke="currentColor" strokeWidth="1.7"/><path d="M4 14V7.5H7V14" stroke="currentColor" strokeWidth="1.7"/><path d="M7.75 14V3.5H10.75V14" stroke="currentColor" strokeWidth="1.7"/><path d="M11.5 14V9H14.5V14" stroke="currentColor" strokeWidth="1.7"/></svg>,
-    <svg key="3" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="3" width="13" height="3" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="2.5" y="7.5" width="13" height="3" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="2.5" y="12" width="13" height="3" rx="1.2" stroke="currentColor" strokeWidth="1.7"/></svg>,
-    <svg key="4" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="10.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="2.5" y="10.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/><rect x="10.5" y="10.5" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.7"/></svg>,
-    <svg key="5" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 3.5H14V14.5H4V3.5Z" stroke="currentColor" strokeWidth="1.7"/><path d="M6 6.5H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/><path d="M6 9H12" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>,
-    <svg key="6" width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M3 7H15" stroke="currentColor" strokeWidth="1.7"/></svg>,
-  ];
-  return icons[index] ?? icons[0];
-}
-
 export function AppShell({
   activeDescription,
   activeSection,
@@ -99,8 +87,6 @@ export function AppShell({
   onToggleTheme,
   theme,
 }: AppShellProps) {
-  const activeNav = navigation.find((item) => item.id === activeSection);
-
   return (
     <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text-primary)] transition-colors duration-300 lg:grid lg:grid-cols-[250px_minmax(0,1fr)]">
       <aside className="flex flex-col bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] transition-colors duration-300">
@@ -109,7 +95,7 @@ export function AppShell({
         </div>
 
         <nav className="flex flex-1 flex-col gap-2 px-4" aria-label="Sections principales">
-          {navigation.map((item, index) => {
+          {navigation.map((item) => {
             const isActive = item.id === activeSection;
 
             return (
@@ -124,7 +110,7 @@ export function AppShell({
                 onClick={() => onNavigate(item.id)}
               >
                 <span className="shrink-0">
-                  <SidebarIcon index={index} />
+                  {item.icon}                  
                 </span>
                 <span className="font-semibold">{item.label}</span>
               </button>
@@ -145,29 +131,15 @@ export function AppShell({
           </button>
         </nav>
 
-        <div className="px-4 pb-6 pt-8">
-          <div className="relative rounded-[30px] bg-[var(--upgrade-bg)] px-5 pb-6 pt-10 text-center">
-            <div className="absolute left-1/2 top-0 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-[var(--accent-blue)] text-2xl text-white shadow-lg">
-              ↑
-            </div>
-            <p className="mx-auto max-w-[170px] text-[15px] font-medium leading-7 text-[var(--upgrade-text)]">
-              Upgrade to Pro for more resources
-            </p>
-            <button className="mt-6 w-full rounded-2xl bg-[var(--accent-blue)] px-4 py-3 text-sm font-semibold text-white">
-              Upgrade
-            </button>
-          </div>
-        </div>
       </aside>
 
       <main className="min-w-0">
         <header className="bg-[var(--panel-bg)] px-5 py-7 transition-colors duration-300 lg:px-10">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-4">
-              <div className="text-3xl">📈</div>
               <div>
                 <p className="text-[2rem] font-semibold tracking-tight text-[var(--text-primary)]">
-                  {activeNav?.label ?? activeTitle}
+                  {activeTitle}
                 </p>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">{activeDescription}</p>
               </div>

@@ -27,19 +27,15 @@ function renderSection(section: AppSectionId) {
 
 export function App() {
   const [activeSection, setActiveSection] = useState<AppSectionId>("dashboard");
-  const [theme, setTheme] = useState<ThemeMode>("light");
-
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const storedTheme = localStorage.getItem("theme");
+    return storedTheme === "dark" ? "dark" : "light";
+  });
+  
   const activeItem = useMemo(
     () => appNavigation.find((item) => item.id === activeSection) ?? appNavigation[0],
     [activeSection]
   );
-
-  useEffect(() => {
-    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-    const nextTheme = storedTheme === "dark" ? "dark" : "light";
-
-    setTheme(nextTheme);
-  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
