@@ -9,7 +9,7 @@ export function UserList(){
     return <>
 
         {isLoading && <Loader label="chargement donnnée user" />}
-        {!isLoading && 
+        {!isLoading && errors === "" && 
             <DataTable
                 tableClassName="min-w-full"
                 tableHead={<thead>
@@ -29,16 +29,11 @@ export function UserList(){
                         <td className="px-4 py-4">{user.firstname}</td>
                     </tr>  
                 )}
-                
-                
-
-                {
-                    errors !== "" && <span>{errors}</span>
-                }
-
-
             </DataTable>   
         }
 
+        {
+            errors !== "" && <span>{errors}</span>
+        }
     </>
 }

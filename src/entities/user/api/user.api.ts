@@ -9,7 +9,7 @@ type GlpiUser = {
 };
 
 export async function getUsers(): Promise<User[]> {
-  const glpiUsers = await glpiGet<GlpiUser[]>("/User");
+  const glpiUsers = await glpiGet<GlpiUser[]>("/Administration/User");
 
   return glpiUsers.map((user) => ({
     id: user.id,
