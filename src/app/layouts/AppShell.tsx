@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { AppSectionId, NavigationItem } from "../config/navigation";
+import {Search} from "lucide-react"
 
 type AppShellProps = {
   activeDescription: string;
@@ -23,15 +24,6 @@ function DashboardXLogo() {
       </div>
       <span className="text-[2rem] font-semibold tracking-tight">GLPI New App</span>
     </div>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
-      <path d="M16 16L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -97,7 +89,7 @@ export function AppShell({
         <nav className="flex flex-1 flex-col gap-2 px-4" aria-label="Sections principales">
           {navigation.map((item) => {
             const isActive = item.id === activeSection;
-
+            const Icon = item.Icon;
             return (
               <button
                 key={item.id}
@@ -110,7 +102,7 @@ export function AppShell({
                 onClick={() => onNavigate(item.id)}
               >
                 <span className="shrink-0">
-                  {item.icon}                  
+                  <Icon size={18} strokeWidth={1.7} />              
                 </span>
                 <span className="font-semibold">{item.label}</span>
               </button>
@@ -151,7 +143,7 @@ export function AppShell({
                   className="w-full border-0 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
                   placeholder="Search..."
                 />
-                <SearchIcon />
+                <Search />
               </div>
 
               <div className="flex items-center gap-4">
@@ -185,10 +177,6 @@ export function AppShell({
         <div className="px-5 pb-10 pt-2 lg:px-10">
           <div className="mb-7 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-              <span>Configuration</span>
-              <span>/</span>
-              <span>Analytics</span>
-              <span>/</span>
               <span className="font-semibold text-[var(--text-primary)]">{activeTitle}</span>
             </div>
 
