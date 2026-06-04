@@ -28,3 +28,5 @@ dist-ssr
 
 utilitaire
 prestashop-new-app
+data/*.sqlite
+data/*.db

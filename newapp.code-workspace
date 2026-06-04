@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "backend/newappglpi"
+		}
+	],
+	"settings": {
+		"js/ts.tsserver.experimental.enableProjectDiagnostics": true
+	}
+}
