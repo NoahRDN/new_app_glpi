@@ -1,4 +1,4 @@
-import { localGet, localPost } from "../../../shared/api/localClient";
+import { localDelete, localGet, localPost } from "../../../shared/api/localClient";
 import type { LocalNote } from "../model/localNote.types";
 
 export async function getLocalNotes(): Promise<LocalNote[]> {
@@ -10,4 +10,8 @@ export async function createLocalNote(payload: {
   note: string;
 }) {
   return localPost("/local-notes", payload);
+}
+
+export async function deleteAllLocalNotes() {
+  return localDelete("/local-notes");
 }
