@@ -1,0 +1,4 @@
+name,content,status,priority,urgency,impact
+Poste comptable bloque,Le poste du service comptabilite ne demarre plus,1,4,4,3
+Demande acces imprimante,Ajouter l'imprimante du bureau 2 pour le nouvel utilisateur,1,3,2,2
+Incident reseau salle 204,Connexion instable sur plusieurs postes,1,5,5,4

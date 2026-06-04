@@ -3,7 +3,8 @@ export type GlpiDataResourceId =
   | "tickets"
   | "computers"
   | "locations"
-  | "groups";
+  | "groups"
+  | "documents";
 
 export type GlpiDataResourceConfig = {
   description: string;
@@ -62,6 +63,15 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     id: "groups",
     label: "Groupes",
     optionalColumns: ["comment"],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
+    description: "Documents GLPI crees a partir d'archives images.",
+    endpoint: "/Document",
+    id: "documents",
+    label: "Documents",
+    optionalColumns: ["filename", "comment"],
     requiredColumns: ["name"],
     resetEnabled: true,
   },

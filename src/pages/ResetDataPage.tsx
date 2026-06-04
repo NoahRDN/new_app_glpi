@@ -1,4 +1,4 @@
-import { Trash2, ShieldAlert } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button } from "../shared/ui/Button";
 import { Error as ErrorMessage } from "../shared/ui/Error";
 import { Success } from "../shared/ui/Succcess";
@@ -30,22 +30,6 @@ export function ResetDataPage() {
 
   return (
     <>
-      <section className="col-span-12">
-        <div className="flex items-center justify-between gap-4 rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--text-secondary)" }}>
-              Reset data
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
-              Reinitialisation GLPI
-            </h2>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-(--panel-soft)">
-            <ShieldAlert size={20} />
-          </div>
-        </div>
-      </section>
-
       <section className="col-span-12 rounded-[18px] border p-6 xl:col-span-5" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
         <Button otherClassName="my-5 bg-red-600 w-full justify-center" disabled={selectedResources.length === 0 || isResetting} onClick={handleReset}>
           <Trash2 size={18} />
