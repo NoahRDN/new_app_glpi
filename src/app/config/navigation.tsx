@@ -5,6 +5,8 @@ import {
   Calendar,
   User,
   LayoutDashboard,
+  FileSpreadsheet,
+  RotateCcw,
 } from "lucide-react";
 
 export type AppSectionId =
@@ -12,7 +14,9 @@ export type AppSectionId =
   | "tickets"
   | "assets"
   | "knowledge-base"
-  | "users";
+  | "users"
+  | "import-data"
+  | "reset-data";
 
 export type NavigationItem = {
   id: AppSectionId;
@@ -57,5 +61,19 @@ export const appNavigation: NavigationItem[] = [
     label: "Utilisateurs",
     description: "Liste des utilisateurs",
     Icon: User,
+  },
+  {
+    id: "import-data",
+    path: "/import-data",
+    label: "Import data",
+    description: "Import CSV multi-ressources GLPI",
+    Icon: FileSpreadsheet,
+  },
+  {
+    id: "reset-data",
+    path: "/reset-data",
+    label: "Reset data",
+    description: "Reinitialisation multi-ressources GLPI",
+    Icon: RotateCcw,
   },
 ];
