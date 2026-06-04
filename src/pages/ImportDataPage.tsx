@@ -249,7 +249,7 @@ export function ImportDataPage() {
           </ErrorMessage>
         ))}
 
-        {error instanceof Error && <ErrorMessage>{error.message}</ErrorMessage>}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
 
         {result && result.importedCount > 0 && (
           <Success>
