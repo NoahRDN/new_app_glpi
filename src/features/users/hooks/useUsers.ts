@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "../../../entities/user/model/user.types";
 import { getUsers } from "../../../entities/user/api/user.api";
+import { getLocalNotes } from "../../../entities/local-note/api/localNote.api";
 
 export function useUsers() {
     const [users, setUsers] = useState<User[]>([]);
@@ -10,7 +11,8 @@ export function useUsers() {
     const refreshUsers = useCallback(async () => {
         try {
             const users = await getUsers();
-
+            const notes = await getLocalNotes();
+            console.log("notes: ",notes);
             setUsers(users);
             setErrors("");
         } catch (error) {
