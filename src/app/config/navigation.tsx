@@ -1,4 +1,11 @@
-import { type LucideIcon ,BadgeDollarSign,SquareKanban,Calendar,User, LayoutDashboard } from "lucide-react"
+import {
+  type LucideIcon,
+  BadgeDollarSign,
+  SquareKanban,
+  Calendar,
+  User,
+  LayoutDashboard,
+} from "lucide-react";
 
 export type AppSectionId =
   | "dashboard"
@@ -9,6 +16,7 @@ export type AppSectionId =
 
 export type NavigationItem = {
   id: AppSectionId;
+  path: string;
   label: string;
   description: string;
   Icon: LucideIcon;
@@ -17,31 +25,36 @@ export type NavigationItem = {
 export const appNavigation: NavigationItem[] = [
   {
     id: "dashboard",
+    path: "/",
     label: "Administration",
-    description: "Vue analytique et configuration avancee",
+    description: "Vue analytique et configuration avancée",
     Icon: LayoutDashboard,
   },
   {
     id: "tickets",
-    label: "Overview",
-    description: "Synthese globale et activite recente",
+    path: "/tickets",
+    label: "Tickets",
+    description: "Synthèse globale et activité récente",
     Icon: SquareKanban,
   },
   {
     id: "assets",
-    label: "Sales",
-    description: "Commandes, flux et operations de vente",
+    path: "/assets",
+    label: "Parc",
+    description: "Ordinateurs, matériels et inventaire",
     Icon: BadgeDollarSign,
   },
   {
     id: "knowledge-base",
-    label: "Schedule",
+    path: "/knowledge-base",
+    label: "Base de connaissances",
     description: "Organisation, process et documentation",
     Icon: Calendar,
   },
   {
     id: "users",
-    label: "Users",
+    path: "/users",
+    label: "Utilisateurs",
     description: "Liste des utilisateurs",
     Icon: User,
   },
