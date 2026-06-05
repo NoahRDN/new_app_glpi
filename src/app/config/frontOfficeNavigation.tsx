@@ -1,0 +1,33 @@
+import { House, LifeBuoy, MonitorSmartphone, UserRound } from "lucide-react";
+import type { OfficeNavigationItem } from "./officeNavigation.types";
+
+export const frontOfficeNavigation: OfficeNavigationItem[] = [
+  {
+    description: "Page d'accueil du portail",
+    Icon: House,
+    id: "front-home",
+    label: "Accueil",
+    path: "/",
+  },
+  {
+    description: "Catalogue des services IT",
+    Icon: MonitorSmartphone,
+    id: "front-portal",
+    label: "Portail",
+    path: "/portal",
+  },
+  {
+    description: "Base documentaire publique",
+    Icon: LifeBuoy,
+    id: "front-help",
+    label: "Aide",
+    path: "/help-center",
+  },
+  {
+    description: "Accès utilisateur",
+    Icon: UserRound,
+    id: "front-account",
+    label: "Mon espace",
+    path: "/account",
+  },
+];
