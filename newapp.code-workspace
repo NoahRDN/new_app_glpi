@@ -8,6 +8,7 @@
 		}
 	],
 	"settings": {
-		"js/ts.tsserver.experimental.enableProjectDiagnostics": true
+		"js/ts.tsserver.experimental.enableProjectDiagnostics": true,
+		"java.compile.nullAnalysis.mode": "automatic"
 	}
 }
