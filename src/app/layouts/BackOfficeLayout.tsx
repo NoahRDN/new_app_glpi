@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
-import { backOfficeNavigation } from "../../config/backOfficeNavigation";
+import { backOfficeNavigation } from "../config/backOfficeNavigation";
 import { OfficeLayoutShell } from "./OfficeLayoutShell";
-import { Button } from "../../../shared/ui/Button";
-import { signOutBackoffice } from "../../../features/backoffice-auth/lib/backofficeAuth";
+import { Button } from "../../shared/ui/Button";
+import { signOutBackoffice } from "../../features/backoffice-auth/lib/backofficeAuth";
 
 export function BackOfficeLayout() {
   const navigate = useNavigate();

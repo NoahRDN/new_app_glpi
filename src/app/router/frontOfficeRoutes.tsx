@@ -1,5 +1,5 @@
 import type { RouteObject } from "react-router";
-import { FrontOfficeLayout } from "./layouts/FrontOfficeLayout";
+import { FrontOfficeLayout } from "../layouts/FrontOfficeLayout";
 import { ProtectedFrontofficeRoute } from "../../features/frontoffice-auth/components/ProtectedFrontofficeRoute";
 import { HomePage } from "../../pages/frontoffice/HomePage";
 import { PortalPage } from "../../pages/frontoffice/PortalPage";

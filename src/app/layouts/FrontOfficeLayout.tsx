@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
-import { frontOfficeNavigation } from "../../config/frontOfficeNavigation";
+import { frontOfficeNavigation } from "../config/frontOfficeNavigation";
 import { OfficeLayoutShell } from "./OfficeLayoutShell";
-import { Button } from "../../../shared/ui/Button";
-import { signOutFrontoffice } from "../../../features/frontoffice-auth/lib/frontofficeAuth";
+import { Button } from "../../shared/ui/Button";
+import { signOutFrontoffice } from "../../features/frontoffice-auth/lib/frontofficeAuth";
 
 export function FrontOfficeLayout() {
   const navigate = useNavigate();

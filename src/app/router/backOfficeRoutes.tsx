@@ -1,5 +1,5 @@
 import type { RouteObject } from "react-router";
-import { BackOfficeLayout } from "./layouts/BackOfficeLayout";
+import { BackOfficeLayout } from "../layouts/BackOfficeLayout";
 import { ProtectedBackofficeRoute } from "../../features/backoffice-auth/components/ProtectedBackofficeRoute";
 import { DashboardPage } from "../../pages/backoffice/DashboardPage";
 import { TicketsPage } from "../../pages/backoffice/TicketsPage";

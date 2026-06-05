@@ -1,8 +1,8 @@
 import { useMemo, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation } from "react-router";
 import { Bell, Moon, Settings, Sun } from "lucide-react";
-import type { OfficeNavigationItem } from "../../config/officeNavigation.types";
-import { useThemeMode } from "../../hooks/useThemeMode";
+import type { OfficeNavigationItem } from "../config/officeNavigation.types";
+import { useThemeMode } from "../hooks/useThemeMode";
 
 type OfficeLayoutShellProps = {
   actions?: ReactNode;
