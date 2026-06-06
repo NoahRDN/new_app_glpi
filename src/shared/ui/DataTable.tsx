@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 
 type DataTableProps = {
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   tableClassName?: string;
-  tableHead?: ReactNode;
+  tableHeads?: ReactNode[];
   toolbar?: ReactNode;
 };
 
@@ -12,7 +12,7 @@ export function DataTable({
   children,
   className = "",
   tableClassName = "",
-  tableHead,
+  tableHeads,
   toolbar,
 }: DataTableProps) {
   return (
@@ -22,10 +22,19 @@ export function DataTable({
     >
       <div className="rounded-[30px] p-5" style={{ backgroundColor: "var(--panel-bg)" }}>
         {toolbar}
-        {tableHead ? (
+        {tableHeads ? (
           <div className="overflow-x-auto">
             <table className={`w-full border-separate [border-spacing:0_0.5rem] ${tableClassName}`}>
-              {tableHead}
+              <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                  { tableHeads.map((tableHead) => {
+                    return <>
+                      <th className="px-4 py-4">
+                        {tableHead}
+                      </th>
+                    </>
+                  }) }
+                  
+              </tr>
               <tbody>{children}</tbody>
             </table>
           </div>

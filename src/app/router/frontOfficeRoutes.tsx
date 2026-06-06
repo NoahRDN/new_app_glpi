@@ -6,6 +6,7 @@ import { PortalPage } from "../../pages/other/frontoffice/PortalPage";
 import { HelpCenterPage } from "../../pages/other/frontoffice/HelpCenterPage";
 import { LoginPage } from "../../pages/other/frontoffice/LoginPage";
 import { AccountPage } from "../../pages/other/frontoffice/AccountPage";
+import { GeneralViewElementPage } from "../../pages/other/frontoffice/GeneralViewElementPage";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -36,6 +37,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "account",
           element: <AccountPage />,
+        },
+        {
+          path: "asset-general-element",
+          element: <GeneralViewElementPage />,
         },
       ],
     },

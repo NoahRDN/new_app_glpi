@@ -103,29 +103,23 @@ export function KnowledgeBasePage() {
 
       <DataTable
         tableClassName="min-w-full"
-        tableHead={
-          <thead>
-            <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-              <th className="w-8.5 px-4 py-4">
-                <label className="flex items-center justify-center">
-                  <input
-                    aria-label="Select all orders"
-                    checked={allVisibleSelected}
-                    className="h-4 w-4 accent-(--accent-blue)"
-                    type="checkbox"
-                    onChange={(event) => toggleAllVisible(event.target.checked)}
-                  />
-                </label>
-              </th>
-              <th className="px-4 py-4">Order</th>
-              <th className="px-4 py-4">Date</th>
-              <th className="px-4 py-4">Customer</th>
-              <th className="px-4 py-4">Payment</th>
-              <th className="px-4 py-4">Status</th>
-              <th className="px-4 py-4">Price</th>
-            </tr>
-          </thead>
-        }
+        tableHeads={[
+          <label className="flex items-center justify-center">
+            <input
+              aria-label="Select all orders"
+              checked={allVisibleSelected}
+              className="h-4 w-4 accent-(--accent-blue)"
+              type="checkbox"
+              onChange={(event) => toggleAllVisible(event.target.checked)}
+            />
+          </label>,
+          "Order",
+          "Date",
+          "Customer",
+          "Payment",
+          "Status",
+          "Price",
+        ]}
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
             <Search color="var(--text-secondary)" />

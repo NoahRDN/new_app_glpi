@@ -138,30 +138,24 @@ export function ParcsPage() {
       </div>
 
       <DataTable
-        tableHead={
-          <thead>
-            <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)"}}>
-              <th>
-                <label className="flex items-center justify-center">
-                  <input
-                    aria-label="Select all products"
-                    checked={allVisibleSelected}
-                    className="h-4 w-4 accent-(--accent-blue)"
-                    type="checkbox"
-                    onChange={(event) => toggleAllVisible(event.target.checked)}
-                  />
-                </label>
-              </th>
-              <th>Payment</th>
-              <th>Brand</th>
-              <th>Code</th>
-              <th>Stock</th>
-              <th>Var</th>
-              <th>Price</th>
-              <th>...</th>
-            </tr>
-          </thead>
-        }
+        tableHeads={[
+          <label className="flex items-center justify-center">
+            <input
+              aria-label="Select all products"
+              checked={allVisibleSelected}
+              className="h-4 w-4 accent-(--accent-blue)"
+              type="checkbox"
+              onChange={(event) => toggleAllVisible(event.target.checked)}
+            />
+          </label>,
+          "Payment",
+          "Brand",
+          "Code",
+          "Stock",
+          "Var",
+          "Price",
+          "...",
+        ]}
         toolbar={
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4" style={{ backgroundColor: "var(--panel-soft)" }}>
             <Search color="var(--text-secondary)" />

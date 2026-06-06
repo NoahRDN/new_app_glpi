@@ -48,15 +48,11 @@ export function AssetsPage() {
             </div>
 
             <DataTable 
-                tableHead={
-                    <thead>
-                        <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-                            <th className="px-4 py-4">Nom</th>
-                            <th className="px-4 py-4">Lien</th>
-                            <th className="px-4 py-4">Type Element</th>
-                        </tr>
-                    </thead>
-                }
+                tableHeads={[
+                    "Nom",
+                    "Lien",
+                    "Type Element",
+                ]}
             >
                 {visibleAssets.map((asset) => (
                     <tr key={asset.name}>

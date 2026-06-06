@@ -25,3 +25,10 @@ export type CreateUser = {
 export type UpdateUser = CreateUser & {
   id: number;
 };
+
+export type UserReference = {
+  id: number;
+  name: string;
+};
+
+export type UserTech = UserReference;

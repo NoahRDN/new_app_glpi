@@ -1,4 +1,4 @@
-import { House, LifeBuoy, MonitorSmartphone, UserRound } from "lucide-react";
+import { Globe, House, LifeBuoy, MonitorSmartphone, UserRound } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const frontOfficeNavigation: OfficeNavigationItem[] = [
@@ -29,5 +29,12 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     id: "front-account",
     label: "Mon espace",
     path: "/account",
+  },
+  {
+    description: "Vue General Element",
+    Icon: Globe,
+    id: "asset-general-element",
+    label: "Vue General Element",
+    path: "/asset-general-element",
   },
 ];
