@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { FrontofficeLoginForm } from "../../features/frontoffice-auth/components/FrontofficeLoginForm";
+import { FrontofficeLoginForm } from "../../../features/frontoffice-auth/components/FrontofficeLoginForm";
 
 export function LoginPage() {
   return (

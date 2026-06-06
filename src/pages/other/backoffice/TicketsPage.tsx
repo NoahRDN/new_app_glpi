@@ -4,11 +4,11 @@ import {
   overviewMetrics,
   overviewMiniCustomers,
   overviewTransactions,
-} from "../../features/backoffice/overview/model/overview.mock";
-import { MetricBadge } from "../../shared/ui/MetricBadge";
-import { PillFilter } from "../../shared/ui/PillFilter";
-import { SectionPanel } from "../../shared/ui/SectionPanel";
-import { StatCard } from "../../shared/ui/StatCard";
+} from "../../../features/backoffice/overview/model/overview.mock";
+import { MetricBadge } from "../../../shared/ui/MetricBadge";
+import { PillFilter } from "../../../shared/ui/PillFilter";
+import { SectionPanel } from "../../../shared/ui/SectionPanel";
+import { StatCard } from "../../../shared/ui/StatCard";
 
 function SparkLine({ stroke, path }: { path: string; stroke: string }) {
   return (

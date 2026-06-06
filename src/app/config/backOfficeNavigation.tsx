@@ -9,15 +9,6 @@ import {
 } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
-export type BackOfficeSectionId =
-  | "dashboard"
-  | "tickets"
-  | "assets"
-  | "knowledge-base"
-  | "users"
-  | "import-data"
-  | "reset-data";
-
 export const backOfficeNavigation: OfficeNavigationItem[] = [
   {
     id: "dashboard",
@@ -34,8 +25,8 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     Icon: SquareKanban,
   },
   {
-    id: "assets",
-    path: "/admin/assets",
+    id: "parcs",
+    path: "/admin/parcs",
     label: "Parc",
     description: "Ordinateurs, matériels et inventaire",
     Icon: BadgeDollarSign,
@@ -46,6 +37,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Base de connaissances",
     description: "Organisation, process et documentation",
     Icon: Calendar,
+  },
+  {
+    id: "assets",
+    path: "/admin/assets",
+    label: "Assets",
+    description: "Listes des Assets de GLPI",
+    Icon: SquareKanban,
   },
   {
     id: "users",

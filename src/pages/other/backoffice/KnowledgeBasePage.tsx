@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { ordersRows } from "../../features/backoffice/orders/model/orders.mock";
-import { DataTable } from "../../shared/ui/DataTable";
-import { OrderRow } from "../../shared/ui/OrderRow";
-import { PillFilter } from "../../shared/ui/PillFilter";
-import { Input } from "../../shared/ui/Input";
+import { ordersRows } from "../../../features/backoffice/orders/model/orders.mock";
+import { DataTable } from "../../../shared/ui/DataTable";
+import { OrderRow } from "../../../shared/ui/OrderRow";
+import { PillFilter } from "../../../shared/ui/PillFilter";
+import { Input } from "../../../shared/ui/Input";
 import { Search } from "lucide-react";
 
 type OrderItem = {

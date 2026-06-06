@@ -1,11 +1,11 @@
-import { CustomerGrowthPanel } from "../../features/backoffice/dashboard/components/CustomerGrowthPanel";
-import { SalesLocationsPanel } from "../../features/backoffice/dashboard/components/SalesLocationsPanel";
-import { TransactionHistoryPanel } from "../../features/backoffice/dashboard/components/TransactionHistoryPanel";
-import { RecentCustomersPanel } from "../../features/backoffice/dashboard/components/RecentCustomersPanel";
-import { dashboardSummaryCards } from "../../features/backoffice/dashboard/model/dashboard.mock";
-import { PillFilter } from "../../shared/ui/PillFilter";
-import { SectionPanel } from "../../shared/ui/SectionPanel";
-import { StatCard } from "../../shared/ui/StatCard";
+import { CustomerGrowthPanel } from "../../../features/backoffice/dashboard/components/CustomerGrowthPanel";
+import { SalesLocationsPanel } from "../../../features/backoffice/dashboard/components/SalesLocationsPanel";
+import { TransactionHistoryPanel } from "../../../features/backoffice/dashboard/components/TransactionHistoryPanel";
+import { RecentCustomersPanel } from "../../../features/backoffice/dashboard/components/RecentCustomersPanel";
+import { dashboardSummaryCards } from "../../../features/backoffice/dashboard/model/dashboard.mock";
+import { PillFilter } from "../../../shared/ui/PillFilter";
+import { SectionPanel } from "../../../shared/ui/SectionPanel";
+import { StatCard } from "../../../shared/ui/StatCard";
 
 export function DashboardPage() {
   return (
