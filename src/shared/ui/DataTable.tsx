@@ -25,16 +25,15 @@ export function DataTable({
         {tableHeads ? (
           <div className="overflow-x-auto">
             <table className={`w-full border-separate [border-spacing:0_0.5rem] ${tableClassName}`}>
-              <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-                  { tableHeads.map((tableHead) => {
-                    return <>
-                      <th className="px-4 py-4">
-                        {tableHead}
-                      </th>
-                    </>
-                  }) }
-                  
-              </tr>
+              <thead>
+                <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                    { tableHeads.map((tableHead, index) => {
+                      return<th key={index} className="px-4 py-4">
+                          {tableHead}
+                        </th>
+                    }) }
+                </tr>
+              </thead>
               <tbody>{children}</tbody>
             </table>
           </div>

@@ -10,6 +10,7 @@ import { ImportDataPage } from "../../pages/backoffice/ImportDataPage";
 import { ResetDataPage } from "../../pages/backoffice/ResetDataPage";
 import { LoginPage } from "../../pages/backoffice/LoginPage";
 import { AssetsPage } from "../../pages/backoffice/AssetsPage";
+import { ComputerPage } from "../../pages/backoffice/ComputerPage";
 
 export const backOfficeRoutes: RouteObject = {
   children: [
@@ -46,6 +47,10 @@ export const backOfficeRoutes: RouteObject = {
           element: <UsersPage />,
         },
         {
+          path: "computers",
+          element: <ComputerPage />,
+        },
+        {
           path: "assets",
           element: <AssetsPage />,
         },
@@ -57,6 +62,7 @@ export const backOfficeRoutes: RouteObject = {
           path: "reset-data",
           element: <ResetDataPage />,
         },
+        
       ],
     },
   ],

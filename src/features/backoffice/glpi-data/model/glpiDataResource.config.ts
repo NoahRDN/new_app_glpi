@@ -32,7 +32,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Tickets de support et demandes.",
-    endpoint: "/Ticket",
+    endpoint: "/Assets/Ticket",
     id: "tickets",
     label: "Tickets",
     optionalColumns: ["status", "priority", "urgency", "impact"],
@@ -41,7 +41,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Materiels du parc informatique.",
-    endpoint: "/Computer",
+    endpoint: "/Assets/Computer",
     id: "computers",
     label: "Ordinateurs",
     optionalColumns: ["serial", "otherserial", "comment"],
@@ -50,7 +50,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Emplacements et sites.",
-    endpoint: "/Location",
+    endpoint: "/Assets/Location",
     id: "locations",
     label: "Emplacements",
     optionalColumns: ["comment"],
@@ -59,7 +59,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Groupes fonctionnels GLPI.",
-    endpoint: "/Group",
+    endpoint: "/Assets/Group",
     id: "groups",
     label: "Groupes",
     optionalColumns: ["comment"],
@@ -68,7 +68,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Documents GLPI crees a partir d'archives images.",
-    endpoint: "/Document",
+    endpoint: "/Assets/Document",
     id: "documents",
     label: "Documents",
     optionalColumns: ["filename", "comment"],

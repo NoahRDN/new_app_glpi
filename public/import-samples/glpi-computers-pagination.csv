@@ -1,0 +1,61 @@
+name,serial,otherserial,comment
+POSTE-001,SN-GLPI-0001,INV-GLPI-0001,Poste bureautique service finance
+POSTE-002,SN-GLPI-0002,INV-GLPI-0002,Poste bureautique service finance
+POSTE-003,SN-GLPI-0003,INV-GLPI-0003,Poste bureautique service finance
+POSTE-004,SN-GLPI-0004,INV-GLPI-0004,Poste bureautique service finance
+POSTE-005,SN-GLPI-0005,INV-GLPI-0005,Poste bureautique service finance
+POSTE-006,SN-GLPI-0006,INV-GLPI-0006,Poste bureautique service RH
+POSTE-007,SN-GLPI-0007,INV-GLPI-0007,Poste bureautique service RH
+POSTE-008,SN-GLPI-0008,INV-GLPI-0008,Poste bureautique service RH
+POSTE-009,SN-GLPI-0009,INV-GLPI-0009,Poste bureautique service RH
+POSTE-010,SN-GLPI-0010,INV-GLPI-0010,Poste bureautique service RH
+POSTE-011,SN-GLPI-0011,INV-GLPI-0011,Portable commercial region nord
+POSTE-012,SN-GLPI-0012,INV-GLPI-0012,Portable commercial region nord
+POSTE-013,SN-GLPI-0013,INV-GLPI-0013,Portable commercial region nord
+POSTE-014,SN-GLPI-0014,INV-GLPI-0014,Portable commercial region nord
+POSTE-015,SN-GLPI-0015,INV-GLPI-0015,Portable commercial region nord
+POSTE-016,SN-GLPI-0016,INV-GLPI-0016,Portable commercial region sud
+POSTE-017,SN-GLPI-0017,INV-GLPI-0017,Portable commercial region sud
+POSTE-018,SN-GLPI-0018,INV-GLPI-0018,Portable commercial region sud
+POSTE-019,SN-GLPI-0019,INV-GLPI-0019,Portable commercial region sud
+POSTE-020,SN-GLPI-0020,INV-GLPI-0020,Portable commercial region sud
+POSTE-021,SN-GLPI-0021,INV-GLPI-0021,Station de travail developpement
+POSTE-022,SN-GLPI-0022,INV-GLPI-0022,Station de travail developpement
+POSTE-023,SN-GLPI-0023,INV-GLPI-0023,Station de travail developpement
+POSTE-024,SN-GLPI-0024,INV-GLPI-0024,Station de travail developpement
+POSTE-025,SN-GLPI-0025,INV-GLPI-0025,Station de travail developpement
+POSTE-026,SN-GLPI-0026,INV-GLPI-0026,Station de travail graphisme
+POSTE-027,SN-GLPI-0027,INV-GLPI-0027,Station de travail graphisme
+POSTE-028,SN-GLPI-0028,INV-GLPI-0028,Station de travail graphisme
+POSTE-029,SN-GLPI-0029,INV-GLPI-0029,Station de travail graphisme
+POSTE-030,SN-GLPI-0030,INV-GLPI-0030,Station de travail graphisme
+POSTE-031,SN-GLPI-0031,INV-GLPI-0031,Mini PC accueil agence A
+POSTE-032,SN-GLPI-0032,INV-GLPI-0032,Mini PC accueil agence A
+POSTE-033,SN-GLPI-0033,INV-GLPI-0033,Mini PC accueil agence A
+POSTE-034,SN-GLPI-0034,INV-GLPI-0034,Mini PC accueil agence A
+POSTE-035,SN-GLPI-0035,INV-GLPI-0035,Mini PC accueil agence A
+POSTE-036,SN-GLPI-0036,INV-GLPI-0036,Mini PC accueil agence B
+POSTE-037,SN-GLPI-0037,INV-GLPI-0037,Mini PC accueil agence B
+POSTE-038,SN-GLPI-0038,INV-GLPI-0038,Mini PC accueil agence B
+POSTE-039,SN-GLPI-0039,INV-GLPI-0039,Mini PC accueil agence B
+POSTE-040,SN-GLPI-0040,INV-GLPI-0040,Mini PC accueil agence B
+POSTE-041,SN-GLPI-0041,INV-GLPI-0041,Terminal caisse magasin 1
+POSTE-042,SN-GLPI-0042,INV-GLPI-0042,Terminal caisse magasin 1
+POSTE-043,SN-GLPI-0043,INV-GLPI-0043,Terminal caisse magasin 1
+POSTE-044,SN-GLPI-0044,INV-GLPI-0044,Terminal caisse magasin 1
+POSTE-045,SN-GLPI-0045,INV-GLPI-0045,Terminal caisse magasin 1
+POSTE-046,SN-GLPI-0046,INV-GLPI-0046,Terminal caisse magasin 2
+POSTE-047,SN-GLPI-0047,INV-GLPI-0047,Terminal caisse magasin 2
+POSTE-048,SN-GLPI-0048,INV-GLPI-0048,Terminal caisse magasin 2
+POSTE-049,SN-GLPI-0049,INV-GLPI-0049,Terminal caisse magasin 2
+POSTE-050,SN-GLPI-0050,INV-GLPI-0050,Terminal caisse magasin 2
+POSTE-051,SN-GLPI-0051,INV-GLPI-0051,Poste support helpdesk niveau 1
+POSTE-052,SN-GLPI-0052,INV-GLPI-0052,Poste support helpdesk niveau 1
+POSTE-053,SN-GLPI-0053,INV-GLPI-0053,Poste support helpdesk niveau 1
+POSTE-054,SN-GLPI-0054,INV-GLPI-0054,Poste support helpdesk niveau 1
+POSTE-055,SN-GLPI-0055,INV-GLPI-0055,Poste support helpdesk niveau 1
+POSTE-056,SN-GLPI-0056,INV-GLPI-0056,Poste support helpdesk niveau 2
+POSTE-057,SN-GLPI-0057,INV-GLPI-0057,Poste support helpdesk niveau 2
+POSTE-058,SN-GLPI-0058,INV-GLPI-0058,Poste support helpdesk niveau 2
+POSTE-059,SN-GLPI-0059,INV-GLPI-0059,Poste support helpdesk niveau 2
+POSTE-060,SN-GLPI-0060,INV-GLPI-0060,Poste support helpdesk niveau 2

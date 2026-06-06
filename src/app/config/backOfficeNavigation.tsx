@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   FileSpreadsheet,
   RotateCcw,
+  Laptop,
 } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
@@ -65,5 +66,12 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Reset data",
     description: "Réinitialisation multi-ressources GLPI",
     Icon: RotateCcw,
+  },
+  {
+    id: "computers",
+    path: "/admin/computers",
+    label: "Computer",
+    description: "Données détailler sur le computer",
+    Icon: Laptop,
   },
 ];

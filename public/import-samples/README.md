@@ -6,6 +6,7 @@ Fichiers CSV disponibles :
 - `glpi-users.csv`
 - `glpi-tickets.csv`
 - `glpi-computers.csv`
+- `glpi-computers-pagination.csv`
 - `glpi-locations.csv`
 - `glpi-groups.csv`
 
