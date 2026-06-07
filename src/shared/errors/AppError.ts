@@ -29,3 +29,20 @@ export class AppError extends Error {
     this.details = params.details;
   }
 }
+
+export function getUserErrorMessage(
+  error: unknown,
+  fallbackMessage = "Une erreur inattendue est survenue.",
+  debug: boolean = false
+): string {
+  if (debug) {
+    console.error("Erreur: ", debug)
+  }
+
+
+  if (error instanceof AppError) {
+    return error.userMessage;
+  }
+
+  return fallbackMessage;
+}

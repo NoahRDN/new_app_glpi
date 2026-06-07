@@ -5,6 +5,7 @@ import { Input } from "../../../../shared/ui/Input";
 import { Loader } from "../../../../shared/ui/Loader";
 import { Button } from "../../../../shared/ui/Button";
 import { useComputersPage } from "../hooks/useComputers";
+import { getUserErrorMessage } from "../../../../shared/errors/AppError";
 
 export function ListComputer() {
   const [search, setSearch] = useState("");
@@ -49,9 +50,7 @@ export function ListComputer() {
   if (isComputersError) {
     return (
       <div className="col-span-12 text-red-500">
-        {computersError instanceof Error
-          ? computersError.message
-          : "Impossible de charger les ordinateurs."}
+        {getUserErrorMessage(computersError, "Impossible de charger les ordinateurs.")}
       </div>
     );
   }
