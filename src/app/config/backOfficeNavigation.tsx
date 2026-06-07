@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   RotateCcw,
   Laptop,
+  TestTube,
 } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
@@ -73,5 +74,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Computer",
     description: "Données détailler sur le computer",
     Icon: Laptop,
+  },
+
+  {
+    id: "memo-test",
+    path: "/admin/memo-test",
+    label: "memo-test",
+    description: "memo-test",
+    Icon: TestTube,
   },
 ];

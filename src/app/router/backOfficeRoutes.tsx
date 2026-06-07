@@ -11,6 +11,7 @@ import { ResetDataPage } from "../../pages/backoffice/ResetDataPage";
 import { LoginPage } from "../../pages/backoffice/LoginPage";
 import { AssetsPage } from "../../pages/backoffice/AssetsPage";
 import { ComputerPage } from "../../pages/backoffice/ComputerPage";
+import { MemoTest } from "../../pages/other/backoffice/MemoTest";
 
 export const backOfficeRoutes: RouteObject = {
   children: [
@@ -61,6 +62,10 @@ export const backOfficeRoutes: RouteObject = {
         {
           path: "reset-data",
           element: <ResetDataPage />,
+        },
+        {
+          path: "memo-test",
+          element: <MemoTest />,
         },
         
       ],

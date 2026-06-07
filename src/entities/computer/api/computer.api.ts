@@ -1,4 +1,4 @@
-import { glpiDelete, glpiGet, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
+import { glpiDelete, glpiGet, glpiGetPaginated, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
 import type {
   Computer,
   CreateComputer,
@@ -10,8 +10,12 @@ export async function getComputers(): Promise<Computer[]> {
   return glpiGet<GlpiComputer[]>("/Assets/Computer");
 }
 
-export async function getComputersPage(page: number, limit: number): Promise<Computer[]> {
-  return glpiGet<GlpiComputer[]>("/Assets/Computer");
+export async function getComputersPage(page: number, limit: number) {
+  const start = page * limit;
+
+  return glpiGetPaginated<GlpiComputer>(
+    `/Assets/Computer?start=${start}&limit=${limit}`,
+  );
 }
 
 export async function getComputer(computerId: number | string): Promise<Computer> {

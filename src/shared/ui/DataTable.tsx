@@ -6,6 +6,7 @@ type DataTableProps = {
   tableClassName?: string;
   tableHeads?: ReactNode[];
   toolbar?: ReactNode;
+  toolbarFooter?: ReactNode;
 };
 
 export function DataTable({
@@ -14,6 +15,7 @@ export function DataTable({
   tableClassName = "",
   tableHeads,
   toolbar,
+  toolbarFooter,
 }: DataTableProps) {
   return (
     <section
@@ -40,6 +42,7 @@ export function DataTable({
         ) : (
           <div className="space-y-2">{children}</div>
         )}
+        {toolbarFooter}
       </div>
     </section>
   );
