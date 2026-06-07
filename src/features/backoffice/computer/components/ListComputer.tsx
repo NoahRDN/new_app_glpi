@@ -28,10 +28,6 @@ export function ListComputer() {
   const query = search.trim().toLowerCase();
 
   const visibleComputers = computers.filter((computer) => {
-    if (computer.is_deleted) {
-      return false;
-    }
-
     if (query.length === 0) {
       return true;
     }

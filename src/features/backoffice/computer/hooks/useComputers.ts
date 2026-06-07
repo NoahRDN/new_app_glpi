@@ -19,5 +19,9 @@ export function useComputersPage(page: number, limit: number) {
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     retry: 1,
+    select: (computers) => ({
+      ...computers,
+      data: computers.data.filter((computer) => !computer.is_deleted)
+    }),
   });
 }

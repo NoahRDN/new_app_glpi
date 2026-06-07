@@ -39,7 +39,6 @@ export function getUserErrorMessage(
     console.error("Erreur: ", debug)
   }
 
-
   if (error instanceof AppError) {
     return error.userMessage;
   }
