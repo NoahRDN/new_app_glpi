@@ -35,3 +35,13 @@ export type GlpiAssetCommon = {
 
   user_tech?: UserTech | null;
 };
+
+export type GeneralViewAssetItemsFilters = {
+  name: string;
+  itemtypes: string[];
+};
+
+export type GeneralViewAssetItemsPage = {
+  data: GeneralViewAssetItems[];
+  total: number;
+};

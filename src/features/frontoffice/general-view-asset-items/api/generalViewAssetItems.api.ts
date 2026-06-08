@@ -1,38 +1,88 @@
 import { getAssets } from "../../../../entities/asset/api/asset.api";
 import { glpiGetPaginated } from "../../../../shared/api/glpiClient";
-import { insertViewAssetItem } from "../lib/generalViewAssetItemsInsert";
-import { type GeneralViewAssetItems, type GlpiAssetCommon } from "../model/generalViewAssetItems.types";
+import { buildGeneralViewAssetItemsFilter, insertViewAssetItem } from "../lib/generalViewAssetItems";
+import { type GeneralViewAssetItems, type GeneralViewAssetItemsFilters, type GeneralViewAssetItemsPage, type GlpiAssetCommon } from "../model/generalViewAssetItems.types";
 
-export async function getGeneralViewAssetItems(): Promise<GeneralViewAssetItems[]> {
+export async function getGeneralViewAssetItemsPage(
+  page: number,
+  limit: number,
+  filters: GeneralViewAssetItemsFilters,
+): Promise<GeneralViewAssetItemsPage> {
   const assets = await getAssets();
 
-  const result = await Promise.all(
-    assets.map(async (asset) => {
-      const limit = 100;
-      let start = 0;
-      let total = Infinity;
+  const selectedAssets =
+    filters.itemtypes.length > 0
+      ? assets.filter((asset) => filters.itemtypes.includes(asset.itemtype))
+      : assets;
 
-      const allGlpiAssetCommons: GlpiAssetCommon[] = [];
-      while (start < total) {
-        const params = new URLSearchParams({
-          start: String(start),
-          limit: String(limit),
-        });
+  const filter = buildGeneralViewAssetItemsFilter(filters);
 
-        const page = await glpiGetPaginated<GlpiAssetCommon>(`${asset.href}?${params.toString()}`);
+  const globalOffset = page * limit;
 
-        total = page.total;
-        start += limit;
-        
+  let remainingOffset = globalOffset;
+  let remainingLimit = limit;
+  let total = 0;
 
-        allGlpiAssetCommons.push(...page.data);
-      }
+  const items: GeneralViewAssetItems[] = [];
 
+  for (const asset of selectedAssets) {
+    const countParams = new URLSearchParams({
+      start: "0",
+      limit: "1",
+    });
 
-      return allGlpiAssetCommons.filter((glpiAssetCommon) => !glpiAssetCommon.is_deleted)
-          .map((glpiAssetCommon) => { 
-            return insertViewAssetItem({itemType: asset.name, glpiAssetCommonData: glpiAssetCommon})});
-      })
-  );
-  return result.flat();
+    if (filter.length > 0) {
+      countParams.set("filter", filter);
+    }
+
+    const countPage = await glpiGetPaginated<GlpiAssetCommon>(
+      `${asset.href}?${countParams.toString()}`,
+    );
+
+    const assetTotal = countPage.total;
+    total += assetTotal;
+
+    if (assetTotal === 0) {
+      continue;
+    }
+
+    if (remainingOffset >= assetTotal) {
+      remainingOffset -= assetTotal;
+      continue;
+    }
+
+    if (remainingLimit <= 0) {
+      continue;
+    }
+
+    const dataParams = new URLSearchParams({
+      start: String(remainingOffset),
+      limit: String(remainingLimit),
+    });
+
+    if (filter.length > 0) {
+      dataParams.set("filter", filter);
+    }
+
+    const dataPage = await glpiGetPaginated<GlpiAssetCommon>(
+      `${asset.href}?${dataParams.toString()}`,
+    );
+
+    const mappedItems = dataPage.data.map((glpiAssetCommon) => {
+      return insertViewAssetItem({
+        itemType: asset.name,
+        glpiAssetCommonData: glpiAssetCommon,
+      });
+    });
+
+    items.push(...mappedItems);
+
+    remainingLimit -= mappedItems.length;
+    remainingOffset = 0;
+  }
+
+  return {
+    data: items,
+    total,
+  };
 }

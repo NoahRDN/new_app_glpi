@@ -3,20 +3,35 @@ import { Button } from "../../../../shared/ui/Button";
 import { DataTable } from "../../../../shared/ui/DataTable";
 import { Input } from "../../../../shared/ui/Input";
 import { Loader } from "../../../../shared/ui/Loader";
-import { useGeneralViewAssetItems } from "../hooks/useGeneralViewAssetItems";
+import { useGeneralViewAssetItemsPage } from "../hooks/useGeneralViewAssetItems";
 import { Error } from "../../../../shared/ui/Error";
 import { RefreshCcw } from "lucide-react";
+import { useState } from "react";
+import type { GeneralViewAssetItemsFilters } from "../model/generalViewAssetItems.types";
+import {  generalViewAssetItemsFiltersDefaultValues } from "../model/generalViewAssetItems.config";
+import { useDebounce } from "../../../../shared/hooks/useDebounce";
 
 export function ListGeneralViewItem(){
+    const [filters, setFilters] = useState<GeneralViewAssetItemsFilters>({...generalViewAssetItemsFiltersDefaultValues})
+    const [page, setPage] = useState(0);
+    const [limit, setLimit] = useState(20);
+
+    const debouncedFilters = useDebounce(filters, 400);
+
     const {
-        data: generalViewAssetItems,
-        isPending: isGeneralViewAssetItemsPending,
-        isFetching: isGeneralViewAssetItemsFetching,
-        isError: isGeneralViewAssetItemsError,
-        error: generalViewAssetItemsError,
-        refetch: refetchGeneralViewAssetItems,
-    } = useGeneralViewAssetItems();
-    if (isGeneralViewAssetItemsPending || isGeneralViewAssetItemsFetching) {
+    data: generalViewAssetItemsPage,
+    isPending: isGeneralViewAssetItemsPending,
+    isFetching: isGeneralViewAssetItemsFetching,
+    isError: isGeneralViewAssetItemsError,
+    error: generalViewAssetItemsError,
+    refetch: refetchGeneralViewAssetItems,
+    } = useGeneralViewAssetItemsPage(page, limit, debouncedFilters);
+
+    const generalViewAssetItems = generalViewAssetItemsPage?.data ?? [];
+    const total = generalViewAssetItemsPage?.total ?? 0;
+    const hasNextPage = (page + 1) * limit < total;
+
+    if (isGeneralViewAssetItemsPending) {
         return <Loader label="Chargement des Items..." />
     }
 
@@ -47,36 +62,94 @@ export function ListGeneralViewItem(){
             ]}
 
             toolbar={
-                <Button
-                    onClick={() => refetchGeneralViewAssetItems()}
-                ><RefreshCcw size={18} />Actualiser</Button>
+                <div className="flex gap-3">
+                    <Input 
+                        type="text" 
+                        value={filters.name}
+                        onChange={(event) => {
+                            setFilters({
+                                ...filters,
+                                name: event.target.value
+                            })
+                            setPage(0);
+                        }}
+                    />
+                    <Button
+                        onClick={() => refetchGeneralViewAssetItems()}
+                    ><RefreshCcw size={18} />Actualiser</Button>
+                </div>
+                
+            }
+
+            toolbarFooter={
+            <div className="flex items-center justify-between">
+                <div className="flex gap-3">
+                    <p className="text-sm text-(--text-secondary)">
+                        Page {page + 1} — {total} item(s) au total
+                        {isGeneralViewAssetItemsFetching && " — Actualisation..."}
+                    </p>
+
+                    <select
+                        value={limit}
+                        onChange={(event) => {
+                            setLimit(Number(event.target.value));
+                            setPage(0);
+                        }}
+                    >
+                        
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    </select>
+                </div>
+
+                <div className="flex gap-3">
+                    <Button
+                        disabled={page === 0}
+                        onClick={() => setPage((currentPage) => currentPage - 1)}
+                    >
+                        Précédent
+                    </Button>
+
+                    <Button
+                        disabled={!hasNextPage}
+                        onClick={() => setPage((currentPage) => currentPage + 1)}
+                    >
+                        Suivant
+                    </Button>
+                </div>
+            </div>
             }
         >
-        { generalViewAssetItems && generalViewAssetItems.length > 0  && 
-            generalViewAssetItems.map((generalViewAssetItem, index) => 
-                <tr key={index}>
-                    <td className="px-4">
-                        <Input type="checkbox" />
-                    </td>
-                    <td className="px-4">{index + 1}</td>
-                    <td className="px-4">{generalViewAssetItem?.name}</td>
-                    <td className="px-4">{generalViewAssetItem?.itemType}</td>
-                    <td className="px-4">{generalViewAssetItem?.dateCreation}</td>
-                    <td className="px-4">{generalViewAssetItem?.dateMod}</td>
-                    <td className="px-4">{generalViewAssetItem?.entity?.name}</td>
-                    <td className="px-4">{generalViewAssetItem?.isRecursive ? "Oui" : "Non"}</td>
-                    <td className="px-4">{generalViewAssetItem?.manufacturer?.name}</td>
-                    <td className="px-4">{generalViewAssetItem?.status?.name}</td>
-                    <td className="px-4">{generalViewAssetItem?.user?.name}</td>
-                    <td className="px-4">{generalViewAssetItem?.userTech?.name}</td>
-                    <td className="px-4">
-                        <Button>Détails</Button>
-                    </td>
-                </tr>
-            )
-        }
+        {generalViewAssetItems.map((generalViewAssetItem, index) => (
+            <tr key={`${generalViewAssetItem.itemType}-${generalViewAssetItem.name}-${page}-${index}`}>
+                <td className="px-4">
+                <Input type="checkbox" />
+                </td>
+                <td className="px-4">{page * limit + index + 1}</td>
+                <td className="px-4">{generalViewAssetItem?.name}</td>
+                <td className="px-4">{generalViewAssetItem?.itemType}</td>
+                <td className="px-4">{generalViewAssetItem?.dateCreation}</td>
+                <td className="px-4">{generalViewAssetItem?.dateMod}</td>
+                <td className="px-4">{generalViewAssetItem?.entity?.name}</td>
+                <td className="px-4">
+                {generalViewAssetItem?.isRecursive ? "Oui" : "Non"}
+                </td>
+                <td className="px-4">{generalViewAssetItem?.manufacturer?.name}</td>
+                <td className="px-4">{generalViewAssetItem?.status?.name}</td>
+                <td className="px-4">{generalViewAssetItem?.user?.name}</td>
+                <td className="px-4">{generalViewAssetItem?.userTech?.name}</td>
+                <td className="px-4">
+                <Button>Détails</Button>
+                </td>
+            </tr>
+            ))}
 
         </DataTable>
+
+        
     
     </>
 }

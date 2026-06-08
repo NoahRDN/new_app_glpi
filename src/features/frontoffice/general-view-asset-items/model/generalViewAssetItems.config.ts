@@ -1,4 +1,4 @@
-import type { GeneralViewAssetItems } from "./generalViewAssetItems.types";
+import type { GeneralViewAssetItems, GeneralViewAssetItemsFilters } from "./generalViewAssetItems.types";
 
 export const generalViewAssetItemDefault: GeneralViewAssetItems = 
 {
@@ -28,4 +28,9 @@ export const generalViewAssetItemDefault: GeneralViewAssetItems =
     id: -1,
     name: "",
   },
+};
+
+export const generalViewAssetItemsFiltersDefaultValues: GeneralViewAssetItemsFilters = {
+  name: "",
+  itemtypes: [],
 };

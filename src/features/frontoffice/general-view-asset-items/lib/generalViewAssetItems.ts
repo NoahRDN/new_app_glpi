@@ -1,5 +1,5 @@
 import { generalViewAssetItemDefault } from "../model/generalViewAssetItems.config";
-import type { GeneralViewAssetItems, GlpiAssetCommon } from "../model/generalViewAssetItems.types";
+import type { GeneralViewAssetItems, GeneralViewAssetItemsFilters, GlpiAssetCommon } from "../model/generalViewAssetItems.types";
 
 export function insertViewAssetItem({itemType, glpiAssetCommonData} : {itemType: string, glpiAssetCommonData: GlpiAssetCommon}){
   const generalViewAssetItem: GeneralViewAssetItems = structuredClone(generalViewAssetItemDefault);
@@ -16,4 +16,20 @@ export function insertViewAssetItem({itemType, glpiAssetCommonData} : {itemType:
   generalViewAssetItem.is_deleted = glpiAssetCommonData.is_deleted;
   
   return generalViewAssetItem;
+}
+
+export function buildGeneralViewAssetItemsFilter(
+  filters: GeneralViewAssetItemsFilters,
+): string {
+  const parts: string[] = [];
+
+  parts.push("is_deleted==false");
+
+  const name = filters.name.trim();
+
+  if (name.length > 0) {
+    parts.push(`name=ilike=*${name}*`);
+  }
+
+  return parts.join(";");
 }
