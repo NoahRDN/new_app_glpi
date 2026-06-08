@@ -9,6 +9,8 @@ export async function getGeneralViewAssetItemsPage(
   filters: GeneralViewAssetItemsFilters,
 ): Promise<GeneralViewAssetItemsPage> {
   const assets = await getAssets();
+  console.log("taille: ", filters.itemtypes.length);
+  console.log("content: ", filters.itemtypes);
 
   const selectedAssets =
     filters.itemtypes.length > 0

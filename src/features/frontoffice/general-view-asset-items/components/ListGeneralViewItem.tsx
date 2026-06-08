@@ -10,6 +10,8 @@ import { useState } from "react";
 import type { GeneralViewAssetItemsFilters } from "../model/generalViewAssetItems.types";
 import {  generalViewAssetItemsFiltersDefaultValues } from "../model/generalViewAssetItems.config";
 import { useDebounce } from "../../../../shared/hooks/useDebounce";
+import { useAssets } from "../../../backoffice/assets/hooks/useAssets";
+import { Select } from "../../../../shared/ui/Select";
 
 export function ListGeneralViewItem(){
     const [filters, setFilters] = useState<GeneralViewAssetItemsFilters>({...generalViewAssetItemsFiltersDefaultValues})
@@ -19,13 +21,24 @@ export function ListGeneralViewItem(){
     const debouncedFilters = useDebounce(filters, 400);
 
     const {
-    data: generalViewAssetItemsPage,
-    isPending: isGeneralViewAssetItemsPending,
-    isFetching: isGeneralViewAssetItemsFetching,
-    isError: isGeneralViewAssetItemsError,
-    error: generalViewAssetItemsError,
-    refetch: refetchGeneralViewAssetItems,
+        data: generalViewAssetItemsPage,
+        isPending: isGeneralViewAssetItemsPending,
+        isFetching: isGeneralViewAssetItemsFetching,
+        isError: isGeneralViewAssetItemsError,
+        error: generalViewAssetItemsError,
+        refetch: refetchGeneralViewAssetItems,                  
     } = useGeneralViewAssetItemsPage(page, limit, debouncedFilters);
+
+    const {
+        data: assetsData,
+        isPending: isAssetsPending,
+        isError: isAssetsError,
+        error: assetsError,
+        refetch: refetchAssets,
+    } = useAssets();
+
+    const [itemTypeFilter, setItemTypeFilter] = useState<string>("")
+
 
     const generalViewAssetItems = generalViewAssetItemsPage?.data ?? [];
     const total = generalViewAssetItemsPage?.total ?? 0;
@@ -39,6 +52,18 @@ export function ListGeneralViewItem(){
         return <div>
             <Error>
                 {getUserErrorMessage(generalViewAssetItemsError, "Erreur lors du chargement des Items")}
+            </Error>
+        </div>
+    }
+
+    if (isAssetsPending) {
+        return <Loader label="Chargement des Assets..." />
+    }
+
+    if (isAssetsError) {
+        return <div>
+            <Error>
+                {getUserErrorMessage(assetsError, "Erreur lors du chargement des Assets")}
             </Error>
         </div>
     }
@@ -64,6 +89,7 @@ export function ListGeneralViewItem(){
             toolbar={
                 <div className="flex gap-3">
                     <Input 
+                        placeholder="Rercherche nom...."
                         type="text" 
                         value={filters.name}
                         onChange={(event) => {
@@ -74,11 +100,39 @@ export function ListGeneralViewItem(){
                             setPage(0);
                         }}
                     />
+
+                    <Select  
+                        value={itemTypeFilter}
+                        onChange={(event) => {
+                            if (event.target.value === "") {
+                                setFilters({
+                                    ...filters,
+                                    itemtypes: []
+                                })
+                                setItemTypeFilter(event.target.value);
+                                return;
+                            }
+
+                            setFilters({
+                                ...filters,
+                                itemtypes: [event.target.value]
+                            })
+                            setItemTypeFilter(event.target.value);
+                        }}
+                        name="filterTypeItem" id="filterTypeItem"
+                    >
+                        <option value="">Type Items</option>
+                        {assetsData && assetsData.length > 0 &&
+                            assetsData.map((asset) => <option key={asset.itemtype} value={asset.itemtype}>{asset.name}</option>)
+                        }
+                    </Select>
                     <Button
-                        onClick={() => refetchGeneralViewAssetItems()}
+                        onClick={() => {
+                            refetchGeneralViewAssetItems()
+                            refetchAssets()
+                        }}
                     ><RefreshCcw size={18} />Actualiser</Button>
                 </div>
-                
             }
 
             toolbarFooter={
@@ -125,24 +179,24 @@ export function ListGeneralViewItem(){
         >
         {generalViewAssetItems.map((generalViewAssetItem, index) => (
             <tr key={`${generalViewAssetItem.itemType}-${generalViewAssetItem.name}-${page}-${index}`}>
-                <td className="px-4">
-                <Input type="checkbox" />
+                <td className="border border-(--panel-border) px-4 py-4">
+                    <Input type="checkbox" />
                 </td>
-                <td className="px-4">{page * limit + index + 1}</td>
-                <td className="px-4">{generalViewAssetItem?.name}</td>
-                <td className="px-4">{generalViewAssetItem?.itemType}</td>
-                <td className="px-4">{generalViewAssetItem?.dateCreation}</td>
-                <td className="px-4">{generalViewAssetItem?.dateMod}</td>
-                <td className="px-4">{generalViewAssetItem?.entity?.name}</td>
-                <td className="px-4">
+                <td className="border border-(--panel-border) px-4 py-4">{page * limit + index + 1}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.name}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.itemType}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.dateCreation}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.dateMod}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.entity?.name}</td>
+                <td className="border border-(--panel-border) px-4 py-4">
                 {generalViewAssetItem?.isRecursive ? "Oui" : "Non"}
                 </td>
-                <td className="px-4">{generalViewAssetItem?.manufacturer?.name}</td>
-                <td className="px-4">{generalViewAssetItem?.status?.name}</td>
-                <td className="px-4">{generalViewAssetItem?.user?.name}</td>
-                <td className="px-4">{generalViewAssetItem?.userTech?.name}</td>
-                <td className="px-4">
-                <Button>Détails</Button>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.manufacturer?.name}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.status?.name}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.user?.name}</td>
+                <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.userTech?.name}</td>
+                <td className="border border-(--panel-border) px-4 py-4">
+                    <Button>Détails</Button>
                 </td>
             </tr>
             ))}
