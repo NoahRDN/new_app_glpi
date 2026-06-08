@@ -4,10 +4,10 @@ function normalizeHeader(header: string) {
   return header.trim().toLowerCase();
 }
 
-export function detectGlpiImportProfile(
+export function detectMatchingGlpiImportProfiles(
   headers: string[],
   profiles: GlpiImportProfile[],
-): GlpiImportProfile | null {
+): GlpiImportProfile[] {
   const normalizedHeaders = new Set(headers.map(normalizeHeader));
 
   const matchingProfiles = profiles.filter((profile) =>
@@ -27,5 +27,12 @@ export function detectGlpiImportProfile(
     return (leftProfile.importOrder ?? 1000) - (rightProfile.importOrder ?? 1000);
   });
 
-  return matchingProfiles[0] ?? null;
+  return matchingProfiles;
+}
+
+export function detectGlpiImportProfile(
+  headers: string[],
+  profiles: GlpiImportProfile[],
+): GlpiImportProfile | null {
+  return detectMatchingGlpiImportProfiles(headers, profiles)[0] ?? null;
 }

@@ -10,8 +10,8 @@ const router = createBrowserRouter([
     element: <Navigate to="/admin/tickets" replace />,
   },
   {
-    path: "/assets",
-    element: <Navigate to="/admin/assets" replace />,
+    path: "/parcs",
+    element: <Navigate to="/admin/parcs" replace />,
   },
   {
     path: "/knowledge-base",

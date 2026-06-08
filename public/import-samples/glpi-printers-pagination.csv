@@ -1,0 +1,101 @@
+name,serial,otherserial,comment
+PRINTER-001,PRN-SN-0001,PRN-INV-0001,Imprimante bureau direction
+PRINTER-002,PRN-SN-0002,PRN-INV-0002,Imprimante bureau direction
+PRINTER-003,PRN-SN-0003,PRN-INV-0003,Imprimante bureau direction
+PRINTER-004,PRN-SN-0004,PRN-INV-0004,Imprimante bureau direction
+PRINTER-005,PRN-SN-0005,PRN-INV-0005,Imprimante bureau direction
+PRINTER-006,PRN-SN-0006,PRN-INV-0006,Imprimante comptabilite
+PRINTER-007,PRN-SN-0007,PRN-INV-0007,Imprimante comptabilite
+PRINTER-008,PRN-SN-0008,PRN-INV-0008,Imprimante comptabilite
+PRINTER-009,PRN-SN-0009,PRN-INV-0009,Imprimante comptabilite
+PRINTER-010,PRN-SN-0010,PRN-INV-0010,Imprimante comptabilite
+PRINTER-011,PRN-SN-0011,PRN-INV-0011,Imprimante RH
+PRINTER-012,PRN-SN-0012,PRN-INV-0012,Imprimante RH
+PRINTER-013,PRN-SN-0013,PRN-INV-0013,Imprimante RH
+PRINTER-014,PRN-SN-0014,PRN-INV-0014,Imprimante RH
+PRINTER-015,PRN-SN-0015,PRN-INV-0015,Imprimante RH
+PRINTER-016,PRN-SN-0016,PRN-INV-0016,Imprimante accueil agence A
+PRINTER-017,PRN-SN-0017,PRN-INV-0017,Imprimante accueil agence A
+PRINTER-018,PRN-SN-0018,PRN-INV-0018,Imprimante accueil agence A
+PRINTER-019,PRN-SN-0019,PRN-INV-0019,Imprimante accueil agence A
+PRINTER-020,PRN-SN-0020,PRN-INV-0020,Imprimante accueil agence A
+PRINTER-021,PRN-SN-0021,PRN-INV-0021,Imprimante accueil agence B
+PRINTER-022,PRN-SN-0022,PRN-INV-0022,Imprimante accueil agence B
+PRINTER-023,PRN-SN-0023,PRN-INV-0023,Imprimante accueil agence B
+PRINTER-024,PRN-SN-0024,PRN-INV-0024,Imprimante accueil agence B
+PRINTER-025,PRN-SN-0025,PRN-INV-0025,Imprimante accueil agence B
+PRINTER-026,PRN-SN-0026,PRN-INV-0026,Imprimante support niveau 1
+PRINTER-027,PRN-SN-0027,PRN-INV-0027,Imprimante support niveau 1
+PRINTER-028,PRN-SN-0028,PRN-INV-0028,Imprimante support niveau 1
+PRINTER-029,PRN-SN-0029,PRN-INV-0029,Imprimante support niveau 1
+PRINTER-030,PRN-SN-0030,PRN-INV-0030,Imprimante support niveau 1
+PRINTER-031,PRN-SN-0031,PRN-INV-0031,Imprimante support niveau 2
+PRINTER-032,PRN-SN-0032,PRN-INV-0032,Imprimante support niveau 2
+PRINTER-033,PRN-SN-0033,PRN-INV-0033,Imprimante support niveau 2
+PRINTER-034,PRN-SN-0034,PRN-INV-0034,Imprimante support niveau 2
+PRINTER-035,PRN-SN-0035,PRN-INV-0035,Imprimante support niveau 2
+PRINTER-036,PRN-SN-0036,PRN-INV-0036,Imprimante magasin nord
+PRINTER-037,PRN-SN-0037,PRN-INV-0037,Imprimante magasin nord
+PRINTER-038,PRN-SN-0038,PRN-INV-0038,Imprimante magasin nord
+PRINTER-039,PRN-SN-0039,PRN-INV-0039,Imprimante magasin nord
+PRINTER-040,PRN-SN-0040,PRN-INV-0040,Imprimante magasin nord
+PRINTER-041,PRN-SN-0041,PRN-INV-0041,Imprimante magasin sud
+PRINTER-042,PRN-SN-0042,PRN-INV-0042,Imprimante magasin sud
+PRINTER-043,PRN-SN-0043,PRN-INV-0043,Imprimante magasin sud
+PRINTER-044,PRN-SN-0044,PRN-INV-0044,Imprimante magasin sud
+PRINTER-045,PRN-SN-0045,PRN-INV-0045,Imprimante magasin sud
+PRINTER-046,PRN-SN-0046,PRN-INV-0046,Imprimante depot central
+PRINTER-047,PRN-SN-0047,PRN-INV-0047,Imprimante depot central
+PRINTER-048,PRN-SN-0048,PRN-INV-0048,Imprimante depot central
+PRINTER-049,PRN-SN-0049,PRN-INV-0049,Imprimante depot central
+PRINTER-050,PRN-SN-0050,PRN-INV-0050,Imprimante depot central
+PRINTER-051,PRN-SN-0051,PRN-INV-0051,Imprimante atelier production
+PRINTER-052,PRN-SN-0052,PRN-INV-0052,Imprimante atelier production
+PRINTER-053,PRN-SN-0053,PRN-INV-0053,Imprimante atelier production
+PRINTER-054,PRN-SN-0054,PRN-INV-0054,Imprimante atelier production
+PRINTER-055,PRN-SN-0055,PRN-INV-0055,Imprimante atelier production
+PRINTER-056,PRN-SN-0056,PRN-INV-0056,Imprimante bureau juridique
+PRINTER-057,PRN-SN-0057,PRN-INV-0057,Imprimante bureau juridique
+PRINTER-058,PRN-SN-0058,PRN-INV-0058,Imprimante bureau juridique
+PRINTER-059,PRN-SN-0059,PRN-INV-0059,Imprimante bureau juridique
+PRINTER-060,PRN-SN-0060,PRN-INV-0060,Imprimante bureau juridique
+PRINTER-061,PRN-SN-0061,PRN-INV-0061,Imprimante logistique
+PRINTER-062,PRN-SN-0062,PRN-INV-0062,Imprimante logistique
+PRINTER-063,PRN-SN-0063,PRN-INV-0063,Imprimante logistique
+PRINTER-064,PRN-SN-0064,PRN-INV-0064,Imprimante logistique
+PRINTER-065,PRN-SN-0065,PRN-INV-0065,Imprimante logistique
+PRINTER-066,PRN-SN-0066,PRN-INV-0066,Imprimante reseau DSI
+PRINTER-067,PRN-SN-0067,PRN-INV-0067,Imprimante reseau DSI
+PRINTER-068,PRN-SN-0068,PRN-INV-0068,Imprimante reseau DSI
+PRINTER-069,PRN-SN-0069,PRN-INV-0069,Imprimante reseau DSI
+PRINTER-070,PRN-SN-0070,PRN-INV-0070,Imprimante reseau DSI
+PRINTER-071,PRN-SN-0071,PRN-INV-0071,Imprimante service achats
+PRINTER-072,PRN-SN-0072,PRN-INV-0072,Imprimante service achats
+PRINTER-073,PRN-SN-0073,PRN-INV-0073,Imprimante service achats
+PRINTER-074,PRN-SN-0074,PRN-INV-0074,Imprimante service achats
+PRINTER-075,PRN-SN-0075,PRN-INV-0075,Imprimante service achats
+PRINTER-076,PRN-SN-0076,PRN-INV-0076,Imprimante service qualite
+PRINTER-077,PRN-SN-0077,PRN-INV-0077,Imprimante service qualite
+PRINTER-078,PRN-SN-0078,PRN-INV-0078,Imprimante service qualite
+PRINTER-079,PRN-SN-0079,PRN-INV-0079,Imprimante service qualite
+PRINTER-080,PRN-SN-0080,PRN-INV-0080,Imprimante service qualite
+PRINTER-081,PRN-SN-0081,PRN-INV-0081,Imprimante comptoir client
+PRINTER-082,PRN-SN-0082,PRN-INV-0082,Imprimante comptoir client
+PRINTER-083,PRN-SN-0083,PRN-INV-0083,Imprimante comptoir client
+PRINTER-084,PRN-SN-0084,PRN-INV-0084,Imprimante comptoir client
+PRINTER-085,PRN-SN-0085,PRN-INV-0085,Imprimante comptoir client
+PRINTER-086,PRN-SN-0086,PRN-INV-0086,Imprimante service technique
+PRINTER-087,PRN-SN-0087,PRN-INV-0087,Imprimante service technique
+PRINTER-088,PRN-SN-0088,PRN-INV-0088,Imprimante service technique
+PRINTER-089,PRN-SN-0089,PRN-INV-0089,Imprimante service technique
+PRINTER-090,PRN-SN-0090,PRN-INV-0090,Imprimante service technique
+PRINTER-091,PRN-SN-0091,PRN-INV-0091,Imprimante salle formation
+PRINTER-092,PRN-SN-0092,PRN-INV-0092,Imprimante salle formation
+PRINTER-093,PRN-SN-0093,PRN-INV-0093,Imprimante salle formation
+PRINTER-094,PRN-SN-0094,PRN-INV-0094,Imprimante salle formation
+PRINTER-095,PRN-SN-0095,PRN-INV-0095,Imprimante salle formation
+PRINTER-096,PRN-SN-0096,PRN-INV-0096,Imprimante agence regionale est
+PRINTER-097,PRN-SN-0097,PRN-INV-0097,Imprimante agence regionale est
+PRINTER-098,PRN-SN-0098,PRN-INV-0098,Imprimante agence regionale est
+PRINTER-099,PRN-SN-0099,PRN-INV-0099,Imprimante agence regionale est
+PRINTER-100,PRN-SN-0100,PRN-INV-0100,Imprimante agence regionale est

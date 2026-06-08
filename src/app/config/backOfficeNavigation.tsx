@@ -6,17 +6,11 @@ import {
   LayoutDashboard,
   FileSpreadsheet,
   RotateCcw,
+  Laptop,
+  Printer,
+  TestTube,
 } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
-
-export type BackOfficeSectionId =
-  | "dashboard"
-  | "tickets"
-  | "assets"
-  | "knowledge-base"
-  | "users"
-  | "import-data"
-  | "reset-data";
 
 export const backOfficeNavigation: OfficeNavigationItem[] = [
   {
@@ -34,8 +28,8 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     Icon: SquareKanban,
   },
   {
-    id: "assets",
-    path: "/admin/assets",
+    id: "parcs",
+    path: "/admin/parcs",
     label: "Parc",
     description: "Ordinateurs, matériels et inventaire",
     Icon: BadgeDollarSign,
@@ -46,6 +40,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Base de connaissances",
     description: "Organisation, process et documentation",
     Icon: Calendar,
+  },
+  {
+    id: "assets",
+    path: "/admin/assets",
+    label: "Assets",
+    description: "Listes des Assets de GLPI",
+    Icon: SquareKanban,
   },
   {
     id: "users",
@@ -67,5 +68,27 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Reset data",
     description: "Réinitialisation multi-ressources GLPI",
     Icon: RotateCcw,
+  },
+  {
+    id: "computers",
+    path: "/admin/computers",
+    label: "Computer",
+    description: "Données détailler sur le computer",
+    Icon: Laptop,
+  },
+  {
+    id: "printers",
+    path: "/admin/printers",
+    label: "Printer",
+    description: "Données détailler sur le printer",
+    Icon: Printer,
+  },
+
+  {
+    id: "memo-test",
+    path: "/admin/memo-test",
+    label: "memo-test",
+    description: "memo-test",
+    Icon: TestTube,
   },
 ];

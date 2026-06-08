@@ -1,16 +1,18 @@
-import { useState, type ChangeEvent } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { FileArchive, FileSpreadsheet, Upload } from "lucide-react";
 import { Button } from "../../shared/ui/Button";
 import { Error as ErrorMessage } from "../../shared/ui/Error";
 import { Success } from "../../shared/ui/Succcess";
 import { BUILT_IN_GLPI_IMPORT_PROFILES } from "../../features/backoffice/glpi-data/model/builtInGlpiImportProfiles";
-import { parseCsvWithDetectedGlpiProfile } from "../../features/backoffice/glpi-data/lib/parseCsvWithDetectedGlpiProfile";
+import { parseCsvWithGlpiProfile } from "../../features/backoffice/glpi-data/lib/parseCsvWithGlpiProfile";
 import { parseGlpiImagesZip } from "../../features/backoffice/glpi-data/lib/parseGlpiImagesZip";
+import { detectMatchingGlpiImportProfiles } from "../../features/backoffice/glpi-data/lib/detectGlpiImportProfile";
+import { parseCsvRaw } from "../../features/backoffice/glpi-data/lib/parseCsvRaw";
 import { useImportGlpiCsv } from "../../features/backoffice/glpi-data/hooks/useImportGlpiCsv";
 import type {
   GlpiImageZipEntryPreview,
+  GlpiImportProfile,
   ParsedGlpiImportAsset,
-  ParsedGlpiImportFile,
   ParsedGlpiImagesZipFile,
   RecognizedGlpiParsedFile,
   UnknownGlpiParsedFile,
@@ -28,6 +30,8 @@ type ImportFileSlot = {
   id: ImportFileSlotId;
   label: string;
 };
+
+type CsvImportFileSlotId = Exclude<ImportFileSlotId, "imagesZip">;
 
 const IMPORT_FILE_SLOTS: ImportFileSlot[] = [
   {
@@ -86,30 +90,166 @@ function sortRecognizedFilesByProfileOrder(files: RecognizedGlpiParsedFile[]) {
   });
 }
 
-async function parseSelectedFile(file: File): Promise<ParsedGlpiImportFile | ParsedGlpiImagesZipFile> {
-  if (file.name.toLowerCase().endsWith(".zip")) {
-    const entries: GlpiImageZipEntryPreview[] = await parseGlpiImagesZip(file);
+function isCsvSlotId(slotId: ImportFileSlotId): slotId is CsvImportFileSlotId {
+  return slotId !== "imagesZip";
+}
 
-    return {
-      entries,
-      fileName: file.name,
-      status: "image-zip",
-    };
-  }
-
-  return parseCsvWithDetectedGlpiProfile(file, BUILT_IN_GLPI_IMPORT_PROFILES);
+function getProfileById(profileId: string) {
+  return BUILT_IN_GLPI_IMPORT_PROFILES.find((profile) => profile.id === profileId) ?? null;
 }
 
 export function ImportDataPage() {
   const [selectedFilesBySlot, setSelectedFilesBySlot] = useState<Partial<Record<ImportFileSlotId, File>>>({});
-  const [parsedFiles, setParsedFiles] = useState<ParsedGlpiImportAsset[]>([]);
-  const [parseErrors, setParseErrors] = useState<FileParseError[]>([]);
+  const [selectedProfileIdsBySlot, setSelectedProfileIdsBySlot] = useState<Partial<Record<CsvImportFileSlotId, string[]>>>({});
+  const [compatibleProfilesBySlot, setCompatibleProfilesBySlot] = useState<Partial<Record<CsvImportFileSlotId, GlpiImportProfile[]>>>({});
+  const [parsedFilesBySlot, setParsedFilesBySlot] = useState<Partial<Record<ImportFileSlotId, ParsedGlpiImportAsset[]>>>({});
+  const [parseErrorsBySlot, setParseErrorsBySlot] = useState<Partial<Record<ImportFileSlotId, FileParseError>>>({});
   const [importImages, setImportImages] = useState(true);
   const { error, importFiles, isImporting, result } = useImportGlpiCsv();
 
+  const parsedFiles = useMemo(
+    () =>
+      Object.values(parsedFilesBySlot).flatMap((slotFiles) =>
+        (slotFiles ?? []).filter((parsedFile): parsedFile is ParsedGlpiImportAsset => Boolean(parsedFile)),
+      ),
+    [parsedFilesBySlot],
+  );
+  const parseErrors = useMemo(
+    () => Object.values(parseErrorsBySlot).filter((parseError): parseError is FileParseError => Boolean(parseError)),
+    [parseErrorsBySlot],
+  );
+
+  function clearSlotFeedback(slotId: ImportFileSlotId) {
+    setParseErrorsBySlot((current) => {
+      const next = { ...current };
+      delete next[slotId];
+      return next;
+    });
+  }
+
+  async function parseAndStoreFile(slotId: ImportFileSlotId, file: File, nextSelectedProfileIds?: string[]) {
+    clearSlotFeedback(slotId);
+
+    if (!isCsvSlotId(slotId)) {
+      try {
+        const entries: GlpiImageZipEntryPreview[] = await parseGlpiImagesZip(file);
+        const parsedFile: ParsedGlpiImagesZipFile = {
+          entries,
+          fileName: file.name,
+          status: "image-zip",
+        };
+
+        setParsedFilesBySlot((current) => ({
+          ...current,
+          [slotId]: [parsedFile],
+        }));
+      } catch (caughtError) {
+        setParsedFilesBySlot((current) => {
+          const next = { ...current };
+          delete next[slotId];
+          return next;
+        });
+        setParseErrorsBySlot((current) => ({
+          ...current,
+          [slotId]: {
+            fileName: file.name,
+            message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+          },
+        }));
+      }
+      return;
+    }
+
+    try {
+      const rawFile = await parseCsvRaw(file);
+      const compatibleProfiles = detectMatchingGlpiImportProfiles(
+        rawFile.headers,
+        BUILT_IN_GLPI_IMPORT_PROFILES,
+      );
+
+      setCompatibleProfilesBySlot((current) => ({
+        ...current,
+        [slotId]: compatibleProfiles,
+      }));
+
+      if (compatibleProfiles.length === 0) {
+        setSelectedProfileIdsBySlot((current) => {
+          const next = { ...current };
+          delete next[slotId];
+          return next;
+        });
+        setParsedFilesBySlot((current) => ({
+          ...current,
+          [slotId]: [
+            {
+              fileName: rawFile.fileName,
+              headers: rawFile.headers,
+              rawRows: rawFile.rows,
+              reason: [
+                "Nom de colonne non conforme a un profil d'import GLPI.",
+                `Colonnes detectees: ${rawFile.headers.join(" ; ") || "<aucune>"}`,
+              ].join(" "),
+              status: "unknown",
+            },
+          ],
+        }));
+        return;
+      }
+
+      const selectedProfileIds =
+        nextSelectedProfileIds?.filter((profileId) =>
+          compatibleProfiles.some((profile) => profile.id === profileId),
+        ) ??
+        selectedProfileIdsBySlot[slotId]?.filter((profileId) =>
+          compatibleProfiles.some((profile) => profile.id === profileId),
+        ) ??
+        [];
+
+      const effectiveSelectedProfileIds =
+        selectedProfileIds.length > 0 ? selectedProfileIds : [compatibleProfiles[0].id];
+
+      setSelectedProfileIdsBySlot((current) => ({
+        ...current,
+        [slotId]: effectiveSelectedProfileIds,
+      }));
+
+      const parsedFilesForSlot = await Promise.all(
+        effectiveSelectedProfileIds.map(async (profileId) => {
+          const profile = getProfileById(profileId);
+
+          if (!profile) {
+            return null;
+          }
+
+          return parseCsvWithGlpiProfile(file, profile);
+        }),
+      );
+
+      setParsedFilesBySlot((current) => ({
+        ...current,
+        [slotId]: parsedFilesForSlot.filter(
+          (parsedFile): parsedFile is RecognizedGlpiParsedFile | UnknownGlpiParsedFile =>
+            Boolean(parsedFile),
+        ),
+      }));
+    } catch (caughtError) {
+      setParsedFilesBySlot((current) => {
+        const next = { ...current };
+        delete next[slotId];
+        return next;
+      });
+      setParseErrorsBySlot((current) => ({
+        ...current,
+        [slotId]: {
+          fileName: file.name,
+          message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+        },
+      }));
+    }
+  }
+
   async function handleFileSlotChange(slotId: ImportFileSlotId, event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0] ?? null;
-    const previousFileName = selectedFilesBySlot[slotId]?.name;
 
     if (!file) {
       setSelectedFilesBySlot((current) => {
@@ -117,8 +257,28 @@ export function ImportDataPage() {
         delete next[slotId];
         return next;
       });
-      setParsedFiles((current) => current.filter((parsedFile) => parsedFile.fileName !== previousFileName));
-      setParseErrors((current) => current.filter((parseError) => parseError.fileName !== previousFileName));
+      if (isCsvSlotId(slotId)) {
+        setSelectedProfileIdsBySlot((current) => {
+          const next = { ...current };
+          delete next[slotId];
+          return next;
+        });
+        setCompatibleProfilesBySlot((current) => {
+          const next = { ...current };
+          delete next[slotId];
+          return next;
+        });
+      }
+      setParsedFilesBySlot((current) => {
+        const next = { ...current };
+        delete next[slotId];
+        return next;
+      });
+      setParseErrorsBySlot((current) => {
+        const next = { ...current };
+        delete next[slotId];
+        return next;
+      });
       return;
     }
 
@@ -126,42 +286,44 @@ export function ImportDataPage() {
       ...current,
       [slotId]: file,
     }));
-    setParseErrors((current) =>
-      current.filter(
-        (parseError) =>
-          parseError.fileName !== previousFileName &&
-          parseError.fileName !== file.name,
-      ),
-    );
 
-    try {
-      const parsedFile = await parseSelectedFile(file);
+    await parseAndStoreFile(slotId, file);
+  }
 
-      setParsedFiles((current) => {
-        const filteredFiles = current.filter(
-          (currentParsedFile) =>
-            currentParsedFile.fileName !== previousFileName &&
-            currentParsedFile.fileName !== file.name,
-        );
+  async function handleProfileCheckedChange(
+    slotId: CsvImportFileSlotId,
+    profileId: string,
+    checked: boolean,
+  ) {
+    const currentFile = selectedFilesBySlot[slotId];
+    const currentSelection = selectedProfileIdsBySlot[slotId] ?? [];
+    const nextSelectedProfileIds = checked
+      ? [...new Set([...currentSelection, profileId])]
+      : currentSelection.filter((currentProfileId) => currentProfileId !== profileId);
 
-        return [...filteredFiles, parsedFile];
-      });
-    } catch (caughtError) {
-      setParsedFiles((current) =>
-        current.filter(
-          (currentParsedFile) =>
-            currentParsedFile.fileName !== previousFileName &&
-            currentParsedFile.fileName !== file.name,
-        ),
-      );
-      setParseErrors((current) => [
-        ...current.filter((parseError) => parseError.fileName !== file.name),
-        {
-          fileName: file.name,
-          message: caughtError instanceof Error ? caughtError.message : String(caughtError),
-        },
-      ]);
+    if (!currentFile) {
+      setSelectedProfileIdsBySlot((current) => ({
+        ...current,
+        [slotId]: nextSelectedProfileIds,
+      }));
+      return;
     }
+
+    if (nextSelectedProfileIds.length === 0) {
+      setSelectedProfileIdsBySlot((current) => ({
+        ...current,
+        [slotId]: [],
+      }));
+      setParsedFilesBySlot((current) => {
+        const next = { ...current };
+        delete next[slotId];
+        return next;
+      });
+      clearSlotFeedback(slotId);
+      return;
+    }
+
+    await parseAndStoreFile(slotId, currentFile, nextSelectedProfileIds);
   }
 
   async function handleImport() {
@@ -212,6 +374,42 @@ export function ImportDataPage() {
               <label className="text-sm font-semibold" htmlFor={`import-file-${slot.id}`} style={{ color: "var(--text-primary)" }}>
                 {slot.label}
               </label>
+              {(() => {
+                if (!isCsvSlotId(slot.id)) {
+                  return null;
+                }
+
+                const csvSlotId = slot.id;
+                const compatibleProfiles = compatibleProfilesBySlot[csvSlotId] ?? [];
+
+                if (compatibleProfiles.length <= 1) {
+                  return null;
+                }
+
+                return (
+                  <div
+                    className="mt-2 space-y-2 rounded-[12px] border px-4 py-3"
+                    style={{ backgroundColor: "var(--panel-soft)", borderColor: "var(--panel-border)" }}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                      Profils compatibles
+                    </p>
+                    {compatibleProfiles.map((profile) => (
+                      <label key={profile.id} className="flex items-center gap-3 text-sm" style={{ color: "var(--text-primary)" }}>
+                        <input
+                          checked={(selectedProfileIdsBySlot[csvSlotId] ?? []).includes(profile.id)}
+                          className="h-4 w-4 accent-(--accent-blue)"
+                          type="checkbox"
+                          onChange={(event) =>
+                            handleProfileCheckedChange(csvSlotId, profile.id, event.target.checked)
+                          }
+                        />
+                        <span>{profile.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                );
+              })()}
               <input
                 accept={slot.accept}
                 className="mt-2 block w-full rounded-[12px] border px-4 py-3 text-sm outline-none"
@@ -265,101 +463,113 @@ export function ImportDataPage() {
           </div>
         )}
 
-        {parsedFiles.map((file, fileIndex) => {
-          if (isImagesZipFile(file)) {
-            return (
-              <section key={`${file.fileName}-${fileIndex}`} className="rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
-                <div className="flex items-center gap-3">
-                  <FileArchive size={20} />
-                  <div>
-                    <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{file.fileName}</h3>
-                    <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{file.entries.length} image(s) reconnue(s)</p>
-                  </div>
-                </div>
+        {IMPORT_FILE_SLOTS.map((slot) => {
+          const slotFiles = parsedFilesBySlot[slot.id];
 
-                {file.entries.length > 0 && (
-                  <div className="mt-5 overflow-x-auto rounded-[12px]" style={{ backgroundColor: "var(--panel-soft)" }}>
-                    <table className="min-w-full">
-                      <thead>
-                        <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-                          <th className="px-4 py-4">Fichier</th>
-                          <th className="px-4 py-4">Reference detectee</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {file.entries.slice(0, 10).map((entry) => (
-                          <tr key={`${file.fileName}-${entry.fileName}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
-                            <td className="px-4 py-3">{entry.fileName}</td>
-                            <td className="px-4 py-3">{entry.reference}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </section>
-            );
-          }
-
-          if (isUnknownFile(file)) {
-            return (
-              <section key={`${file.fileName}-${fileIndex}`} className="rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
-                <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{file.fileName}</h3>
-                <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>{file.reason ?? "Profil non reconnu."}</p>
-              </section>
-            );
+          if (!slotFiles || slotFiles.length === 0) {
+            return null;
           }
 
           return (
-            <section key={`${file.fileName}-${fileIndex}`} className="rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{file.fileName}</h3>
-                  <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>Profil reconnu: {file.profile.label}</p>
-                </div>
-                <div className="rounded-[12px] px-3 py-2 text-sm font-semibold" style={{ backgroundColor: "var(--panel-soft)", color: "var(--text-primary)" }}>
-                  Ordre {file.profile.importOrder ?? 1000}
-                </div>
-              </div>
+            <div key={slot.id} className="space-y-5">
+              {slotFiles.map((file, fileIndex) => {
+                if (isImagesZipFile(file)) {
+                  return (
+                    <section key={`${slot.id}-${fileIndex}`} className="rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+                      <div className="flex items-center gap-3">
+                        <FileArchive size={20} />
+                        <div>
+                          <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{file.fileName}</h3>
+                          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{file.entries.length} image(s) reconnue(s)</p>
+                        </div>
+                      </div>
 
-              <div className="mt-5 overflow-x-auto rounded-[12px]" style={{ backgroundColor: "var(--panel-soft)" }}>
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
-                      {file.profile.previewColumns.map((column) => (
-                        <th key={`${column.resource}-${column.field}`} className="px-4 py-4">{column.label}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {file.rows.slice(0, 10).map((row, rowIndex) => (
-                      <tr key={`${file.fileName}-${rowIndex}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
-                        {file.profile.previewColumns.map((column) => {
-                          const resource = row[column.resource];
-                          const value = resource?.[column.field];
+                      {file.entries.length > 0 && (
+                        <div className="mt-5 overflow-x-auto rounded-[12px]" style={{ backgroundColor: "var(--panel-soft)" }}>
+                          <table className="min-w-full">
+                            <thead>
+                              <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                                <th className="px-4 py-4">Fichier</th>
+                                <th className="px-4 py-4">Reference detectee</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {file.entries.slice(0, 10).map((entry) => (
+                                <tr key={`${file.fileName}-${entry.fileName}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
+                                  <td className="px-4 py-3">{entry.fileName}</td>
+                                  <td className="px-4 py-3">{entry.reference}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </section>
+                  );
+                }
 
-                          return (
-                            <td key={`${column.resource}-${column.field}`} className="px-4 py-3">
-                              {String(value ?? "")}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                if (isUnknownFile(file)) {
+                  return (
+                    <section key={`${slot.id}-${fileIndex}`} className="rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+                      <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{file.fileName}</h3>
+                      <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>{file.reason ?? "Profil non reconnu."}</p>
+                    </section>
+                  );
+                }
 
-              {file.invalidRows.length > 0 && (
-                <ul className="mt-4 space-y-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                  {file.invalidRows.slice(0, 6).map((invalidRow) => (
-                    <li key={invalidRow.rowIndex}>
-                      Ligne {invalidRow.rowIndex + 2}: {invalidRow.reasons.join(", ")}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+                return (
+                  <section key={`${slot.id}-${fileIndex}`} className="rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{file.fileName}</h3>
+                        <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>Profil reconnu: {file.profile.label}</p>
+                      </div>
+                      <div className="rounded-[12px] px-3 py-2 text-sm font-semibold" style={{ backgroundColor: "var(--panel-soft)", color: "var(--text-primary)" }}>
+                        Ordre {file.profile.importOrder ?? 1000}
+                      </div>
+                    </div>
+
+                    <div className="mt-5 overflow-x-auto rounded-[12px]" style={{ backgroundColor: "var(--panel-soft)" }}>
+                      <table className="min-w-full">
+                        <thead>
+                          <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                            {file.profile.previewColumns.map((column) => (
+                              <th key={`${column.resource}-${column.field}`} className="px-4 py-4">{column.label}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {file.rows.slice(0, 10).map((row, rowIndex) => (
+                            <tr key={`${file.fileName}-${rowIndex}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
+                              {file.profile.previewColumns.map((column) => {
+                                const resource = row[column.resource];
+                                const value = resource?.[column.field];
+
+                                return (
+                                  <td key={`${column.resource}-${column.field}`} className="px-4 py-3">
+                                    {String(value ?? "")}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {file.invalidRows.length > 0 && (
+                      <ul className="mt-4 space-y-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+                        {file.invalidRows.slice(0, 6).map((invalidRow) => (
+                          <li key={invalidRow.rowIndex}>
+                            Ligne {invalidRow.rowIndex + 2}: {invalidRow.reasons.join(", ")}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                );
+              })}
+            </div>
           );
         })}
       </section>

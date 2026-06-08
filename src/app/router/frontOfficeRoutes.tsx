@@ -1,11 +1,12 @@
 import type { RouteObject } from "react-router";
-import { FrontOfficeLayout } from "./layouts/FrontOfficeLayout";
+import { FrontOfficeLayout } from "../layouts/FrontOfficeLayout";
 import { ProtectedFrontofficeRoute } from "../../features/frontoffice-auth/components/ProtectedFrontofficeRoute";
-import { HomePage } from "../../pages/frontoffice/HomePage";
-import { PortalPage } from "../../pages/frontoffice/PortalPage";
-import { HelpCenterPage } from "../../pages/frontoffice/HelpCenterPage";
-import { LoginPage } from "../../pages/frontoffice/LoginPage";
-import { AccountPage } from "../../pages/frontoffice/AccountPage";
+import { HomePage } from "../../pages/other/frontoffice/HomePage";
+import { PortalPage } from "../../pages/other/frontoffice/PortalPage";
+import { HelpCenterPage } from "../../pages/other/frontoffice/HelpCenterPage";
+import { LoginPage } from "../../pages/other/frontoffice/LoginPage";
+import { AccountPage } from "../../pages/other/frontoffice/AccountPage";
+import { GeneralViewElementPage } from "../../pages/other/frontoffice/GeneralViewElementPage";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -36,6 +37,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "account",
           element: <AccountPage />,
+        },
+        {
+          path: "asset-general-element",
+          element: <GeneralViewElementPage />,
         },
       ],
     },
