@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef } from "react";
 import type { User } from "../../../../entities/user/model/user.types";
 import { Button } from "../../../../shared/ui/Button";
-import { Error } from "../../../../shared/ui/Error";
+import { MyError } from "../../../../shared/ui/MyError";
 import { Input } from "../../../../shared/ui/Input";
 import { Label } from "../../../../shared/ui/Label";
 import { Success } from "../../../../shared/ui/Succcess";
@@ -31,7 +31,7 @@ export function UserUpdate({ onClose, onUserUpdated, userToUpdate }: UserUpdateP
 
   return (
     <div className="flex items-center gap-3 flex-col">
-      {error !== "" && <Error>{error}</Error>}
+      {error !== "" && <MyError>{error}</MyError>}
       {isSuccess && <Success>Utilisateur modifié avec succès</Success>}
 
       <form className="flex gap-3 flex-col w-full" onSubmit={handleSubmit}>

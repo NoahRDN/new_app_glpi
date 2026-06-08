@@ -6,7 +6,8 @@ import { PortalPage } from "../../pages/other/frontoffice/PortalPage";
 import { HelpCenterPage } from "../../pages/other/frontoffice/HelpCenterPage";
 import { LoginPage } from "../../pages/other/frontoffice/LoginPage";
 import { AccountPage } from "../../pages/other/frontoffice/AccountPage";
-import { GeneralViewElementPage } from "../../pages/other/frontoffice/GeneralViewElementPage";
+import { GeneralViewElementPage } from "../../pages/frontoffice/GeneralViewElementPage";
+import { TicketsPage } from "../../pages/frontoffice/TicketsPage";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -41,6 +42,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "asset-general-element",
           element: <GeneralViewElementPage />,
+        },
+        {
+          path: "create-ticket",
+          element: <TicketsPage />,
         },
       ],
     },
