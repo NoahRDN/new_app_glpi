@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CreateTicket } from "../../../../entities/ticket/model/ticket.types";
-import { getUserErrorMessage } from "../../../../shared/errors/AppError";
+import { getDeveloperErrorDetails, getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Input } from "../../../../shared/ui/Input";
 import { Label } from "../../../../shared/ui/Label";
 import { MyError } from "../../../../shared/ui/MyError";
@@ -8,6 +8,8 @@ import { useCreateTicket } from "../hooks/useCreateTicket";
 import { createTicketDefault } from "../../../../entities/ticket/model/ticket.config";
 import { Textarea } from "../../../../shared/ui/Textarea";
 import { Button } from "../../../../shared/ui/Button";
+import { useNavigate } from "react-router";
+import { Select } from "../../../../shared/ui/Select";
 
 export function TicketsAdd(){
     const {
@@ -18,8 +20,8 @@ export function TicketsAdd(){
         isSuccess: isTicketSuccess,
     } = useCreateTicket();
 
-    const [form, setForm] = useState<CreateTicket>(createTicketDefault);
-    
+    const [form, setForm] = useState<CreateTicket>({...createTicketDefault});
+    const navigate = useNavigate();
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
@@ -38,14 +40,26 @@ export function TicketsAdd(){
 
     if (isCreatePrinterError) {
         return <MyError>
-            {getUserErrorMessage(createPrinterError)}
+            <p>{getUserErrorMessage(createPrinterError, "Erreur lors de la création du ticket.")}</p>
+
+            {import.meta.env.DEV && (
+                <pre className="mt-4 whitespace-pre-wrap rounded bg-red-100 p-3 text-xs">
+                {getDeveloperErrorDetails(createPrinterError)}
+                </pre>
+            )}
         </MyError>
     }
 
     if (isTicketSuccess) {
-        return <div className="rounded-[30px] p-5 bg-green-200 text-green-500">
-            Votre Ticket a été créer avec succès
-        </div>
+        return  <>
+            <div className="rounded-[30px] p-5 bg-green-200 text-green-500">
+                Votre Ticket a été créer avec succès
+            </div>
+            <Button otherClassName="mt-3" onClick={() => window.location.reload()}>
+                Retour
+            </Button>
+        </>
+
     }
 
     return<>
@@ -73,6 +87,21 @@ export function TicketsAdd(){
                     });
                 }}
                 id="contentTicket" />
+            <Label htmlFor="elementsTicket">Element</Label>
+
+            <div className="flex">
+                <span>Mes éléments</span>
+                <Select>
+                    <option value="">--------</option>
+                </Select>
+            </div>
+            
+            <div className="flex">
+                <span>Ou recherche complète</span>
+                <Select> 
+                    <option value="">--------</option>
+                </Select>
+            </div>
             <Button type="submit" otherClassName="justify-center">
                 {isCreatingTicket ? "Création Ticket..." : "Valider"}
             </Button>

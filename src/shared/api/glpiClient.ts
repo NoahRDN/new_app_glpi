@@ -1,5 +1,5 @@
 import { env } from "../config/env";
-import { AppError } from "../errors/AppError";
+import { AppError, extractErrorDetail } from "../errors/AppError";
 
 type RequestMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
@@ -156,12 +156,17 @@ function createApiError(params: {
     });
   }
 
+  const detailedMessage = extractErrorDetail(params.details);
+
   return new AppError({
     message: `GLPI API ${params.method} ${params.path} failed: ${params.status} ${params.statusText}`,
-    userMessage: "Une erreur est survenue pendant l’appel à GLPI.",
+    userMessage:
+      params.status >= 500
+        ? "Erreur serveur GLPI pendant le traitement de la requête."
+        : "Une erreur est survenue pendant l’appel à GLPI.",
     code: "GLPI_API_ERROR",
     status: params.status,
-    details: params.details,
+    details: detailedMessage ?? params.details,
   });
 }
 

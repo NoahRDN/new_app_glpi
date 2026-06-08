@@ -12,6 +12,6 @@ export type CreateTicket = {
   content: string;
   priority?: number;
   type?: number;
-  urgence?: number;
+  urgency?: number;
   impact?: number;
 }

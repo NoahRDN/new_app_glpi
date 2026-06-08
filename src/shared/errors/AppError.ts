@@ -47,3 +47,49 @@ export function getUserErrorMessage(
 
   return fallbackMessage;
 }
+
+export function getDeveloperErrorDetails(error: unknown): string | undefined {
+  if (error instanceof AppError) {
+    return JSON.stringify(
+      {
+        code: error.code,
+        status: error.status,
+        message: error.message,
+        details: error.details,
+      },
+      null,
+      2
+    );
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return undefined;
+}
+
+export function extractErrorDetail(details: string): string | undefined {
+  if (!details.trim()) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(details) as {
+      title?: string;
+      detail?: string;
+      message?: string;
+      status?: string;
+    };
+
+    return (
+      parsed.detail ??
+      parsed.message ??
+      parsed.title ??
+      parsed.status ??
+      details
+    );
+  } catch {
+    return details;
+  }
+}
