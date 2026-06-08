@@ -1,8 +1,9 @@
-import { glpiDelete, glpiGet, glpiPost } from "../../../../shared/api/glpiClient";
+import { glpiDelete, glpiGetPaginated, glpiPost } from "../../../../shared/api/glpiClient";
 import type { GlpiDataResourceConfig } from "../model/glpiDataResource.config";
 
 type GlpiListItem = {
   id?: number;
+  is_deleted?: boolean;
 };
 
 function extractListItems(response: unknown): GlpiListItem[] {
@@ -21,8 +22,34 @@ function extractListItems(response: unknown): GlpiListItem[] {
 }
 
 export async function getGlpiResourceItems(resource: GlpiDataResourceConfig) {
-  const response = await glpiGet<unknown>(resource.endpoint);
-  return extractListItems(response);
+  const limit = 100;
+  let start = 0;
+  let total = Infinity;
+
+  const allItems: unknown[] = [];
+
+  while (start < total) {
+    const params = new URLSearchParams({
+      start: String(start),
+      limit: String(limit),
+    });
+
+    const page = await glpiGetPaginated<unknown>(
+      `${resource.endpoint}?${params.toString()}`
+    );
+
+    const items = extractListItems(page.data);
+
+    allItems.push(...items);
+
+    total = page.total;
+    start += limit;
+
+    if (items.length === 0) {
+      break;
+    }
+  }
+  return extractListItems(allItems);
 }
 
 export async function createGlpiResourceItem(

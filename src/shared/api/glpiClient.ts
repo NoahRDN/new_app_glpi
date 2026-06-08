@@ -27,7 +27,7 @@ function isTokenValid() {
   return accessToken !== null && Date.now() < accessTokenExpiresAt - 30_000;
 }
 
-function parseContentRange(value: string | null) {
+export function parseContentRange(value: string | null) {
   if (!value) {
     return {
       start: 0,

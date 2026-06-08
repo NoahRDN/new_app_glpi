@@ -2,7 +2,7 @@ import type { GeneralViewAssetItems } from "./generalViewAssetItems.types";
 
 export const generalViewAssetItemsMock: GeneralViewAssetItems[] = [
   {
-    assetType: "Computer",
+    itemType: "Computer",
     dateCreation: "2026-06-05T17:55:40.618Z",
     dateMod: "2026-06-06T08:22:14.105Z",
     entity: {
@@ -30,7 +30,7 @@ export const generalViewAssetItemsMock: GeneralViewAssetItems[] = [
     },
   },
   {
-    assetType: "Laptop",
+    itemType: "Laptop",
     dateCreation: "2026-05-14T09:10:12.000Z",
     dateMod: "2026-06-04T15:42:18.000Z",
     entity: {
@@ -58,7 +58,7 @@ export const generalViewAssetItemsMock: GeneralViewAssetItems[] = [
     },
   },
   {
-    assetType: "Workstation",
+    itemType: "Workstation",
     dateCreation: "2026-04-28T11:32:45.900Z",
     dateMod: "2026-06-03T10:17:51.221Z",
     entity: {

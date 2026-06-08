@@ -20,7 +20,7 @@ export function useDeleteUser(){
             setIsSuccessDeleteUser(true);
         } catch (error) {
             if(error instanceof Error){
-                console.log(error)
+                console.error(error)
                 setErrorsDeleteUser(error.message)
             } else{
                 setErrorsDeleteUser(`Erreur pendant la suppression de l'utilisateur ${userId}`);

@@ -41,7 +41,7 @@ export async function getComputersPage(
   }
   
   return glpiGetPaginated<GlpiComputer>(
-    `/Assets/Computer?is_deleted==false;${params.toString()}`,
+    `/Assets/Computer?${params.toString()}`,
   );
 }
 

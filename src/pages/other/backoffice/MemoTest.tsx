@@ -7,8 +7,6 @@ export function MemoTest() {
   const [counter, setCounter] = useState(0);
 
   const filteredNumbers = useMemo(() => {
-    console.log("Calcul du filtre");
-
     return numbers.filter((number) => {
       return number.toString().includes(search);
     });

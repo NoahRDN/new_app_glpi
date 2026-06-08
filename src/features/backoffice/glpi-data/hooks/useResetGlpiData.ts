@@ -23,7 +23,6 @@ export function useResetGlpiData() {
 
       try {
         const items = await getGlpiResourceItems(resource);
-        totalFound = items.length;
 
         for (const item of items) {
           if (item.id === undefined) {
@@ -33,6 +32,20 @@ export function useResetGlpiData() {
             });
             continue;
           }
+
+          if (item.is_deleted === undefined) {
+            errors.push({
+              id: "unknown",
+              message: "Ligne sans situation de remove",
+            });
+            continue;
+          }
+
+          if (item.is_deleted) {
+            continue;
+          }
+
+            totalFound = items.length;
 
           try {
             const itemIsProtected = resource.protectedIds?.includes(item.id);
@@ -52,6 +65,7 @@ export function useResetGlpiData() {
             });
           }
         }
+
       } catch (caughtError) {
         errors.push({
           id: "resource",
