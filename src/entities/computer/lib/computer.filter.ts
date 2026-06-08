@@ -1,7 +1,9 @@
 import type { ComputerFilters } from "../model/computer.types";
 
-export function buildComputerFilter(filters: ComputerFilters): string | undefined {
-  const parts: string[] = [];
+export function buildComputerFilter(
+    {filters, parts = ["is_deleted==false"]}
+    :{parts?: string[],filters: ComputerFilters}
+): string | undefined {
 
   const name = filters.name.trim();
 

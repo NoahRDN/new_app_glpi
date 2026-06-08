@@ -1,4 +1,4 @@
-import { RefreshCcw } from "lucide-react";
+import {  Eye, PenLine, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DataTable } from "../../../../shared/ui/DataTable";
 import { Input } from "../../../../shared/ui/Input";
@@ -6,15 +6,21 @@ import { Loader } from "../../../../shared/ui/Loader";
 import { Button } from "../../../../shared/ui/Button";
 import { useComputersPage } from "../hooks/useComputers";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
-import type { ComputerFilters } from "../../../../entities/computer/model/computer.types";
+import type { Computer, ComputerFilters } from "../../../../entities/computer/model/computer.types";
 import { useDebounce } from "../../../../shared/hooks/useDebounce";
 import { computerFiltersDefaultValues } from "../../../../entities/computer/model/computer.config";
+import { CreateComputerForm } from "./CreateComputerForm";
+import { Modal } from "../../../../shared/ui/Modal";
+import { UpdateComputerForm } from "./UpdateComputerForm";
+import { useDeleteComputer } from "../hooks/useDeleteComputer";
 
 export function ListComputer() {
   const [filters, setFilters] = useState<ComputerFilters>(computerFiltersDefaultValues);
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState<number>(20);
   const debouncedFilters = useDebounce(filters, 400);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [computerToUpdate, setComputerToUpdate] = useState<Computer | null>(null);
 
   const {
     data: computersPage,
@@ -25,11 +31,16 @@ export function ListComputer() {
     refetch: refetchComputers,
   } = useComputersPage(page, limit, debouncedFilters);
 
+  const {
+    mutateAsync: deleteComputerAsync,
+    isPending: isDeletingComputer,
+    error: deleteComputerError,
+    isError: isDeleteComputerError,
+  } = useDeleteComputer();
+
   const computers = computersPage?.data ?? [];
   const total = computersPage?.total ?? 0;
   const hasNextPage = (page + 1) * limit < total;
-
-
 
   if (isComputersPending) {
     return <Loader label="Chargement de la liste des ordinateurs" />;
@@ -45,6 +56,48 @@ export function ListComputer() {
 
   return (
     <>
+      <Modal
+        isOpen={isModalOpen}
+        title="Création Computer"
+        onClose={() => {
+            setIsModalOpen(false)
+        }}
+      >
+        <CreateComputerForm 
+          onClose={() => setIsModalOpen(false)}
+          onCreated={() => setIsModalOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={computerToUpdate !== null}
+        title="Modification Computer"
+        onClose={() => {
+          setComputerToUpdate(null);
+        }}
+      >
+        {computerToUpdate !== null && (
+          <UpdateComputerForm
+            computer={computerToUpdate}
+            onClose={() => {
+              setComputerToUpdate(null);
+            }}
+            onUpdated={() => {
+              setComputerToUpdate(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      {isDeleteComputerError && (
+        <div className="col-span-12 text-red-500">
+          {getUserErrorMessage(
+            deleteComputerError,
+            "Impossible de supprimer l’ordinateur.",
+          )}
+        </div>
+      )}
+
       <DataTable
         tableHeads={[
           <Input type="checkbox" />,
@@ -61,8 +114,11 @@ export function ListComputer() {
         toolbar={
           <div
             className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4"
-            style={{ backgroundColor: "var(--panel-soft)" }}
           >
+            <Button
+                otherClassName="mr-4"
+                onClick={() => setIsModalOpen(true)}
+            >Action Groupé</Button>
             <Input
               placeholder="Rechercher dans la page actuelle..."
               value={filters?.name}
@@ -77,10 +133,14 @@ export function ListComputer() {
               }}
             />
 
-            <Button onClick={() => refetchComputers()}>
+            <Button type="button" onClick={() => refetchComputers()}>
               <RefreshCcw size={18} />
               Actualiser
             </Button>
+            <Button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+            ><Plus size={20} />Ajouter</Button>
           </div>
         }
 
@@ -140,8 +200,34 @@ export function ListComputer() {
             <td className="px-4 py-3">
               {visibleComputer.manufacturer?.name ?? "-"}
             </td>
-            <td className="px-4 py-3">
-              <Button isWithBackground={false}>Voir</Button>
+            <td className="px-4 py-3 flex gap-3">
+              <Button
+                otherClassName="bg-blue-500"
+                isWithBackground={false}
+                aria-label="modification"
+                onClick={() => {
+                  setComputerToUpdate(visibleComputer);
+                }}
+              >
+                <PenLine size={18} />
+              </Button>
+              <Button 
+                otherClassName="bg-red-500"
+                disabled={isDeletingComputer}
+                aria-label="suppression"
+                onClick={async () => {
+                  const isConfirmed = confirm(
+                    `Voulez-vous vraiment supprimer "${visibleComputer.name}" ?`,
+                  );
+
+                  if (!isConfirmed) {
+                    return;
+                  }
+
+                  await deleteComputerAsync(visibleComputer.id);
+                }}
+              ><Trash2 size={18} /></Button>
+              <Button otherClassName="bg-blue-400" aria-label="Voir le détail"><Eye size={18} /></Button>
             </td>
           </tr>
         ))}

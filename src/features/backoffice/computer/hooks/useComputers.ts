@@ -23,9 +23,9 @@ export function useComputersPage(page: number, limit: number, search: ComputerFi
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     retry: 1,
-    select: (computersPage) => ({
-      ...computersPage,
-      data: computersPage.data.filter((computer) => !computer.is_deleted),
-    }),
+    // select: (computersPage) => ({
+    //   ...computersPage,
+    //   data: computersPage.data.filter((computer) => !computer.is_deleted),
+    // }),
   });
 }

@@ -96,3 +96,4 @@ export type ComputerFilters = {
   statusId?: number | null;
   manufacturerId?: number | null;
 };
+

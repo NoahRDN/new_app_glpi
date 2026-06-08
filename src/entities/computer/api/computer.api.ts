@@ -33,14 +33,15 @@ export async function getComputersPage(
     limit: String(limit),
   });
 
-  const filter = buildComputerFilter(filters);
+  const filter = buildComputerFilter({filters: filters});
+
 
   if (filter) {
     params.set("filter", filter);
   }
-
+  
   return glpiGetPaginated<GlpiComputer>(
-    `/Assets/Computer?${params.toString()}`,
+    `/Assets/Computer?is_deleted==false;${params.toString()}`,
   );
 }
 
