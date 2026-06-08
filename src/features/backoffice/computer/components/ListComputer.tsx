@@ -6,11 +6,15 @@ import { Loader } from "../../../../shared/ui/Loader";
 import { Button } from "../../../../shared/ui/Button";
 import { useComputersPage } from "../hooks/useComputers";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
+import type { ComputerFilters } from "../../../../entities/computer/model/computer.types";
+import { useDebounce } from "../../../../shared/hooks/useDebounce";
+import { computerFiltersDefaultValues } from "../../../../entities/computer/model/computer.config";
 
 export function ListComputer() {
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<ComputerFilters>(computerFiltersDefaultValues);
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState<number>(20);
+  const debouncedFilters = useDebounce(filters, 400);
 
   const {
     data: computersPage,
@@ -19,25 +23,13 @@ export function ListComputer() {
     isError: isComputersError,
     error: computersError,
     refetch: refetchComputers,
-  } = useComputersPage(page, limit);
+  } = useComputersPage(page, limit, debouncedFilters);
 
   const computers = computersPage?.data ?? [];
   const total = computersPage?.total ?? 0;
   const hasNextPage = (page + 1) * limit < total;
 
-  const query = search.trim().toLowerCase();
 
-  const visibleComputers = computers.filter((computer) => {
-    if (query.length === 0) {
-      return true;
-    }
-
-    return (
-      computer.name?.toLowerCase().includes(query) ||
-      computer.serial?.toLowerCase().includes(query) ||
-      computer.otherserial?.toLowerCase().includes(query)
-    );
-  });
 
   if (isComputersPending) {
     return <Loader label="Chargement de la liste des ordinateurs" />;
@@ -73,8 +65,16 @@ export function ListComputer() {
           >
             <Input
               placeholder="Rechercher dans la page actuelle..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              value={filters?.name}
+              onChange={(event) => {
+                setFilters((currentFilters) => {
+                  return {
+                    ...currentFilters,
+                    name: event.target.value
+                  }
+                });
+                setPage(0);
+              }}
             />
 
             <Button onClick={() => refetchComputers()}>
@@ -124,7 +124,7 @@ export function ListComputer() {
           </div>
         }
       >
-        {visibleComputers.map((visibleComputer, index) => (
+        {computers.map((visibleComputer, index) => (
           <tr key={visibleComputer.id}>
             <td className="px-4">
               <Input type="checkbox" />

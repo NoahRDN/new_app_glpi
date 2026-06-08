@@ -88,3 +88,11 @@ export type CreateComputer = {
 export type UpdateComputer = Partial<CreateComputer> & {
   id: number;
 };
+
+export type ComputerFilters = {
+  name: string;
+  dateCreationFrom?: string;
+  dateCreationTo?: string;
+  statusId?: number | null;
+  manufacturerId?: number | null;
+};
