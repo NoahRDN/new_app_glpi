@@ -1,8 +1,8 @@
 import type { CreateTicket } from "./ticket.types";
 
 export const createTicketDefault : CreateTicket = {
-  name: "",
-  content: "",
+  name: "Ticket New App",
+  content: "First Création ticket new app",
   priority: -1,
   type: -1,
   urgence: -1,

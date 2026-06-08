@@ -1,3 +1,5 @@
+import { env } from "../config/env";
+
 // src/shared/errors/AppError.ts
 export type AppErrorCode =
   | "NETWORK_ERROR"
@@ -33,10 +35,10 @@ export class AppError extends Error {
 export function getUserErrorMessage(
   error: unknown,
   fallbackMessage = "Une erreur inattendue est survenue.",
-  debug: boolean = false
+  debug: boolean = env.modeDebug
 ): string {
   if (debug) {
-    console.error("Erreur: ", debug)
+    console.error("Détail Erreur: ", error)
   }
 
   if (error instanceof AppError) {

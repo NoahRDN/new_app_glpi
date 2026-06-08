@@ -28,6 +28,8 @@ type Env = {
   // Permissions demandées au moment de créer le token.
   // Exemple : "api user email status"
   glpiOAuthScope: string;
+
+  modeDebug: boolean;
 };
 
 export const env: Env = {
@@ -38,4 +40,5 @@ export const env: Env = {
   glpiOAuthUsername: import.meta.env.VITE_GLPI_OAUTH_USERNAME ?? "",
   glpiOAuthPassword: import.meta.env.VITE_GLPI_OAUTH_PASSWORD ?? "",
   glpiOAuthScope: import.meta.env.VITE_GLPI_OAUTH_SCOPE ?? "",
+  modeDebug: import.meta.env.VITE_MODE_DEBUG ?? false,
 };
