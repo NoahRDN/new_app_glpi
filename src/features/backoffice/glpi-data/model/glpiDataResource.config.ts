@@ -2,6 +2,7 @@ export type GlpiDataResourceId =
   | "users"
   | "tickets"
   | "computers"
+  | "printers"
   | "locations"
   | "groups"
   | "documents";
@@ -44,6 +45,15 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     endpoint: "/Assets/Computer",
     id: "computers",
     label: "Ordinateurs",
+    optionalColumns: ["serial", "otherserial", "comment"],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
+    description: "Imprimantes du parc informatique.",
+    endpoint: "/Assets/Printer",
+    id: "printers",
+    label: "Imprimantes",
     optionalColumns: ["serial", "otherserial", "comment"],
     requiredColumns: ["name"],
     resetEnabled: true,

@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   RotateCcw,
   Laptop,
+  Printer,
   TestTube,
 } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
@@ -74,6 +75,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Computer",
     description: "Données détailler sur le computer",
     Icon: Laptop,
+  },
+  {
+    id: "printers",
+    path: "/admin/printers",
+    label: "Printer",
+    description: "Données détailler sur le printer",
+    Icon: Printer,
   },
 
   {
