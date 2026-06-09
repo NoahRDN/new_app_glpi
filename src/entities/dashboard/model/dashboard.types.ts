@@ -11,3 +11,9 @@ export type DashboardStats = {
   totalTickets: number;
   ticketsByType: DashboardStatDetail[];
 };
+
+export type CountTarget = {
+  key: string;
+  label: string;
+  path: string;
+};

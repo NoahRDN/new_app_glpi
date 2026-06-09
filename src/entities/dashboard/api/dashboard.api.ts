@@ -1,39 +1,7 @@
 import { glpiGetPaginated } from "../../../shared/api/glpiClient";
-import type { DashboardStats } from "../model/dashboard.types";
-
-type CountTarget = {
-  key: string;
-  label: string;
-  path: string;
-};
-
-const assetTargets: CountTarget[] = [
-  {
-    key: "computers",
-    label: "Ordinateurs",
-    path: "/Assets/Computer",
-  },
-  {
-    key: "printers",
-    label: "Imprimantes",
-    path: "/Assets/Printer",
-  },
-  {
-    key: "monitors",
-    label: "Moniteurs",
-    path: "/Assets/Monitor",
-  },
-  {
-    key: "phones",
-    label: "Téléphones",
-    path: "/Assets/Phone",
-  },
-  {
-    key: "network-equipments",
-    label: "Matériels réseau",
-    path: "/Assets/NetworkEquipment",
-  },
-];
+import { getAssets } from "../../asset/api/asset.api";
+import { excludedAssetTypes } from "../model/dashboard.config";
+import type { CountTarget, DashboardStats } from "../model/dashboard.types";
 
 const ticketTargets: CountTarget[] = [
   {
@@ -76,6 +44,8 @@ async function getCountDetails(targets: CountTarget[]) {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
+  const assetTargets = await getAssetTargets();
+
   const [assetsByType, ticketsByType, totalTickets] = await Promise.all([
     getCountDetails(assetTargets),
     getCountDetails(ticketTargets),
@@ -93,4 +63,16 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalTickets,
     ticketsByType,
   };
+}
+
+export async function getAssetTargets(): Promise<CountTarget[]> {
+  const assets = await getAssets();
+
+  return assets
+    .filter((asset) => !excludedAssetTypes.includes(asset.itemtype))
+    .map((asset) => ({
+      key: asset.itemtype,
+      label: asset.name,
+      path: asset.href,
+    }));
 }
