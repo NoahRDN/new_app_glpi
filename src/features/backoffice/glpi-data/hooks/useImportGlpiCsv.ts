@@ -638,7 +638,7 @@ async function importImageZipFiles(
   rollbackActions: RollbackAction[],
 ): Promise<ImportExecutionSummary> {
   let importedCount = 0;
-  const skippedCount = 0;
+  let skippedCount = 0;
   const errors: ImportError[] = [];
   const files: ImportFileSummary[] = [];
 
@@ -679,6 +679,7 @@ async function importImageZipFiles(
         );
         importedCount += importedEntryCount;
         fileImportedCount += importedEntryCount;
+        skippedCount += importedEntryCount === 0 ? 1 : 0;
       }
 
       files.push({
@@ -686,7 +687,7 @@ async function importImageZipFiles(
         importedCount: fileImportedCount,
         profileLabel: "Archive images / documents",
         resourceIds: ["documents"],
-        skippedCount: 0,
+        skippedCount: imageEntries.length - fileImportedCount,
       });
     } catch (caughtError) {
       errors.push({
@@ -722,6 +723,12 @@ async function importImageZipEntry(
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
 ) {
+  const linkedAsset = context.assetReferencesByKey.get(normalizeKey(imageEntry.reference));
+
+  if (!linkedAsset) {
+    return 0;
+  }
+
   const createdDocument = await createDocumentWithFile({
     comment: `Import image zip: ${zipFileName}`,
     file: imageEntry.file,
@@ -730,31 +737,30 @@ async function importImageZipEntry(
   });
 
   const documentId = extractCreatedId(createdDocument);
-  const linkedAsset = context.assetReferencesByKey.get(normalizeKey(imageEntry.reference));
 
-  if (documentId !== null) {
-    rollbackActions.push({
-      label: `document#${documentId}`,
-      run: () => deleteDocument(documentId),
-    });
+  if (documentId === null) {
+    return 0;
   }
 
-  if (documentId !== null && linkedAsset) {
-    const createdDocumentItem = await createDocumentItem({
-      input: {
-        documents_id: documentId,
-        items_id: linkedAsset.itemId,
-        itemtype: linkedAsset.itemtype,
-      },
-    });
-    const documentItemId = extractCreatedId(createdDocumentItem);
+  rollbackActions.push({
+    label: `document#${documentId}`,
+    run: () => deleteDocument(documentId),
+  });
 
-    if (documentItemId !== null) {
-      rollbackActions.push({
-        label: `documentItem#${documentItemId}`,
-        run: () => deleteDocumentItem(documentItemId),
-      });
-    }
+  const createdDocumentItem = await createDocumentItem({
+    input: {
+      documents_id: documentId,
+      items_id: linkedAsset.itemId,
+      itemtype: linkedAsset.itemtype,
+    },
+  });
+  const documentItemId = extractCreatedId(createdDocumentItem);
+
+  if (documentItemId !== null) {
+    rollbackActions.push({
+      label: `documentItem#${documentItemId}`,
+      run: () => deleteDocumentItem(documentItemId),
+    });
   }
 
   return 1;
