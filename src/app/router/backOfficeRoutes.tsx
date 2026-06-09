@@ -72,7 +72,6 @@ export const backOfficeRoutes: RouteObject = {
           path: "memo-test",
           element: <MemoTest />,
         },
-        
       ],
     },
   ],

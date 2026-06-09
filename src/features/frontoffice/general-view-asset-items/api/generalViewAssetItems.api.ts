@@ -3,14 +3,16 @@ import { glpiGetPaginated } from "../../../../shared/api/glpiClient";
 import { buildGeneralViewAssetItemsFilter, insertViewAssetItem } from "../lib/generalViewAssetItems";
 import { type GeneralViewAssetItems, type GeneralViewAssetItemsFilters, type GeneralViewAssetItemsPage, type GlpiAssetCommon } from "../model/generalViewAssetItems.types";
 
-export async function getGeneralViewAssetItemsPage(
+export async function getGeneralViewAssetItemsPage({
+  page,
+  limit,
+  filters
+}:{
   page: number,
   limit: number,
-  filters: GeneralViewAssetItemsFilters,
-): Promise<GeneralViewAssetItemsPage> {
+  filters: GeneralViewAssetItemsFilters
+}): Promise<GeneralViewAssetItemsPage> {
   const assets = await getAssets();
-  console.log("taille: ", filters.itemtypes.length);
-  console.log("content: ", filters.itemtypes);
 
   const selectedAssets =
     filters.itemtypes.length > 0
@@ -70,12 +72,13 @@ export async function getGeneralViewAssetItemsPage(
       `${asset.href}?${dataParams.toString()}`,
     );
 
-    const mappedItems = dataPage.data.map((glpiAssetCommon) => {
-      return insertViewAssetItem({
-        itemType: asset.name,
+    const mappedItems = dataPage.data.map((glpiAssetCommon) =>
+      insertViewAssetItem({
+        itemType: asset.itemtype,
+        itemTypeLabel: asset.name,
         glpiAssetCommonData: glpiAssetCommon,
-      });
-    });
+      })
+    );
 
     items.push(...mappedItems);
 
@@ -87,4 +90,31 @@ export async function getGeneralViewAssetItemsPage(
     data: items,
     total,
   };
+}
+
+export async function getAllGeneralViewAssetItems(
+  filters: GeneralViewAssetItemsFilters,
+): Promise<GeneralViewAssetItems[]> {
+  const firstPage = await getGeneralViewAssetItemsPage({
+    page: 0,
+    limit: 100,
+    filters,
+  });
+
+  const total = firstPage.total;
+  const totalPages = Math.ceil(total / 100);
+
+  const allItems = [...firstPage.data];
+
+  for (let page = 1; page < totalPages; page++) {
+    const nextPage = await getGeneralViewAssetItemsPage({
+      page,
+      limit: 100,
+      filters,
+    });
+
+    allItems.push(...nextPage.data);
+  }
+
+  return allItems;
 }

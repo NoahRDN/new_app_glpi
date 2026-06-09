@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../../shared/ui/Button";
-import { Error } from "../../../shared/ui/Error";
+import { MyError } from "../../../shared/ui/MyError";
 import { Input } from "../../../shared/ui/Input";
 import { Label } from "../../../shared/ui/Label";
 import { signInBackoffice } from "../lib/backofficeAuth";
@@ -26,7 +26,7 @@ export function BackofficeLoginForm() {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      {error !== "" ? <Error>{error}</Error> : null}
+      {error !== "" ? <MyError>{error}</MyError> : null}
 
       <div className="space-y-2">
         <Label htmlFor="backoffice-username">Username admin</Label>

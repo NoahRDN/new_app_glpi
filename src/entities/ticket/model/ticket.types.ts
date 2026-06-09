@@ -1,11 +1,22 @@
-export type TicketStatus = "new" | "in_progress" | "resolved";
-export type TicketPriority = "medium" | "high" | "critical";
-
 export type Ticket = {
   id: number;
-  priority: TicketPriority;
+  priority: string;
   requester: string;
-  status: TicketStatus;
-  title: string;
+  status: string;
+  name: string;
   updatedAt: string;
+};
+
+export type CreateTicketPayload = {
+  name: string;
+  content: string;
+  type: number;
+  urgency?: number;
+  impact?: number;
+  priority?: number;
+};
+
+export type CreateTicketResponse = {
+  id: number;
+  href: string;
 };

@@ -21,6 +21,17 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) =>
             path.replace(/^\/glpi-api/, env.GLPI_API_PATH || "/api.php/v2.3"),
         },
+
+        "/glpi-legacy-api": {
+          target: env.GLPI_PROXY_TARGET || "http://glpi.localhost",
+          changeOrigin: true,
+          rewrite: (path) =>
+            path.replace(
+              /^\/glpi-legacy-api/,
+              env.GLPI_LEGACY_API_PATH || "/apirest.php",
+            ),
+        },
+
         "/local-api": {
           target: "http://localhost:8080",
           changeOrigin: true,

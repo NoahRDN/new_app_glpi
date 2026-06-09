@@ -4,7 +4,7 @@ import { DataTable } from "../../../../shared/ui/DataTable";
 import { Input } from "../../../../shared/ui/Input";
 import { Loader } from "../../../../shared/ui/Loader";
 import { useGeneralViewAssetItemsPage } from "../hooks/useGeneralViewAssetItems";
-import { Error } from "../../../../shared/ui/Error";
+import { MyError } from "../../../../shared/ui/MyError";
 import { RefreshCcw } from "lucide-react";
 import { useState } from "react";
 import type { GeneralViewAssetItemsFilters } from "../model/generalViewAssetItems.types";
@@ -50,9 +50,9 @@ export function ListGeneralViewItem(){
 
     if (isGeneralViewAssetItemsError) {
         return <div>
-            <Error>
+            <MyError>
                 {getUserErrorMessage(generalViewAssetItemsError, "Erreur lors du chargement des Items")}
-            </Error>
+            </MyError>
         </div>
     }
 
@@ -62,9 +62,9 @@ export function ListGeneralViewItem(){
 
     if (isAssetsError) {
         return <div>
-            <Error>
+            <MyError>
                 {getUserErrorMessage(assetsError, "Erreur lors du chargement des Assets")}
-            </Error>
+            </MyError>
         </div>
     }
 

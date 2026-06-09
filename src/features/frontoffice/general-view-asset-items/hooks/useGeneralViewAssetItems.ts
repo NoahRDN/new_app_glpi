@@ -14,7 +14,7 @@ export function useGeneralViewAssetItemsPage(
 ) {
   return useQuery({
     queryKey: [...generalViewAssetItemsQueryKey, page, limit, filters],
-    queryFn: () => getGeneralViewAssetItemsPage(page, limit, filters),
+    queryFn: () => getGeneralViewAssetItemsPage({page, limit, filters}),
     placeholderData: keepPreviousData,
     staleTime: 60_000,
     retry: 1,

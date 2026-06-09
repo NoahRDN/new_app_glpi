@@ -1,7 +1,7 @@
 import { useMemo, useState, type ChangeEvent } from "react";
 import { FileArchive, FileSpreadsheet, Upload } from "lucide-react";
 import { Button } from "../../shared/ui/Button";
-import { Error as ErrorMessage } from "../../shared/ui/Error";
+import { MyError as ErrorMessage } from "../../shared/ui/MyError";
 import { Success } from "../../shared/ui/Succcess";
 import { BUILT_IN_GLPI_IMPORT_PROFILES } from "../../features/backoffice/glpi-data/model/builtInGlpiImportProfiles";
 import { parseCsvWithGlpiProfile } from "../../features/backoffice/glpi-data/lib/parseCsvWithGlpiProfile";

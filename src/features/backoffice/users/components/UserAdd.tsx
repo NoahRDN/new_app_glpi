@@ -3,7 +3,7 @@ import { Button } from "../../../../shared/ui/Button";
 import { Input } from "../../../../shared/ui/Input";
 import { Label } from "../../../../shared/ui/Label";
 import { useAddUser } from "../hooks/useAddUser";
-import { Error } from "../../../../shared/ui/Error";
+import { MyError } from "../../../../shared/ui/MyError";
 import { Success } from "../../../../shared/ui/Succcess";
 
 type UserAddProps = {
@@ -30,7 +30,7 @@ export function UserAdd({onClose, onUserCreated} : UserAddProps){
     return(<>
     <div className="flex items-center gap-3 flex-col">
         {
-            error !== "" && <Error>{error}</Error>
+            error !== "" && <MyError>{error}</MyError>
         }
         {
             isSuccess && <Success>Utilisateur ajouté avec succès</Success>

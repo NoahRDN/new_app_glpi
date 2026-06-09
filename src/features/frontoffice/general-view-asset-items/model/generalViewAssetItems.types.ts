@@ -4,8 +4,12 @@ import type { Status } from "../../../../entities/status/model/status.types";
 import type { UserReference, UserTech } from "../../../../entities/user/model/user.types";
 
 export type GeneralViewAssetItems = {
+  id: number;
   name: string;
+
   itemType: string;
+  itemTypeLabel: string;
+
   dateCreation?: string | null;
   dateMod?: string | null;
   entity?: Entity | null;
@@ -39,6 +43,7 @@ export type GlpiAssetCommon = {
 export type GeneralViewAssetItemsFilters = {
   name: string;
   itemtypes: string[];
+  userId?: number;
 };
 
 export type GeneralViewAssetItemsPage = {

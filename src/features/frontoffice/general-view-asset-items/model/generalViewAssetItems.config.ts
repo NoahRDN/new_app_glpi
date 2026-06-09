@@ -1,8 +1,9 @@
 import type { GeneralViewAssetItems, GeneralViewAssetItemsFilters } from "./generalViewAssetItems.types";
 
-export const generalViewAssetItemDefault: GeneralViewAssetItems = 
-{
+export const generalViewAssetItemDefault: GeneralViewAssetItems = {
+  id: 0,
   itemType: "",
+  itemTypeLabel: "",
   dateCreation: "",
   dateMod: "",
   entity: {
