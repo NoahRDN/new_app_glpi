@@ -20,7 +20,7 @@ export type UpdateDocumentItem = Record<string, unknown> & {
 };
 
 export async function getDocumentItems(): Promise<DocumentItem[]> {
-  return glpiLegacyGet<DocumentItem[]>("/Document_Item");
+  return glpiLegacyGet<DocumentItem[]>("/Document_Item?range=0-9999");
 }
 
 export async function getDocumentItemsByAsset(params: {
