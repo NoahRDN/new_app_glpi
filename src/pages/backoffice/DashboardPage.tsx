@@ -1,14 +1,28 @@
 import { useDashboardStats } from "../../features/backoffice/dashboard/hooks/useDashboardStats";
 
 export function DashboardPage() {
-  const { stats, isLoading, error } = useDashboardStats();
+  const {
+    data: stats,
+    isPending,
+    isError,
+    error,
+    refetch,
+    isFetching,
+  } = useDashboardStats();
 
-  if (isLoading) {
+  if (isPending) {
     return <p>Chargement du dashboard...</p>;
   }
 
-  if (error) {
-    return <p>{error}</p>;
+  if (isError) {
+    return (
+      <div>
+        <p>Impossible de charger les statistiques du dashboard.</p>
+        {import.meta.env.DEV && (
+          <pre className="text-xs">{error instanceof Error ? error.message : String(error)}</pre>
+        )}
+      </div>
+    );
   }
 
   if (!stats) {
@@ -17,6 +31,10 @@ export function DashboardPage() {
 
   return (
     <div className="grid gap-6">
+      <button type="button" onClick={() => refetch()}>
+        {isFetching ? "Actualisation..." : "Actualiser"}
+      </button>
+
       <section className="rounded-3xl border p-6">
         <p className="text-sm text-[var(--text-secondary)]">
           Éléments du parc
@@ -36,9 +54,7 @@ export function DashboardPage() {
       </section>
 
       <section className="rounded-3xl border p-6">
-        <p className="text-sm text-[var(--text-secondary)]">
-          Tickets
-        </p>
+        <p className="text-sm text-[var(--text-secondary)]">Tickets</p>
         <p className="text-4xl font-semibold text-[var(--text-primary)]">
           {stats.totalTickets}
         </p>
