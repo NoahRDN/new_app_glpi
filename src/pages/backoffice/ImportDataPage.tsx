@@ -98,6 +98,25 @@ function getProfileById(profileId: string) {
   return BUILT_IN_GLPI_IMPORT_PROFILES.find((profile) => profile.id === profileId) ?? null;
 }
 
+function getImportStageLabel(stage: string) {
+  switch (stage) {
+    case "profile-parse":
+      return "Analyse du profil";
+    case "resource-create":
+      return "Création ressource";
+    case "ticket-link":
+      return "Liaison ticket / asset";
+    case "ticket-cost":
+      return "Création coût ticket";
+    case "image-import":
+      return "Import image / document";
+    case "rollback":
+      return "Rollback / réinitialisation";
+    default:
+      return stage;
+  }
+}
+
 export function ImportDataPage() {
   const [selectedFilesBySlot, setSelectedFilesBySlot] = useState<Partial<Record<ImportFileSlotId, File>>>({});
   const [selectedProfileIdsBySlot, setSelectedProfileIdsBySlot] = useState<Partial<Record<CsvImportFileSlotId, string[]>>>({});
@@ -449,10 +468,76 @@ export function ImportDataPage() {
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
 
-        {result && result.importedCount > 0 && (
-          <Success>
-            {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
-          </Success>
+        {result && (
+          <>
+            {result.failedCount === 0 ? (
+              <Success>
+                {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
+              </Success>
+            ) : (
+              <ErrorMessage>
+                {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
+              </ErrorMessage>
+            )}
+
+            {result.errors.length > 0 && (
+              <section
+                className="rounded-[18px] border p-6"
+                style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
+              >
+                <h3 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Détail des erreurs d'import
+                </h3>
+
+                <div className="mt-4 space-y-4">
+                  {result.errors.map((item, index) => (
+                    <article
+                      key={`${item.fileName}-${item.stage}-${index}`}
+                      className="rounded-[16px] border p-4"
+                      style={{ backgroundColor: "var(--panel-soft)", borderColor: "var(--panel-border)" }}
+                    >
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="rounded-[10px] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]" style={{ backgroundColor: "color-mix(in srgb, #ef4444 14%, transparent)", color: "var(--text-primary)" }}>
+                          {getImportStageLabel(item.stage)}
+                        </span>
+                        <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                          {item.fileName}
+                        </span>
+                        {item.profileLabel ? (
+                          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                            Profil: {item.profileLabel}
+                          </span>
+                        ) : null}
+                        {item.resourceId ? (
+                          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                            Ressource: {item.resourceId}
+                          </span>
+                        ) : null}
+                        {item.rowIndex !== undefined ? (
+                          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                            Ligne: {item.rowIndex + 2}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="mt-3 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                        {item.message}
+                      </p>
+
+                      {item.details ? (
+                        <pre
+                          className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-[12px] p-3 text-xs"
+                          style={{ backgroundColor: "color-mix(in srgb, var(--panel-bg) 75%, black 6%)", color: "var(--text-secondary)" }}
+                        >
+                          {item.details}
+                        </pre>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         {parsedFiles.length === 0 && parseErrors.length === 0 && (

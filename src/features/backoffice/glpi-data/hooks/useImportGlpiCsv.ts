@@ -1,17 +1,36 @@
 import { useState } from "react";
 import { createComputer } from "../../../../entities/computer/api/computer.api";
-import { createComputerModel, getComputerModels } from "../../../../entities/computer-model/api/computerModel.api";
-import { createDocument } from "../../../../entities/document/api/document.api";
-import { createDocumentItem } from "../../../../entities/document/api/documentItem.api";
-import { createLocation, getLocations } from "../../../../entities/location/api/location.api";
-import { createManufacturer, getManufacturers } from "../../../../entities/manufacturer/api/manufacturer.api";
-import { createMonitor } from "../../../../entities/monitor/api/monitor.api";
-import { createMonitorModel, getMonitorModels } from "../../../../entities/monitor-model/api/monitorModel.api";
-import { createState, getStates } from "../../../../entities/state/api/state.api";
-import { createTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
-import { createTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
+import {
+  createComputerModel,
+  deleteComputerModel,
+  getComputerModels,
+} from "../../../../entities/computer-model/api/computerModel.api";
+import { createDocument, deleteDocument } from "../../../../entities/document/api/document.api";
+import {
+  createDocumentItem,
+  deleteDocumentItem,
+} from "../../../../entities/document/api/documentItem.api";
+import {
+  createLocation,
+  deleteLocation,
+  getLocations,
+} from "../../../../entities/location/api/location.api";
+import {
+  createManufacturer,
+  deleteManufacturer,
+  getManufacturers,
+} from "../../../../entities/manufacturer/api/manufacturer.api";
+import { createMonitor, deleteMonitor } from "../../../../entities/monitor/api/monitor.api";
+import {
+  createMonitorModel,
+  deleteMonitorModel,
+  getMonitorModels,
+} from "../../../../entities/monitor-model/api/monitorModel.api";
+import { createState, deleteState, getStates } from "../../../../entities/state/api/state.api";
+import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
+import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
 import { getUsers } from "../../../../entities/user/api/user.api";
-import { createGlpiResourceItem } from "../api/glpiDataResource.api";
+import { createGlpiResourceItem, deleteGlpiResourceItem } from "../api/glpiDataResource.api";
 import { extractGlpiImageFilesFromZip } from "../lib/parseGlpiImagesZip";
 import { getGlpiDataResource, type GlpiDataResourceId } from "../model/glpiDataResource.config";
 import type {
@@ -28,8 +47,20 @@ type ImportFilesInput = {
 };
 
 type ImportError = {
+  details?: string;
   fileName: string;
   message: string;
+  profileLabel?: string;
+  resourceId?: GlpiDataResourceId | "documents" | "ticket-links" | "ticket-costs" | "rollback";
+  rollback?: boolean;
+  rowIndex?: number;
+  stage:
+    | "profile-parse"
+    | "resource-create"
+    | "ticket-link"
+    | "ticket-cost"
+    | "image-import"
+    | "rollback";
 };
 
 type ImportResult = {
@@ -54,6 +85,11 @@ type ImportedAssetReference = {
 type EvalImportContext = {
   assetReferencesByKey: Map<string, ImportedAssetReference>;
   ticketIdsByRef: Map<string, number>;
+};
+
+type RollbackAction = {
+  label: string;
+  run: () => Promise<void>;
 };
 
 const EVAL_ASSETS_PROFILE_ID = "glpi-eval-assets-juin-2026-v1";
@@ -210,7 +246,10 @@ function buildUserLookup(users: Awaited<ReturnType<typeof getUsers>>) {
 
 function createNameResolver<T extends { id: number; name: string }>(params: {
   createItem: (payload: { name: string }) => Promise<T>;
+  deleteItem: (id: number) => Promise<void>;
   getItems: () => Promise<T[]>;
+  rollbackActions: RollbackAction[];
+  rollbackLabel: string;
 }) {
   let itemsPromise: Promise<T[]> | null = null;
 
@@ -239,6 +278,10 @@ function createNameResolver<T extends { id: number; name: string }>(params: {
     }
 
     const createdItem = await params.createItem({ name: normalizedName });
+    params.rollbackActions.push({
+      label: `${params.rollbackLabel}#${createdItem.id}`,
+      run: () => params.deleteItem(createdItem.id),
+    });
     items.push(createdItem);
     return createdItem.id;
   };
@@ -259,26 +302,42 @@ function extractCreatedId(value: unknown) {
 async function importEvalAssetsFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
+  rollbackActions: RollbackAction[],
 ) {
   const resolveStateId = createNameResolver({
     createItem: createState,
+    deleteItem: deleteState,
     getItems: getStates,
+    rollbackActions,
+    rollbackLabel: "state",
   });
   const resolveLocationId = createNameResolver({
     createItem: createLocation,
+    deleteItem: deleteLocation,
     getItems: getLocations,
+    rollbackActions,
+    rollbackLabel: "location",
   });
   const resolveManufacturerId = createNameResolver({
     createItem: createManufacturer,
+    deleteItem: deleteManufacturer,
     getItems: getManufacturers,
+    rollbackActions,
+    rollbackLabel: "manufacturer",
   });
   const resolveComputerModelId = createNameResolver({
     createItem: createComputerModel,
+    deleteItem: deleteComputerModel,
     getItems: getComputerModels,
+    rollbackActions,
+    rollbackLabel: "computerModel",
   });
   const resolveMonitorModelId = createNameResolver({
     createItem: createMonitorModel,
+    deleteItem: deleteMonitorModel,
     getItems: getMonitorModels,
+    rollbackActions,
+    rollbackLabel: "monitorModel",
   });
   const users = await getUsers();
   const userLookup = buildUserLookup(users);
@@ -315,6 +374,10 @@ async function importEvalAssetsFile(
         model_id: await resolveMonitorModelId(data.modelName),
         name,
       });
+      rollbackActions.push({
+        label: `monitor#${createdMonitor.id}`,
+        run: () => deleteMonitor(createdMonitor.id),
+      });
 
       context.assetReferencesByKey.set(normalizeKey(name), {
         itemId: createdMonitor.id,
@@ -336,6 +399,10 @@ async function importEvalAssetsFile(
       ...commonPayload,
       model_id: await resolveComputerModelId(data.modelName),
       name,
+    });
+    rollbackActions.push({
+      label: `computer#${createdComputer.id}`,
+      run: () => deleteGlpiResourceItem(getGlpiDataResource("computers"), createdComputer.id),
     });
 
     context.assetReferencesByKey.set(normalizeKey(name), {
@@ -359,6 +426,7 @@ async function importEvalAssetsFile(
 async function importEvalTicketsFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
+  rollbackActions: RollbackAction[],
 ) {
   let importedCount = 0;
 
@@ -391,6 +459,13 @@ async function importEvalTicketsFile(
     }
 
     if (ticketId !== null) {
+      rollbackActions.push({
+        label: `ticket#${ticketId}`,
+        run: () => deleteGlpiResourceItem(getGlpiDataResource("tickets"), ticketId),
+      });
+    }
+
+    if (ticketId !== null) {
       const items = parseItemsList(data.itemsRaw);
 
       for (const itemReference of items) {
@@ -400,11 +475,19 @@ async function importEvalTicketsFile(
           continue;
         }
 
-        await createTicketItemLink({
+        const createdLink = await createTicketItemLink({
           itemId: linkedAsset.itemId,
           itemtype: linkedAsset.itemtype,
           ticketId,
         });
+        const linkId = extractCreatedId(createdLink);
+
+        if (linkId !== null) {
+          rollbackActions.push({
+            label: `ticketItemLink#${linkId}`,
+            run: () => deleteTicketItemLink(linkId),
+          });
+        }
       }
     }
 
@@ -417,6 +500,7 @@ async function importEvalTicketsFile(
 async function importEvalTicketCostsFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
+  rollbackActions: RollbackAction[],
 ) {
   let importedCount = 0;
 
@@ -435,7 +519,7 @@ async function importEvalTicketCostsFile(
       continue;
     }
 
-    await createTicketCost({
+    const createdTicketCost = await createTicketCost({
       input: {
         actiontime: Number(data.durationSecond ?? 0),
         cost_fixed: Number(data.fixedCost ?? 0),
@@ -443,6 +527,14 @@ async function importEvalTicketCostsFile(
         tickets_id: ticketId,
       },
     });
+    const ticketCostId = extractCreatedId(createdTicketCost);
+
+    if (ticketCostId !== null) {
+      rollbackActions.push({
+        label: `ticketCost#${ticketCostId}`,
+        run: () => deleteTicketCost(ticketCostId),
+      });
+    }
 
     importedCount += 1;
   }
@@ -454,6 +546,7 @@ async function importImageZipFiles(
   imageZipFiles: File[],
   importImages: boolean,
   context: EvalImportContext,
+  rollbackActions: RollbackAction[],
 ) {
   let importedCount = 0;
   let skippedCount = 0;
@@ -472,13 +565,22 @@ async function importImageZipFiles(
       const imageEntries = await extractGlpiImageFilesFromZip(imageZipFile);
 
       for (const imageEntry of imageEntries) {
-        importedCount += await importImageZipEntry(imageZipFile.name, imageEntry, context);
+        importedCount += await importImageZipEntry(
+          imageZipFile.name,
+          imageEntry,
+          context,
+          rollbackActions,
+        );
       }
     } catch (caughtError) {
       errors.push({
+        details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
         fileName: imageZipFile.name,
         message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+        resourceId: "documents",
+        stage: "image-import",
       });
+      throw caughtError;
     }
   }
 
@@ -493,6 +595,7 @@ async function importImageZipEntry(
   zipFileName: string,
   imageEntry: GlpiImageZipEntryUpload,
   context: EvalImportContext,
+  rollbackActions: RollbackAction[],
 ) {
   const createdDocument = await createDocument({
     input: {
@@ -505,14 +608,29 @@ async function importImageZipEntry(
   const documentId = extractCreatedId(createdDocument);
   const linkedAsset = context.assetReferencesByKey.get(normalizeKey(imageEntry.reference));
 
+  if (documentId !== null) {
+    rollbackActions.push({
+      label: `document#${documentId}`,
+      run: () => deleteDocument(documentId),
+    });
+  }
+
   if (documentId !== null && linkedAsset) {
-    await createDocumentItem({
+    const createdDocumentItem = await createDocumentItem({
       input: {
         documents_id: documentId,
         items_id: linkedAsset.itemId,
         itemtype: linkedAsset.itemtype,
       },
     });
+    const documentItemId = extractCreatedId(createdDocumentItem);
+
+    if (documentItemId !== null) {
+      rollbackActions.push({
+        label: `documentItem#${documentItemId}`,
+        run: () => deleteDocumentItem(documentItemId),
+      });
+    }
   }
 
   return 1;
@@ -521,27 +639,53 @@ async function importImageZipEntry(
 async function importRecognizedFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
+  rollbackActions: RollbackAction[],
 ) {
   if (file.profile.id === EVAL_ASSETS_PROFILE_ID) {
-    return importEvalAssetsFile(file, context);
+    return importEvalAssetsFile(file, context, rollbackActions);
   }
 
   if (file.profile.id === EVAL_TICKETS_PROFILE_ID) {
-    return importEvalTicketsFile(file, context);
+    return importEvalTicketsFile(file, context, rollbackActions);
   }
 
   if (file.profile.id === EVAL_TICKET_COSTS_PROFILE_ID) {
-    return importEvalTicketCostsFile(file, context);
+    return importEvalTicketCostsFile(file, context, rollbackActions);
   }
 
   let importedCount = 0;
 
   for (const item of getResourcePayloads(file)) {
-    await createGlpiResourceItem(getGlpiDataResource(item.resourceId), item.payload);
+    const resource = getGlpiDataResource(item.resourceId);
+    const createdItem = await createGlpiResourceItem(resource, item.payload);
+    const createdId = extractCreatedId(createdItem);
+
+    if (createdId !== null) {
+      rollbackActions.push({
+        label: `${item.resourceId}#${createdId}`,
+        run: () => deleteGlpiResourceItem(resource, createdId),
+      });
+    }
     importedCount += 1;
   }
 
   return importedCount;
+}
+
+async function rollbackImport(rollbackActions: RollbackAction[]) {
+  const rollbackErrors: string[] = [];
+
+  for (const action of [...rollbackActions].reverse()) {
+    try {
+      await action.run();
+    } catch (caughtError) {
+      rollbackErrors.push(
+        `${action.label}: ${caughtError instanceof Error ? caughtError.message : String(caughtError)}`,
+      );
+    }
+  }
+
+  return rollbackErrors;
 }
 
 export function useImportGlpiCsv(): UseImportGlpiCsvResult {
@@ -561,18 +705,36 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       assetReferencesByKey: new Map(),
       ticketIdsByRef: new Map(),
     };
+    const rollbackActions: RollbackAction[] = [];
 
     try {
       for (const file of recognizedFiles) {
         try {
-          importedCount += await importRecognizedFile(file, context);
+          importedCount += await importRecognizedFile(file, context, rollbackActions);
         } catch (caughtError) {
           errors.push({
+            details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
             fileName: file.fileName,
             message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+            profileLabel: file.profile.label,
+            resourceId: file.profile.id === EVAL_ASSETS_PROFILE_ID
+              ? "computers"
+              : file.profile.id === EVAL_TICKETS_PROFILE_ID
+                ? "tickets"
+                : file.profile.id === EVAL_TICKET_COSTS_PROFILE_ID
+                  ? "ticket-costs"
+                  : undefined,
+            stage:
+              file.profile.id === EVAL_ASSETS_PROFILE_ID
+                ? "resource-create"
+                : file.profile.id === EVAL_TICKETS_PROFILE_ID
+                  ? "ticket-link"
+                  : file.profile.id === EVAL_TICKET_COSTS_PROFILE_ID
+                    ? "ticket-cost"
+                    : "resource-create",
           });
+          throw caughtError;
         }
-
         skippedCount += file.invalidRows.length;
       }
 
@@ -580,13 +742,32 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
         imageZipFiles,
         importImages,
         context,
+        rollbackActions,
       );
 
       importedCount += imageImportResult.importedCount;
       skippedCount += imageImportResult.skippedCount;
       errors.push(...imageImportResult.errors);
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : String(caughtError));
+      const rollbackErrors = await rollbackImport(rollbackActions);
+      importedCount = 0;
+
+      const baseMessage =
+        caughtError instanceof Error ? caughtError.message : String(caughtError);
+      const rollbackMessage =
+        rollbackErrors.length > 0
+          ? ` Rollback partiel en erreur: ${rollbackErrors.join(" | ")}`
+          : " Rollback exécuté.";
+
+      errors.push({
+        details: rollbackErrors.join(" | "),
+        fileName: "import",
+        message: `${baseMessage}${rollbackMessage}`,
+        resourceId: "rollback",
+        rollback: true,
+        stage: "rollback",
+      });
+      setError(`${baseMessage}${rollbackMessage}`);
     } finally {
       setResult({
         errors,

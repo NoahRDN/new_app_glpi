@@ -273,8 +273,11 @@ export const GLPI_EVAL_ASSETS_JUIN_2026_PROFILE: GlpiImportProfile = {
   },
   previewColumns: [
     { field: "name", label: "Nom", resource: "computers" },
-    { field: "itemType", label: "Type", resource: "computers" },
     { field: "statusLabel", label: "Statut", resource: "computers" },
+    { field: "locationName", label: "Emplacement", resource: "computers" },
+    { field: "manufacturerName", label: "Fabricant", resource: "computers" },
+    { field: "itemType", label: "Type", resource: "computers" },
+    { field: "modelName", label: "Modèle", resource: "computers" },
     { field: "inventoryNumber", label: "Inventaire", resource: "computers" },
     { field: "userName", label: "Utilisateur", resource: "computers" },
   ],
@@ -347,10 +350,14 @@ export const GLPI_EVAL_TICKETS_JUIN_2026_PROFILE: GlpiImportProfile = {
   },
   previewColumns: [
     { field: "refTicket", label: "Réf", resource: "tickets" },
-    { field: "name", label: "Titre", resource: "tickets" },
+    { field: "dateLabel", label: "Date", resource: "tickets" },
+    { field: "hourLabel", label: "Heure", resource: "tickets" },
     { field: "typeLabel", label: "Type", resource: "tickets" },
+    { field: "name", label: "Titre", resource: "tickets" },
+    { field: "content", label: "Description", resource: "tickets" },
     { field: "statusLabel", label: "Statut", resource: "tickets" },
     { field: "priorityLabel", label: "Priorité", resource: "tickets" },
+    { field: "itemsRaw", label: "Items", resource: "tickets" },
   ],
 };
 
