@@ -3,6 +3,7 @@ import type {
   GlpiImageZipEntryPreview,
   GlpiImageZipEntryUpload,
 } from "../model/glpiImportProfile.types";
+import { normalizeImageFile } from "./imageFileNormalizer";
 
 const SUPPORTED_IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif)$/i;
 
@@ -20,28 +21,6 @@ function isIgnoredZipEntry(path: string) {
 
 function extractReferenceFromFileName(fileName: string) {
   return fileName.replace(/\.[^.]+$/, "").trim();
-}
-
-function getMimeTypeFromFileName(fileName: string) {
-  const normalizedFileName = fileName.toLowerCase();
-
-  if (normalizedFileName.endsWith(".png")) {
-    return "image/png";
-  }
-
-  if (normalizedFileName.endsWith(".jpg") || normalizedFileName.endsWith(".jpeg")) {
-    return "image/jpeg";
-  }
-
-  if (normalizedFileName.endsWith(".webp")) {
-    return "image/webp";
-  }
-
-  if (normalizedFileName.endsWith(".gif")) {
-    return "image/gif";
-  }
-
-  return "application/octet-stream";
 }
 
 async function loadZip(file: File) {
@@ -78,14 +57,19 @@ export async function extractGlpiImageFilesFromZip(file: File): Promise<GlpiImag
   return Promise.all(
     imageEntries.map(async (entry) => {
       const fileName = getZipEntryFileName(entry.name);
-      const blob = await entry.async("blob");
+      const rawBlob = await entry.async("blob");
+      const normalizedImage = await normalizeImageFile({
+        file: rawBlob,
+        fileName,
+      });
 
       return {
-        file: new File([blob], fileName, {
-          type: getMimeTypeFromFileName(fileName),
-        }),
-        fileName,
+        detectedType: normalizedImage.detectedType,
+        file: normalizedImage.file,
+        fileName: normalizedImage.fileName,
+        originalFileName: normalizedImage.originalFileName,
         reference: extractReferenceFromFileName(fileName),
+        wasRenamed: normalizedImage.wasRenamed,
       };
     }),
   );

@@ -5,7 +5,9 @@ type ErrorProps = {
 }
 
 export function Success({children} : ErrorProps){
-    return <span className="text-green-600 bg-green-100">
-        {children}
-    </span>
+    return <section  className="rounded-[30px] p-5 bg-(--panel-bg)">
+        <span className="text-green-600 bg-green-100">
+            {children}
+        </span>
+    </section>
 }

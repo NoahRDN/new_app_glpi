@@ -1,6 +1,7 @@
 import {
   glpiLegacyDelete,
   glpiLegacyGet,
+  glpiLegacyGetBlob,
   glpiLegacyPost,
   glpiLegacyPostFormData,
   glpiLegacyPut,
@@ -18,6 +19,8 @@ export type CreateDocumentWithFilePayload = {
   comment?: string;
   file: Blob;
   fileName: string;
+  items_id?: number;
+  itemtype?: string;
   name: string;
 };
 
@@ -31,6 +34,10 @@ export async function getDocuments(): Promise<Document[]> {
 
 export async function getDocument(documentId: number | string): Promise<Document> {
   return glpiLegacyGet<Document>(`/Document/${documentId}`);
+}
+
+export async function getDocumentFileBlob(documentId: number | string): Promise<Blob> {
+  return glpiLegacyGetBlob(`/Document/${documentId}?alt=media`);
 }
 
 export async function createDocument(payload: CreateDocument): Promise<Document> {
@@ -48,6 +55,9 @@ export async function createDocumentWithFile(
       input: {
         comment: payload.comment,
         name: payload.name,
+        items_id: payload.items_id,
+        itemtype: payload.itemtype,
+        _only_if_upload_succeed: true,
       },
     }),
   );

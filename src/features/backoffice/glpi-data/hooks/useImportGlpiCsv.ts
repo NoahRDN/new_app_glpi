@@ -10,10 +10,6 @@ import {
   deleteDocument,
 } from "../../../../entities/document/api/document.api";
 import {
-  createDocumentItem,
-  deleteDocumentItem,
-} from "../../../../entities/document/api/documentItem.api";
-import {
   createLocation,
   deleteLocation,
   findLocationByName,
@@ -37,6 +33,7 @@ import {
 import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
 import { getUsers } from "../../../../entities/user/api/user.api";
+import { AppError, extractErrorDetail } from "../../../../shared/errors/AppError";
 import { createGlpiResourceItem, deleteGlpiResourceItem } from "../api/glpiDataResource.api";
 import { extractGlpiImageFilesFromZip } from "../lib/parseGlpiImagesZip";
 import { getGlpiDataResource, type GlpiDataResourceId } from "../model/glpiDataResource.config";
@@ -70,6 +67,13 @@ type ImportError = {
     | "rollback";
 };
 
+type ImportWarning = {
+  details?: string;
+  fileName: string;
+  message: string;
+  resourceId: string;
+};
+
 type ImportResult = {
   errors: ImportError[];
   failedCount: number;
@@ -77,6 +81,7 @@ type ImportResult = {
   importedCount: number;
   resources: ImportResourceSummary[];
   skippedCount: number;
+  warnings: ImportWarning[];
 };
 
 type UseImportGlpiCsvResult = {
@@ -122,6 +127,7 @@ type ImportExecutionSummary = {
   importedCount: number;
   resources: ImportResourceSummary[];
   skippedCount?: number;
+  warnings?: ImportWarning[];
 };
 
 const EVAL_ASSETS_PROFILE_ID = "glpi-eval-assets-juin-2026-v1";
@@ -274,6 +280,48 @@ function buildUserLookup(users: Awaited<ReturnType<typeof getUsers>>) {
   });
 
   return byName;
+}
+
+function getImportErrorMessage(error: unknown) {
+  if (error instanceof AppError) {
+    return extractErrorDetail(error.details ?? "") ?? error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+function getImportErrorDetails(error: unknown) {
+  if (error instanceof AppError) {
+    const extractedDetails = extractErrorDetail(error.details ?? "");
+
+    return [
+      `Code: ${error.code}`,
+      error.status !== undefined ? `Status: ${error.status}` : undefined,
+      `Message: ${error.message}`,
+      extractedDetails ? `Détail GLPI: ${extractedDetails}` : undefined,
+      error.details ? `Réponse brute: ${error.details}` : undefined,
+    ]
+      .filter((item): item is string => Boolean(item))
+      .join("\n");
+  }
+
+  if (error instanceof Error) {
+    return error.stack ?? error.message;
+  }
+
+  return String(error);
+}
+
+function getDetectedTypeLabel(detectedType: string) {
+  if (detectedType === "jpg") {
+    return "JPEG";
+  }
+
+  return detectedType.toUpperCase();
 }
 
 function createNameResolver<T extends { id: number; name: string }>(params: {
@@ -641,6 +689,7 @@ async function importImageZipFiles(
   let skippedCount = 0;
   const errors: ImportError[] = [];
   const files: ImportFileSummary[] = [];
+  const warnings: ImportWarning[] = [];
 
   if (!importImages) {
     return {
@@ -670,6 +719,19 @@ async function importImageZipFiles(
       const imageEntries = await extractGlpiImageFilesFromZip(imageZipFile);
       let fileImportedCount = 0;
 
+      imageEntries.forEach((imageEntry) => {
+        if (!imageEntry.wasRenamed || !imageEntry.originalFileName) {
+          return;
+        }
+
+        warnings.push({
+          details: `Le contenu réel détecté est ${getDetectedTypeLabel(imageEntry.detectedType ?? "")}, mais l'extension du fichier ne correspondait pas.`,
+          fileName: imageEntry.originalFileName,
+          message: `Image corrigée automatiquement : ${imageEntry.originalFileName} a été importée sous le nom ${imageEntry.fileName}.`,
+          resourceId: "documents",
+        });
+      });
+
       for (const imageEntry of imageEntries) {
         const importedEntryCount = await importImageZipEntry(
           imageZipFile.name,
@@ -691,9 +753,9 @@ async function importImageZipFiles(
       });
     } catch (caughtError) {
       errors.push({
-        details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
+        details: getImportErrorDetails(caughtError),
         fileName: imageZipFile.name,
-        message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+        message: getImportErrorMessage(caughtError),
         resourceId: "documents",
         stage: "image-import",
       });
@@ -714,6 +776,7 @@ async function importImageZipFiles(
       },
     ],
     skippedCount,
+    warnings,
   };
 }
 
@@ -729,39 +792,31 @@ async function importImageZipEntry(
     return 0;
   }
 
+  const comment = imageEntry.wasRenamed && imageEntry.originalFileName
+    ? `Import image zip: ${zipFileName}. Nom original: ${imageEntry.originalFileName}, corrigé en: ${imageEntry.fileName}.`
+    : `Import image zip: ${zipFileName}`;
+
   const createdDocument = await createDocumentWithFile({
-    comment: `Import image zip: ${zipFileName}`,
+    comment,
     file: imageEntry.file,
     fileName: imageEntry.fileName,
+    items_id: linkedAsset.itemId,
+    itemtype: linkedAsset.itemtype,
     name: imageEntry.reference || imageEntry.fileName,
   });
 
   const documentId = extractCreatedId(createdDocument);
 
   if (documentId === null) {
-    return 0;
+    throw new Error(
+      `Échec de l'import de l'image ${imageEntry.fileName}: document GLPI invalide.`,
+    );
   }
 
   rollbackActions.push({
     label: `document#${documentId}`,
     run: () => deleteDocument(documentId),
   });
-
-  const createdDocumentItem = await createDocumentItem({
-    input: {
-      documents_id: documentId,
-      items_id: linkedAsset.itemId,
-      itemtype: linkedAsset.itemtype,
-    },
-  });
-  const documentItemId = extractCreatedId(createdDocumentItem);
-
-  if (documentItemId !== null) {
-    rollbackActions.push({
-      label: `documentItem#${documentItemId}`,
-      run: () => deleteDocumentItem(documentItemId),
-    });
-  }
 
   return 1;
 }
@@ -820,7 +875,7 @@ async function rollbackImport(rollbackActions: RollbackAction[]) {
       await action.run();
     } catch (caughtError) {
       rollbackErrors.push(
-        `${action.label}: ${caughtError instanceof Error ? caughtError.message : String(caughtError)}`,
+        `${action.label}: ${getImportErrorMessage(caughtError)}`,
       );
     }
   }
@@ -843,6 +898,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
     const errors: ImportError[] = [];
     const fileSummaries: ImportFileSummary[] = [];
     const resourceSummaryMap = new Map<string, ImportResourceSummary>();
+    const warnings: ImportWarning[] = [];
     const context: EvalImportContext = {
       assetReferencesByKey: new Map(),
       ticketIdsByRef: new Map(),
@@ -876,9 +932,9 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
           });
         } catch (caughtError) {
           errors.push({
-            details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
+            details: getImportErrorDetails(caughtError),
             fileName: file.fileName,
-            message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+            message: getImportErrorMessage(caughtError),
             profileLabel: file.profile.label,
             resourceId: file.profile.id === EVAL_ASSETS_PROFILE_ID
               ? "computers"
@@ -912,6 +968,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       skippedCount += imageImportResult.skippedCount ?? 0;
       errors.push(...(imageImportResult.errors ?? []));
       fileSummaries.push(...(imageImportResult.files ?? []));
+      warnings.push(...(imageImportResult.warnings ?? []));
       imageImportResult.resources.forEach((item) => {
         const current = resourceSummaryMap.get(item.resourceId);
 
@@ -927,15 +984,19 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       const rollbackErrors = await rollbackImport(rollbackActions);
       importedCount = 0;
 
-      const baseMessage =
-        caughtError instanceof Error ? caughtError.message : String(caughtError);
+      const baseMessage = getImportErrorMessage(caughtError);
       const rollbackMessage =
         rollbackErrors.length > 0
           ? ` Rollback partiel en erreur: ${rollbackErrors.join(" | ")}`
           : " Rollback exécuté.";
 
       errors.push({
-        details: rollbackErrors.join(" | "),
+        details: [
+          getImportErrorDetails(caughtError),
+          rollbackErrors.length > 0
+            ? `Erreurs de rollback:\n${rollbackErrors.join("\n")}`
+            : "Rollback exécuté sans erreur supplémentaire.",
+        ].join("\n\n"),
         fileName: "import",
         message: `${baseMessage}${rollbackMessage}`,
         resourceId: "rollback",
@@ -951,6 +1012,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
         importedCount,
         resources: [...resourceSummaryMap.values()],
         skippedCount,
+        warnings,
       });
       setIsImporting(false);
     }
