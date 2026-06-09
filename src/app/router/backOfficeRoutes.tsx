@@ -2,7 +2,6 @@ import type { RouteObject } from "react-router";
 import { BackOfficeLayout } from "../layouts/BackOfficeLayout";
 import { ProtectedBackofficeRoute } from "../../features/backoffice-auth/components/ProtectedBackofficeRoute";
 import { DashboardOtherPage } from "../../pages/other/backoffice/DashboardOtherPage";
-import { TicketsPage } from "../../pages/other/backoffice/TicketsPage";
 import { ParcsPage } from "../../pages/other/backoffice/ParcPage";
 import { KnowledgeBasePage } from "../../pages/other/backoffice/KnowledgeBasePage";
 import { UsersPage } from "../../pages/backoffice/UsersPage";
@@ -14,6 +13,8 @@ import { ComputerPage } from "../../pages/backoffice/ComputerPage";
 import { PrinterPage } from "../../pages/backoffice/PrinterPage";
 import { MemoTest } from "../../pages/other/backoffice/MemoTest";
 import { DashboardPage } from "../../pages/backoffice/DashboardPage";
+import { TicketsPage as BackOfficeTicketsPage } from "../../pages/backoffice/TicketsPage";
+import { TicketDetailPage } from "../../pages/backoffice/TicketDetailPage";
 
 export const backOfficeRoutes: RouteObject = {
   children: [
@@ -39,7 +40,11 @@ export const backOfficeRoutes: RouteObject = {
         },
         {
           path: "tickets",
-          element: <TicketsPage />,
+          element: <BackOfficeTicketsPage />,
+        },
+        {
+          path: "tickets/:ticketId",
+          element: <TicketDetailPage />,
         },
         {
           path: "parcs",

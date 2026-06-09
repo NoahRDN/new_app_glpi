@@ -5,6 +5,10 @@ export async function getTickets(): Promise<Ticket[]> {
   return glpiGet<Ticket[]>("/Assistance/Ticket");
 }
 
+export async function getTicket(ticketId: number | string): Promise<Ticket> {
+  return glpiGet<Ticket>(`/Assistance/Ticket/${ticketId}`);
+}
+
 export async function createTicket(
   payload: CreateTicketPayload,
 ): Promise<CreateTicketResponse> {
