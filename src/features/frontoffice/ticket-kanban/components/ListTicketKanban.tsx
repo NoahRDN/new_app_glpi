@@ -1,5 +1,5 @@
 import { Eye, RefreshCcw } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Button } from "../../../../shared/ui/Button";
@@ -11,6 +11,7 @@ import { useDebounce } from "../../../../shared/hooks/useDebounce";
 import type { TicketFilters } from "../../../../entities/ticket/model/ticket.types";
 import { ticketFilterDefault } from "../../../../entities/ticket/model/ticket.config";
 import { Select } from "../../../../shared/ui/Select";
+import { findTicketKanbanGroup, groupTicketsByKanban } from "../lib/ticketKanban";
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -46,6 +47,9 @@ export function ListTicketKanban() {
   } = useTicketsPage(page, limit, debouncedFilters);
 
   const tickets = ticketsPage?.data ?? [];
+  useMemo(() => {
+    return groupTicketsByKanban(tickets);
+  }, [tickets]);
   const total = ticketsPage?.total ?? 0;
   const hasNextPage = (page + 1) * limit < total;
 
@@ -147,7 +151,9 @@ export function ListTicketKanban() {
           <td className="border border-(--panel-border) px-4 py-4">{index + (page * limit) + 1}</td>
           <td className="border border-(--panel-border) px-4 py-4">{ticket.name}</td>
           <td className="border border-(--panel-border) px-4 py-4">{ticket.status?.name ?? "-"}</td>
-          <td className="border border-(--panel-border) px-4 py-4">status kanban</td>
+          <td className="border border-(--panel-border) px-4 py-4">
+            {findTicketKanbanGroup(ticket)?.label ?? "-"}
+          </td>
           <td className="border border-(--panel-border) px-4 py-4">{ticket.priority}</td>
           <td className="border border-(--panel-border) px-4 py-4">{ticket.user_recipient?.name ?? "-"}</td>
           <td className="border border-(--panel-border) px-4 py-4">{ticket.category?.name ?? "-"}</td>
