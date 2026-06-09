@@ -25,6 +25,10 @@ export async function getTicketAssetLinks(): Promise<TicketAssetLink[]> {
   return glpiLegacyGet<TicketAssetLink[]>("/Item_Ticket");
 }
 
+export async function getTicketItemLinks(): Promise<TicketAssetLink[]> {
+  return getTicketAssetLinks();
+}
+
 export async function getTicketAssetLinksByTicketId(
   ticketId: number,
 ): Promise<TicketAssetLink[]> {
@@ -66,7 +70,18 @@ export async function linkAssetToTicket(payload: {
   });
 }
 
+export async function createTicketItemLink(payload: {
+  ticketId: number;
+  itemtype: string;
+  itemId: number;
+}) {
+  return linkAssetToTicket(payload);
+}
+
 export async function unlinkAssetFromTicket(linkId: number) {
   return glpiLegacyDelete(`/Item_Ticket/${linkId}`);
 }
 
+export async function deleteTicketItemLink(linkId: number) {
+  return unlinkAssetFromTicket(linkId);
+}

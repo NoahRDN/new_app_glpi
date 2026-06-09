@@ -9,6 +9,12 @@ export async function getUsers(): Promise<User[]> {
   return mapGlpiUsersToUsers(glpiUsers);
 }
 
+export async function getUser(userId: number | string): Promise<User> {
+  const glpiUser = await glpiGet<GlpiUser>(`/Administration/User/${userId}`);
+
+  return mapGlpiUserToUser(glpiUser);
+}
+
 export async function createUser(createUser : CreateUser) : Promise<User>{
 
   const glpiUser = await glpiPost<GlpiUser>("/Administration/User", createUser);
