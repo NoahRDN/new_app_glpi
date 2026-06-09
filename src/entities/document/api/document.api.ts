@@ -53,6 +53,7 @@ export async function createDocumentWithFile(
       input: {
         comment: payload.comment,
         name: payload.name,
+        _only_if_upload_succeed: true,
       },
     }),
   );

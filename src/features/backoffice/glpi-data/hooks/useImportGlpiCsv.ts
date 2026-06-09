@@ -37,6 +37,7 @@ import {
 import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
 import { getUsers } from "../../../../entities/user/api/user.api";
+import { AppError, extractErrorDetail } from "../../../../shared/errors/AppError";
 import { createGlpiResourceItem, deleteGlpiResourceItem } from "../api/glpiDataResource.api";
 import { extractGlpiImageFilesFromZip } from "../lib/parseGlpiImagesZip";
 import { getGlpiDataResource, type GlpiDataResourceId } from "../model/glpiDataResource.config";
@@ -274,6 +275,40 @@ function buildUserLookup(users: Awaited<ReturnType<typeof getUsers>>) {
   });
 
   return byName;
+}
+
+function getImportErrorMessage(error: unknown) {
+  if (error instanceof AppError) {
+    return extractErrorDetail(error.details ?? "") ?? error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+function getImportErrorDetails(error: unknown) {
+  if (error instanceof AppError) {
+    const extractedDetails = extractErrorDetail(error.details ?? "");
+
+    return [
+      `Code: ${error.code}`,
+      error.status !== undefined ? `Status: ${error.status}` : undefined,
+      `Message: ${error.message}`,
+      extractedDetails ? `Détail GLPI: ${extractedDetails}` : undefined,
+      error.details ? `Réponse brute: ${error.details}` : undefined,
+    ]
+      .filter((item): item is string => Boolean(item))
+      .join("\n");
+  }
+
+  if (error instanceof Error) {
+    return error.stack ?? error.message;
+  }
+
+  return String(error);
 }
 
 function createNameResolver<T extends { id: number; name: string }>(params: {
@@ -691,9 +726,9 @@ async function importImageZipFiles(
       });
     } catch (caughtError) {
       errors.push({
-        details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
+        details: getImportErrorDetails(caughtError),
         fileName: imageZipFile.name,
-        message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+        message: getImportErrorMessage(caughtError),
         resourceId: "documents",
         stage: "image-import",
       });
@@ -739,7 +774,9 @@ async function importImageZipEntry(
   const documentId = extractCreatedId(createdDocument);
 
   if (documentId === null) {
-    return 0;
+    throw new Error(
+      `Échec de l'import de l'image ${imageEntry.fileName}: document GLPI invalide.`,
+    );
   }
 
   rollbackActions.push({
@@ -820,7 +857,7 @@ async function rollbackImport(rollbackActions: RollbackAction[]) {
       await action.run();
     } catch (caughtError) {
       rollbackErrors.push(
-        `${action.label}: ${caughtError instanceof Error ? caughtError.message : String(caughtError)}`,
+        `${action.label}: ${getImportErrorMessage(caughtError)}`,
       );
     }
   }
@@ -876,9 +913,9 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
           });
         } catch (caughtError) {
           errors.push({
-            details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
+            details: getImportErrorDetails(caughtError),
             fileName: file.fileName,
-            message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+            message: getImportErrorMessage(caughtError),
             profileLabel: file.profile.label,
             resourceId: file.profile.id === EVAL_ASSETS_PROFILE_ID
               ? "computers"
@@ -927,15 +964,19 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       const rollbackErrors = await rollbackImport(rollbackActions);
       importedCount = 0;
 
-      const baseMessage =
-        caughtError instanceof Error ? caughtError.message : String(caughtError);
+      const baseMessage = getImportErrorMessage(caughtError);
       const rollbackMessage =
         rollbackErrors.length > 0
           ? ` Rollback partiel en erreur: ${rollbackErrors.join(" | ")}`
           : " Rollback exécuté.";
 
       errors.push({
-        details: rollbackErrors.join(" | "),
+        details: [
+          getImportErrorDetails(caughtError),
+          rollbackErrors.length > 0
+            ? `Erreurs de rollback:\n${rollbackErrors.join("\n")}`
+            : "Rollback exécuté sans erreur supplémentaire.",
+        ].join("\n\n"),
         fileName: "import",
         message: `${baseMessage}${rollbackMessage}`,
         resourceId: "rollback",
