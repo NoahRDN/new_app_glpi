@@ -1,4 +1,10 @@
-import { glpiDelete, glpiGet, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
+import {
+  glpiDelete,
+  glpiGet,
+  glpiGetPaginated,
+  glpiPatch,
+  glpiPost,
+} from "../../../shared/api/glpiClient";
 import type { Model } from "../../model/model/model.types";
 
 export type CreateMonitorModel = Record<string, unknown> & {
@@ -15,6 +21,23 @@ export async function getMonitorModels(): Promise<Model[]> {
 
 export async function getMonitorModel(monitorModelId: number | string): Promise<Model> {
   return glpiGet<Model>(`/Dropdowns/MonitorModel/${monitorModelId}`);
+}
+
+export async function findMonitorModelByName(name: string): Promise<Model | undefined> {
+  const params = new URLSearchParams({
+    start: "0",
+    limit: "10",
+  });
+
+  params.set("filter", `name==${name}`);
+
+  const page = await glpiGetPaginated<Model>(
+    `/Dropdowns/MonitorModel?${params.toString()}`,
+  );
+
+  return page.data.find(
+    (model) => model.name.trim().toLowerCase() === name.trim().toLowerCase(),
+  );
 }
 
 export async function createMonitorModel(payload: CreateMonitorModel): Promise<Model> {

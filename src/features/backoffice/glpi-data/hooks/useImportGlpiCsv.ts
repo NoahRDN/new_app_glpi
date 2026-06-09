@@ -3,7 +3,7 @@ import { createComputer } from "../../../../entities/computer/api/computer.api";
 import {
   createComputerModel,
   deleteComputerModel,
-  getComputerModels,
+  findComputerModelByName,
 } from "../../../../entities/computer-model/api/computerModel.api";
 import { createDocument, deleteDocument } from "../../../../entities/document/api/document.api";
 import {
@@ -13,20 +13,24 @@ import {
 import {
   createLocation,
   deleteLocation,
-  getLocations,
+  findLocationByName,
 } from "../../../../entities/location/api/location.api";
 import {
   createManufacturer,
   deleteManufacturer,
-  getManufacturers,
+  findManufacturerByName,
 } from "../../../../entities/manufacturer/api/manufacturer.api";
 import { createMonitor, deleteMonitor } from "../../../../entities/monitor/api/monitor.api";
 import {
   createMonitorModel,
   deleteMonitorModel,
-  getMonitorModels,
+  findMonitorModelByName,
 } from "../../../../entities/monitor-model/api/monitorModel.api";
-import { createState, deleteState, getStates } from "../../../../entities/state/api/state.api";
+import {
+  createState,
+  deleteState,
+  findStateByName,
+} from "../../../../entities/state/api/state.api";
 import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
 import { getUsers } from "../../../../entities/user/api/user.api";
@@ -66,7 +70,9 @@ type ImportError = {
 type ImportResult = {
   errors: ImportError[];
   failedCount: number;
+  files: ImportFileSummary[];
   importedCount: number;
+  resources: ImportResourceSummary[];
   skippedCount: number;
 };
 
@@ -90,6 +96,29 @@ type EvalImportContext = {
 type RollbackAction = {
   label: string;
   run: () => Promise<void>;
+};
+
+type ImportResourceSummary = {
+  importedCount: number;
+  label: string;
+  resourceId: string;
+  skippedCount: number;
+};
+
+type ImportFileSummary = {
+  fileName: string;
+  importedCount: number;
+  profileLabel?: string;
+  resourceIds: string[];
+  skippedCount: number;
+};
+
+type ImportExecutionSummary = {
+  errors?: ImportError[];
+  files?: ImportFileSummary[];
+  importedCount: number;
+  resources: ImportResourceSummary[];
+  skippedCount?: number;
 };
 
 const EVAL_ASSETS_PROFILE_ID = "glpi-eval-assets-juin-2026-v1";
@@ -247,19 +276,11 @@ function buildUserLookup(users: Awaited<ReturnType<typeof getUsers>>) {
 function createNameResolver<T extends { id: number; name: string }>(params: {
   createItem: (payload: { name: string }) => Promise<T>;
   deleteItem: (id: number) => Promise<void>;
-  getItems: () => Promise<T[]>;
+  findItemByName: (name: string) => Promise<T | undefined>;
   rollbackActions: RollbackAction[];
   rollbackLabel: string;
 }) {
-  let itemsPromise: Promise<T[]> | null = null;
-
-  async function loadItems() {
-    if (itemsPromise === null) {
-      itemsPromise = params.getItems();
-    }
-
-    return itemsPromise;
-  }
+  const cache = new Map<string, number>();
 
   return async function resolveIdByName(name: string | number | boolean | undefined) {
     const normalizedName = typeof name === "string" ? name.trim() : "";
@@ -268,22 +289,38 @@ function createNameResolver<T extends { id: number; name: string }>(params: {
       return undefined;
     }
 
-    const items = await loadItems();
-    const existingItem = items.find(
-      (item) => normalizeKey(item.name) === normalizeKey(normalizedName),
-    );
+    const cacheKey = normalizeKey(normalizedName);
+    const cachedId = cache.get(cacheKey);
+
+    if (cachedId !== undefined) {
+      return cachedId;
+    }
+
+    const existingItem = await params.findItemByName(normalizedName);
 
     if (existingItem) {
+      cache.set(cacheKey, existingItem.id);
       return existingItem.id;
     }
 
-    const createdItem = await params.createItem({ name: normalizedName });
-    params.rollbackActions.push({
-      label: `${params.rollbackLabel}#${createdItem.id}`,
-      run: () => params.deleteItem(createdItem.id),
-    });
-    items.push(createdItem);
-    return createdItem.id;
+    try {
+      const createdItem = await params.createItem({ name: normalizedName });
+      params.rollbackActions.push({
+        label: `${params.rollbackLabel}#${createdItem.id}`,
+        run: () => params.deleteItem(createdItem.id),
+      });
+      cache.set(cacheKey, createdItem.id);
+      return createdItem.id;
+    } catch (caughtError) {
+      const itemAfterFailedCreate = await params.findItemByName(normalizedName);
+
+      if (itemAfterFailedCreate) {
+        cache.set(cacheKey, itemAfterFailedCreate.id);
+        return itemAfterFailedCreate.id;
+      }
+
+      throw caughtError;
+    }
   };
 }
 
@@ -303,39 +340,39 @@ async function importEvalAssetsFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
-) {
+) : Promise<ImportExecutionSummary> {
   const resolveStateId = createNameResolver({
     createItem: createState,
     deleteItem: deleteState,
-    getItems: getStates,
+    findItemByName: findStateByName,
     rollbackActions,
     rollbackLabel: "state",
   });
   const resolveLocationId = createNameResolver({
     createItem: createLocation,
     deleteItem: deleteLocation,
-    getItems: getLocations,
+    findItemByName: findLocationByName,
     rollbackActions,
     rollbackLabel: "location",
   });
   const resolveManufacturerId = createNameResolver({
     createItem: createManufacturer,
     deleteItem: deleteManufacturer,
-    getItems: getManufacturers,
+    findItemByName: findManufacturerByName,
     rollbackActions,
     rollbackLabel: "manufacturer",
   });
   const resolveComputerModelId = createNameResolver({
     createItem: createComputerModel,
     deleteItem: deleteComputerModel,
-    getItems: getComputerModels,
+    findItemByName: findComputerModelByName,
     rollbackActions,
     rollbackLabel: "computerModel",
   });
   const resolveMonitorModelId = createNameResolver({
     createItem: createMonitorModel,
     deleteItem: deleteMonitorModel,
-    getItems: getMonitorModels,
+    findItemByName: findMonitorModelByName,
     rollbackActions,
     rollbackLabel: "monitorModel",
   });
@@ -343,6 +380,8 @@ async function importEvalAssetsFile(
   const userLookup = buildUserLookup(users);
 
   let importedCount = 0;
+  let computerCount = 0;
+  let monitorCount = 0;
 
   for (const row of file.rows) {
     const data = getRowBucket(row, "computers");
@@ -392,6 +431,7 @@ async function importEvalAssetsFile(
       }
 
       importedCount += 1;
+      monitorCount += 1;
       continue;
     }
 
@@ -418,17 +458,35 @@ async function importEvalAssetsFile(
     }
 
     importedCount += 1;
+    computerCount += 1;
   }
 
-  return importedCount;
+  return {
+    importedCount,
+    resources: [
+      {
+        importedCount: computerCount,
+        label: "Ordinateurs",
+        resourceId: "computers",
+        skippedCount: 0,
+      },
+      {
+        importedCount: monitorCount,
+        label: "Moniteurs",
+        resourceId: "monitors",
+        skippedCount: 0,
+      },
+    ].filter((item) => item.importedCount > 0),
+  };
 }
 
 async function importEvalTicketsFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
-) {
+): Promise<ImportExecutionSummary> {
   let importedCount = 0;
+  let ticketLinkCount = 0;
 
   for (const row of file.rows) {
     const data = getRowBucket(row, "tickets");
@@ -488,20 +546,38 @@ async function importEvalTicketsFile(
             run: () => deleteTicketItemLink(linkId),
           });
         }
+
+        ticketLinkCount += 1;
       }
     }
 
     importedCount += 1;
   }
 
-  return importedCount;
+  return {
+    importedCount,
+    resources: [
+      {
+        importedCount,
+        label: "Tickets",
+        resourceId: "tickets",
+        skippedCount: 0,
+      },
+      {
+        importedCount: ticketLinkCount,
+        label: "Liaisons ticket / élément",
+        resourceId: "ticket-links",
+        skippedCount: 0,
+      },
+    ].filter((item) => item.importedCount > 0),
+  };
 }
 
 async function importEvalTicketCostsFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
-) {
+): Promise<ImportExecutionSummary> {
   let importedCount = 0;
 
   for (const row of file.rows) {
@@ -539,7 +615,17 @@ async function importEvalTicketCostsFile(
     importedCount += 1;
   }
 
-  return importedCount;
+  return {
+    importedCount,
+    resources: [
+      {
+        importedCount,
+        label: "Coûts de ticket",
+        resourceId: "ticket-costs",
+        skippedCount: 0,
+      },
+    ],
+  };
 }
 
 async function importImageZipFiles(
@@ -547,15 +633,31 @@ async function importImageZipFiles(
   importImages: boolean,
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
-) {
+): Promise<ImportExecutionSummary> {
   let importedCount = 0;
-  let skippedCount = 0;
+  const skippedCount = 0;
   const errors: ImportError[] = [];
+  const files: ImportFileSummary[] = [];
 
   if (!importImages) {
     return {
       errors,
+      files: imageZipFiles.map((file) => ({
+        fileName: file.name,
+        importedCount: 0,
+        profileLabel: "Archive images / documents ignorée",
+        resourceIds: ["images-zip"],
+        skippedCount: 1,
+      })),
       importedCount,
+      resources: [
+        {
+          importedCount: 0,
+          label: "Images ZIP ignorées",
+          resourceId: "images-zip",
+          skippedCount: imageZipFiles.length,
+        },
+      ],
       skippedCount: imageZipFiles.length,
     };
   }
@@ -563,15 +665,26 @@ async function importImageZipFiles(
   for (const imageZipFile of imageZipFiles) {
     try {
       const imageEntries = await extractGlpiImageFilesFromZip(imageZipFile);
+      let fileImportedCount = 0;
 
       for (const imageEntry of imageEntries) {
-        importedCount += await importImageZipEntry(
+        const importedEntryCount = await importImageZipEntry(
           imageZipFile.name,
           imageEntry,
           context,
           rollbackActions,
         );
+        importedCount += importedEntryCount;
+        fileImportedCount += importedEntryCount;
       }
+
+      files.push({
+        fileName: imageZipFile.name,
+        importedCount: fileImportedCount,
+        profileLabel: "Archive images / documents",
+        resourceIds: ["documents"],
+        skippedCount: 0,
+      });
     } catch (caughtError) {
       errors.push({
         details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
@@ -586,7 +699,16 @@ async function importImageZipFiles(
 
   return {
     errors,
+    files,
     importedCount,
+    resources: [
+      {
+        importedCount,
+        label: "Documents / images",
+        resourceId: "documents",
+        skippedCount,
+      },
+    ],
     skippedCount,
   };
 }
@@ -640,7 +762,7 @@ async function importRecognizedFile(
   file: RecognizedGlpiParsedFile,
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
-) {
+): Promise<ImportExecutionSummary> {
   if (file.profile.id === EVAL_ASSETS_PROFILE_ID) {
     return importEvalAssetsFile(file, context, rollbackActions);
   }
@@ -654,6 +776,7 @@ async function importRecognizedFile(
   }
 
   let importedCount = 0;
+  const resourceCountById = new Map<string, number>();
 
   for (const item of getResourcePayloads(file)) {
     const resource = getGlpiDataResource(item.resourceId);
@@ -667,9 +790,18 @@ async function importRecognizedFile(
       });
     }
     importedCount += 1;
+    resourceCountById.set(item.resourceId, (resourceCountById.get(item.resourceId) ?? 0) + 1);
   }
 
-  return importedCount;
+  return {
+    importedCount,
+    resources: [...resourceCountById.entries()].map(([resourceId, count]) => ({
+      importedCount: count,
+      label: getGlpiDataResource(resourceId as GlpiDataResourceId).label,
+      resourceId,
+      skippedCount: 0,
+    })),
+  };
 }
 
 async function rollbackImport(rollbackActions: RollbackAction[]) {
@@ -701,6 +833,8 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
     let importedCount = 0;
     let skippedCount = 0;
     const errors: ImportError[] = [];
+    const fileSummaries: ImportFileSummary[] = [];
+    const resourceSummaryMap = new Map<string, ImportResourceSummary>();
     const context: EvalImportContext = {
       assetReferencesByKey: new Map(),
       ticketIdsByRef: new Map(),
@@ -710,7 +844,28 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
     try {
       for (const file of recognizedFiles) {
         try {
-          importedCount += await importRecognizedFile(file, context, rollbackActions);
+          const fileImportResult = await importRecognizedFile(file, context, rollbackActions);
+          importedCount += fileImportResult.importedCount;
+          fileSummaries.push(
+            ...(fileImportResult.files ?? [{
+              fileName: file.fileName,
+              importedCount: fileImportResult.importedCount,
+              profileLabel: file.profile.label,
+              resourceIds: fileImportResult.resources.map((item) => item.resourceId),
+              skippedCount: file.invalidRows.length,
+            }]),
+          );
+          fileImportResult.resources.forEach((item) => {
+            const current = resourceSummaryMap.get(item.resourceId);
+
+            if (current) {
+              current.importedCount += item.importedCount;
+              current.skippedCount += item.skippedCount;
+              return;
+            }
+
+            resourceSummaryMap.set(item.resourceId, { ...item });
+          });
         } catch (caughtError) {
           errors.push({
             details: caughtError instanceof Error ? caughtError.stack ?? caughtError.message : String(caughtError),
@@ -746,8 +901,20 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       );
 
       importedCount += imageImportResult.importedCount;
-      skippedCount += imageImportResult.skippedCount;
-      errors.push(...imageImportResult.errors);
+      skippedCount += imageImportResult.skippedCount ?? 0;
+      errors.push(...(imageImportResult.errors ?? []));
+      fileSummaries.push(...(imageImportResult.files ?? []));
+      imageImportResult.resources.forEach((item) => {
+        const current = resourceSummaryMap.get(item.resourceId);
+
+        if (current) {
+          current.importedCount += item.importedCount;
+          current.skippedCount += item.skippedCount;
+          return;
+        }
+
+        resourceSummaryMap.set(item.resourceId, { ...item });
+      });
     } catch (caughtError) {
       const rollbackErrors = await rollbackImport(rollbackActions);
       importedCount = 0;
@@ -772,7 +939,9 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       setResult({
         errors,
         failedCount: errors.length,
+        files: fileSummaries,
         importedCount,
+        resources: [...resourceSummaryMap.values()],
         skippedCount,
       });
       setIsImporting(false);

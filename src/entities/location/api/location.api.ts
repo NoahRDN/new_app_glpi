@@ -1,4 +1,10 @@
-import { glpiDelete, glpiGet, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
+import {
+  glpiDelete,
+  glpiGet,
+  glpiGetPaginated,
+  glpiPatch,
+  glpiPost,
+} from "../../../shared/api/glpiClient";
 import type { Location } from "../model/location.types";
 
 export type CreateLocation = Record<string, unknown> & {
@@ -15,6 +21,23 @@ export async function getLocations(): Promise<Location[]> {
 
 export async function getLocation(locationId: number | string): Promise<Location> {
   return glpiGet<Location>(`/Dropdowns/Location/${locationId}`);
+}
+
+export async function findLocationByName(name: string): Promise<Location | undefined> {
+  const params = new URLSearchParams({
+    start: "0",
+    limit: "10",
+  });
+
+  params.set("filter", `name==${name}`);
+
+  const page = await glpiGetPaginated<Location>(
+    `/Dropdowns/Location?${params.toString()}`,
+  );
+
+  return page.data.find(
+    (location) => location.name.trim().toLowerCase() === name.trim().toLowerCase(),
+  );
 }
 
 export async function createLocation(payload: CreateLocation): Promise<Location> {

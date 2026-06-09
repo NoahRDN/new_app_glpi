@@ -472,12 +472,80 @@ export function ImportDataPage() {
           <>
             {result.failedCount === 0 ? (
               <Success>
-                {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
+                Import termine: {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
               </Success>
             ) : (
               <ErrorMessage>
-                {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
+                Import termine avec erreur(s): {result.importedCount} element(s) importe(s), {result.failedCount} echec(s), {result.skippedCount} ignore(s).
               </ErrorMessage>
+            )}
+
+            {(result.resources.length > 0 || result.files.length > 0) && (
+              <section
+                className="rounded-[18px] border p-6"
+                style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
+              >
+                <h3 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Détail de l'import
+                </h3>
+
+                {result.resources.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                      Par ressource
+                    </p>
+                    <div className="mt-3 grid gap-3 md:grid-cols-2">
+                      {result.resources.map((item) => (
+                        <article
+                          key={item.resourceId}
+                          className="rounded-[16px] border p-4"
+                          style={{ backgroundColor: "var(--panel-soft)", borderColor: "var(--panel-border)" }}
+                        >
+                          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                            {item.label}
+                          </p>
+                          <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+                            {item.importedCount} importé(s) | {item.skippedCount} ignoré(s)
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {result.files.length > 0 && (
+                  <div className="mt-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                      Par fichier
+                    </p>
+                    <div className="mt-3 space-y-3">
+                      {result.files.map((item) => (
+                        <article
+                          key={`${item.fileName}-${item.profileLabel ?? "no-profile"}`}
+                          className="rounded-[16px] border p-4"
+                          style={{ backgroundColor: "var(--panel-soft)", borderColor: "var(--panel-border)" }}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                                {item.fileName}
+                              </p>
+                              {item.profileLabel ? (
+                                <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
+                                  Profil: {item.profileLabel}
+                                </p>
+                              ) : null}
+                            </div>
+                            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                              {item.importedCount} importé(s) | {item.skippedCount} ignoré(s)
+                            </p>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
             )}
 
             {result.errors.length > 0 && (

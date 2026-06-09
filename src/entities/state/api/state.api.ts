@@ -1,4 +1,10 @@
-import { glpiDelete, glpiGet, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
+import {
+  glpiDelete,
+  glpiGet,
+  glpiGetPaginated,
+  glpiPatch,
+  glpiPost,
+} from "../../../shared/api/glpiClient";
 
 export type State = {
   [key: string]: unknown;
@@ -20,6 +26,23 @@ export async function getStates(): Promise<State[]> {
 
 export async function getState(stateId: number | string): Promise<State> {
   return glpiGet<State>(`/Dropdowns/State/${stateId}`);
+}
+
+export async function findStateByName(name: string): Promise<State | undefined> {
+  const params = new URLSearchParams({
+    start: "0",
+    limit: "10",
+  });
+
+  params.set("filter", `name==${name}`);
+
+  const page = await glpiGetPaginated<State>(
+    `/Dropdowns/State?${params.toString()}`,
+  );
+
+  return page.data.find(
+    (state) => state.name.trim().toLowerCase() === name.trim().toLowerCase(),
+  );
 }
 
 export async function createState(payload: CreateState): Promise<State> {
