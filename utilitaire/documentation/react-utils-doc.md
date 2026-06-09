@@ -1051,7 +1051,7 @@ Quand tu reviens → le composant est recréé → limit revient à 20
 
 Quand tu écris :
 
-const [limit, setLimit] = useState<number>(20);
+const [limit, setLimit] = useState<number>(5);
 
 React crée un état lié à l’instance actuelle du composant ListComputer.
 
@@ -1097,7 +1097,7 @@ limit disparaît
 
 Quand tu reviens sur /admin/computers, React recrée un nouveau ListComputer, donc :
 
-useState<number>(20)
+useState<number>(5)
 
 repart à 20.
 

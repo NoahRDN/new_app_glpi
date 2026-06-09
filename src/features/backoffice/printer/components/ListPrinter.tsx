@@ -17,7 +17,7 @@ import { usePrintersPage } from "../hooks/usePrinters";
 export function ListPrinter() {
   const [filters, setFilters] = useState<PrinterFilters>(printerFiltersDefaultValues);
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState<number>(20);
+  const [limit, setLimit] = useState<number>(5);
   const debouncedFilters = useDebounce(filters, 400);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [printerToUpdate, setPrinterToUpdate] = useState<Printer | null>(null);

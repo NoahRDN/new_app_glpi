@@ -17,7 +17,7 @@ import { useDeleteComputer } from "../hooks/useDeleteComputer";
 export function ListComputer() {
   const [filters, setFilters] = useState<ComputerFilters>(computerFiltersDefaultValues);
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState<number>(20);
+  const [limit, setLimit] = useState<number>(5);
   const debouncedFilters = useDebounce(filters, 400);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [computerToUpdate, setComputerToUpdate] = useState<Computer | null>(null);

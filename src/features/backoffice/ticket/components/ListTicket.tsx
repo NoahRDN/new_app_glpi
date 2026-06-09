@@ -33,7 +33,7 @@ export function ListTicket() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<TicketFilters>(ticketFilterDefault);
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState<number>(20);
+  const [limit, setLimit] = useState<number>(5);
   const debouncedFilters = useDebounce(filters, 400);
 
   const {
