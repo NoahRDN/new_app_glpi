@@ -1,15 +1,17 @@
-import type { ComponentPropsWithoutRef, ReactNode } from "react"
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-type SelectProps = 
-    ComponentPropsWithoutRef<"select"> & {
-    children: ReactNode
-}
+type SelectProps = ComponentPropsWithoutRef<"select"> & {
+    children: ReactNode;
+    isFullWidth?: boolean;
+};
 
-export function Select({children, ...props} : SelectProps){
-    return <select
-    className="w-full rounded-[18px] border px-4 py-4 text-lg font-semibold outline-none border-(--panel-border) bg-(--panel-soft) text-(--text-primary)" 
-    {...props} >
-        {children}
+export function Select({ isFullWidth, children, className = "", ...props }: SelectProps) {
+  return (
+    <select
+      className={`${isFullWidth ? "w-full" : "w-auto"} rounded-[18px] border px-3 py-3 text-lg font-semibold outline-none border-[var(--panel-border)] bg-[var(--panel-soft)] text-[var(--text-primary)] ${className}`}
+      {...props}
+    >
+      {children}
     </select>
-
+  );
 }

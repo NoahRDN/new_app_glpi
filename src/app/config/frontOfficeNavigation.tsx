@@ -1,4 +1,4 @@
-import { Globe, House, LifeBuoy, MonitorSmartphone, TicketPlus, UserRound } from "lucide-react";
+import { Globe, House, Kanban, LifeBuoy, MonitorSmartphone, TicketPlus, UserRound } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const frontOfficeNavigation: OfficeNavigationItem[] = [
@@ -43,5 +43,12 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     id: "create-ticket",
     label: "Création Ticket",
     path: "/create-ticket",
+  },
+  {
+    description: "Ticket en présentation Kaban",
+    Icon: Kanban,
+    id: "ticket-kaban",
+    label: "Ticket en présentation Kaban",
+    path: "/ticket-kaban",
   },
 ];

@@ -130,27 +130,29 @@ export function ListPrinter() {
         )}
         toolbarFooter={(
           <div className="col-span-12 mt-4 flex items-center justify-between">
-            <p className="text-sm text-(--text-secondary)">
-              Page {page + 1} — {total} imprimante(s) au total
-              {isPrintersFetching ? " — Actualisation..." : ""}
-            </p>
+            <div className="flex gap-3">
+              <p className="text-sm text-(--text-secondary)">
+                Page {page + 1} — {total} imprimante(s) au total
+                {isPrintersFetching ? " — Actualisation..." : ""}
+              </p>
 
-            <select
-              id="limitPrinterPagination"
-              name="limitPrinterPagination"
-              value={limit}
-              onChange={(event) => {
-                setLimit(Number(event.target.value));
-                setPage(0);
-              }}
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
+              <select
+                id="limitPrinterPagination"
+                name="limitPrinterPagination"
+                value={limit}
+                onChange={(event) => {
+                  setLimit(Number(event.target.value));
+                  setPage(0);
+                }}
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
 
             <div className="flex gap-3">
               <Button

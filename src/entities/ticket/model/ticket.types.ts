@@ -62,6 +62,10 @@ export type Ticket = {
   waiting_duration: number;
 };
 
+export type TicketFilters = {
+  name: string;
+};
+
 export type CreateTicketPayload = {
   name: string;
   content: string;
