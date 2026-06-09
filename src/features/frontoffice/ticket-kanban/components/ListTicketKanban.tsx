@@ -13,6 +13,7 @@ import { ticketFilterDefault } from "../../../../entities/ticket/model/ticket.co
 import { Select } from "../../../../shared/ui/Select";
 import { findTicketKanbanGroup, groupTicketsByKanban } from "../lib/ticketKanban";
 import { ticketKanbanGroups } from "../model/ticketKanban.config";
+import { useTicketKanbanCounts } from "../hooks/useTicketKanbanCounts";
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -39,6 +40,11 @@ export function ListTicketKanban() {
   const debouncedFilters = useDebounce(filters, 400);
 
   const {
+    data: ticketKanbanCounts,
+    isPending: isTicketKanbanCountsPending,
+  } = useTicketKanbanCounts();
+
+  const {
     data: ticketsPage,
     isPending: isTicketsPending,
     isFetching: isTicketsFetching,
@@ -51,11 +57,10 @@ export function ListTicketKanban() {
     return ticketsPage?.data ?? [];
   }, [ticketsPage?.data]);
   
-  const ticketsByKanban = useMemo(() => {
+  useMemo(() => {
     return groupTicketsByKanban(tickets);
   }, [tickets]);
 
-  console.log("kanban: ",ticketsByKanban);
   const total = ticketsPage?.total ?? 0;
   const hasNextPage = (page + 1) * limit < total;
 
@@ -72,15 +77,23 @@ export function ListTicketKanban() {
   }
 
   return (<>
-    <div className="rounded-[30px] p-5 bg-var(--panel-bg)">
-      {
-        ticketKanbanGroups.map((ticketKanbanGroup) => {
-          return <div className="flex gap-1">
-            <h3 className="font-bold underline">{ticketKanbanGroup.key}: </h3>
-            <span>{ticketsByKanban[ticketKanbanGroup.key].length}</span>
-          </div>
-        } )
-      }
+    <div className="col-span-12 rounded-[30px] p-5 bg-(--panel-bg)">
+      {ticketKanbanGroups.map((ticketKanbanGroup) => (
+        <div key={ticketKanbanGroup.key} className="flex gap-1">
+          <h3 className="font-bold underline">
+            {ticketKanbanGroup.label}:
+          </h3>
+          
+
+          <span>
+            {isTicketKanbanCountsPending
+              ? "..."
+              : ticketKanbanCounts?.[ticketKanbanGroup.key] ?? 0}
+          </span>
+
+          
+        </div>
+      ))}
     </div>
 
     <DataTable
