@@ -6,8 +6,11 @@ import {
 } from "../../../shared/api/glpiLegacyClient";
 
 export type DocumentItem = {
-  [key: string]: unknown;
   id: number;
+  documents_id?: number;
+  items_id?: number;
+  itemtype?: string;
+  [key: string]: unknown;
 };
 
 export type CreateDocumentItem = Record<string, unknown>;
@@ -18,6 +21,18 @@ export type UpdateDocumentItem = Record<string, unknown> & {
 
 export async function getDocumentItems(): Promise<DocumentItem[]> {
   return glpiLegacyGet<DocumentItem[]>("/Document_Item");
+}
+
+export async function getDocumentItemsByAsset(params: {
+  itemId: number;
+  itemtype: string;
+}): Promise<DocumentItem[]> {
+  const documentItems = await getDocumentItems();
+
+  return documentItems.filter((documentItem) => (
+    documentItem.itemtype === params.itemtype &&
+    Number(documentItem.items_id) === params.itemId
+  ));
 }
 
 export async function getDocumentItem(documentItemId: number | string): Promise<DocumentItem> {

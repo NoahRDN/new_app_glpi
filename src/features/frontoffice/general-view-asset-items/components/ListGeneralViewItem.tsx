@@ -12,6 +12,7 @@ import {  generalViewAssetItemsFiltersDefaultValues } from "../model/generalView
 import { useDebounce } from "../../../../shared/hooks/useDebounce";
 import { useAssets } from "../../../backoffice/assets/hooks/useAssets";
 import { Select } from "../../../../shared/ui/Select";
+import { AssetImages } from "../../../shared/asset-images/components/AssetImages";
 
 export function ListGeneralViewItem(){
     const [filters, setFilters] = useState<GeneralViewAssetItemsFilters>({...generalViewAssetItemsFiltersDefaultValues})
@@ -73,6 +74,7 @@ export function ListGeneralViewItem(){
             tableHeads={[
                 <Input type="checkbox" />, 
                 "Numéro Ligne",
+                "Image",
                 "Nom",
                 "Type",
                 "Date de création",
@@ -183,6 +185,14 @@ export function ListGeneralViewItem(){
                     <Input type="checkbox" />
                 </td>
                 <td className="border border-(--panel-border) px-4 py-4">{page * limit + index + 1}</td>
+                <td className="border border-(--panel-border) px-4 py-4">
+                    <AssetImages
+                        itemId={generalViewAssetItem.id}
+                        itemtype={generalViewAssetItem.itemType}
+                        limit={1}
+                        variant="thumbnail"
+                    />
+                </td>
                 <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.name}</td>
                 <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.itemType}</td>
                 <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.dateCreation}</td>
@@ -196,7 +206,7 @@ export function ListGeneralViewItem(){
                 <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.user?.name}</td>
                 <td className="border border-(--panel-border) px-4 py-4">{generalViewAssetItem?.userTech?.name}</td>
                 <td className="border border-(--panel-border) px-4 py-4">
-                    <Button>Détails</Button>
+                    <span className="text-sm text-(--text-secondary)">-</span>
                 </td>
             </tr>
             ))}

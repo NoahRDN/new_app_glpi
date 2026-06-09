@@ -1,6 +1,7 @@
 import {
   glpiLegacyDelete,
   glpiLegacyGet,
+  glpiLegacyGetBlob,
   glpiLegacyPost,
   glpiLegacyPostFormData,
   glpiLegacyPut,
@@ -31,6 +32,10 @@ export async function getDocuments(): Promise<Document[]> {
 
 export async function getDocument(documentId: number | string): Promise<Document> {
   return glpiLegacyGet<Document>(`/Document/${documentId}`);
+}
+
+export async function getDocumentFileBlob(documentId: number | string): Promise<Blob> {
+  return glpiLegacyGetBlob(`/Document/${documentId}?alt=media`);
 }
 
 export async function createDocument(payload: CreateDocument): Promise<Document> {
