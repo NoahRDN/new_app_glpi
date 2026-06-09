@@ -548,6 +548,61 @@ export function ImportDataPage() {
               </section>
             )}
 
+            {result.warnings.length > 0 && (
+              <section
+                className="rounded-[18px] border p-6"
+                style={{
+                  backgroundColor: "color-mix(in srgb, #f59e0b 10%, var(--panel-bg))",
+                  borderColor: "color-mix(in srgb, #f59e0b 35%, var(--panel-border))",
+                }}
+              >
+                <h3 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
+                  Avertissements d'import
+                </h3>
+
+                <div className="mt-4 space-y-4">
+                  {result.warnings.map((item, index) => (
+                    <article
+                      key={`${item.fileName}-${item.resourceId}-${index}`}
+                      className="rounded-[16px] border p-4"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, #f59e0b 8%, var(--panel-soft))",
+                        borderColor: "color-mix(in srgb, #f59e0b 25%, var(--panel-border))",
+                      }}
+                    >
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span
+                          className="rounded-[10px] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]"
+                          style={{
+                            backgroundColor: "color-mix(in srgb, #f59e0b 18%, transparent)",
+                            color: "var(--text-primary)",
+                          }}
+                        >
+                          Correction automatique
+                        </span>
+                        <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                          {item.fileName}
+                        </span>
+                        <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                          Ressource: {item.resourceId}
+                        </span>
+                      </div>
+
+                      <p className="mt-3 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                        {item.message}
+                      </p>
+
+                      {item.details ? (
+                        <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+                          {item.details}
+                        </p>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {result.errors.length > 0 && (
               <section
                 className="rounded-[18px] border p-6"

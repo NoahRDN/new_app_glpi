@@ -67,6 +67,13 @@ type ImportError = {
     | "rollback";
 };
 
+type ImportWarning = {
+  details?: string;
+  fileName: string;
+  message: string;
+  resourceId: string;
+};
+
 type ImportResult = {
   errors: ImportError[];
   failedCount: number;
@@ -74,6 +81,7 @@ type ImportResult = {
   importedCount: number;
   resources: ImportResourceSummary[];
   skippedCount: number;
+  warnings: ImportWarning[];
 };
 
 type UseImportGlpiCsvResult = {
@@ -119,6 +127,7 @@ type ImportExecutionSummary = {
   importedCount: number;
   resources: ImportResourceSummary[];
   skippedCount?: number;
+  warnings?: ImportWarning[];
 };
 
 const EVAL_ASSETS_PROFILE_ID = "glpi-eval-assets-juin-2026-v1";
@@ -305,6 +314,14 @@ function getImportErrorDetails(error: unknown) {
   }
 
   return String(error);
+}
+
+function getDetectedTypeLabel(detectedType: string) {
+  if (detectedType === "jpg") {
+    return "JPEG";
+  }
+
+  return detectedType.toUpperCase();
 }
 
 function createNameResolver<T extends { id: number; name: string }>(params: {
@@ -672,6 +689,7 @@ async function importImageZipFiles(
   let skippedCount = 0;
   const errors: ImportError[] = [];
   const files: ImportFileSummary[] = [];
+  const warnings: ImportWarning[] = [];
 
   if (!importImages) {
     return {
@@ -700,6 +718,19 @@ async function importImageZipFiles(
     try {
       const imageEntries = await extractGlpiImageFilesFromZip(imageZipFile);
       let fileImportedCount = 0;
+
+      imageEntries.forEach((imageEntry) => {
+        if (!imageEntry.wasRenamed || !imageEntry.originalFileName) {
+          return;
+        }
+
+        warnings.push({
+          details: `Le contenu réel détecté est ${getDetectedTypeLabel(imageEntry.detectedType ?? "")}, mais l'extension du fichier ne correspondait pas.`,
+          fileName: imageEntry.originalFileName,
+          message: `Image corrigée automatiquement : ${imageEntry.originalFileName} a été importée sous le nom ${imageEntry.fileName}.`,
+          resourceId: "documents",
+        });
+      });
 
       for (const imageEntry of imageEntries) {
         const importedEntryCount = await importImageZipEntry(
@@ -745,6 +776,7 @@ async function importImageZipFiles(
       },
     ],
     skippedCount,
+    warnings,
   };
 }
 
@@ -760,15 +792,12 @@ async function importImageZipEntry(
     return 0;
   }
 
-  console.log("Image à uploader:", {
-    fileName: imageEntry.fileName,
-    reference: imageEntry.reference,
-    size: imageEntry.file.size,
-    type: imageEntry.file.type,
-  });
+  const comment = imageEntry.wasRenamed && imageEntry.originalFileName
+    ? `Import image zip: ${zipFileName}. Nom original: ${imageEntry.originalFileName}, corrigé en: ${imageEntry.fileName}.`
+    : `Import image zip: ${zipFileName}`;
 
   const createdDocument = await createDocumentWithFile({
-    comment: `Import image zip: ${zipFileName}`,
+    comment,
     file: imageEntry.file,
     fileName: imageEntry.fileName,
     items_id: linkedAsset.itemId,
@@ -869,6 +898,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
     const errors: ImportError[] = [];
     const fileSummaries: ImportFileSummary[] = [];
     const resourceSummaryMap = new Map<string, ImportResourceSummary>();
+    const warnings: ImportWarning[] = [];
     const context: EvalImportContext = {
       assetReferencesByKey: new Map(),
       ticketIdsByRef: new Map(),
@@ -938,6 +968,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       skippedCount += imageImportResult.skippedCount ?? 0;
       errors.push(...(imageImportResult.errors ?? []));
       fileSummaries.push(...(imageImportResult.files ?? []));
+      warnings.push(...(imageImportResult.warnings ?? []));
       imageImportResult.resources.forEach((item) => {
         const current = resourceSummaryMap.get(item.resourceId);
 
@@ -981,6 +1012,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
         importedCount,
         resources: [...resourceSummaryMap.values()],
         skippedCount,
+        warnings,
       });
       setIsImporting(false);
     }

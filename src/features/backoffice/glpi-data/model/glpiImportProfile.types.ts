@@ -82,7 +82,10 @@ export type GlpiImageZipEntryPreview = {
 };
 
 export type GlpiImageZipEntryUpload = GlpiImageZipEntryPreview & {
+  detectedType?: string;
   file: File;
+  originalFileName?: string;
+  wasRenamed?: boolean;
 };
 
 export type ParsedGlpiImagesZipFile = {
