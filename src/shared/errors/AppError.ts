@@ -8,7 +8,9 @@ export type AppErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "VALIDATION_ERROR"
-  | "GLPI_API_ERROR";
+  | "GLPI_API_ERROR"
+  | "LEGACY_SESSION_ERROR"
+  | "GLPI_LEGACY_API_ERROR";
 
 export class AppError extends Error {
   public readonly userMessage: string;

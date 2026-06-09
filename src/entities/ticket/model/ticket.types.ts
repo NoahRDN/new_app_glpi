@@ -7,11 +7,16 @@ export type Ticket = {
   updatedAt: string;
 };
 
-export type CreateTicket = {
+export type CreateTicketPayload = {
   name: string;
   content: string;
-  priority?: number;
-  type?: number;
+  type: number;
   urgency?: number;
   impact?: number;
-}
+  priority?: number;
+};
+
+export type CreateTicketResponse = {
+  id: number;
+  href: string;
+};
