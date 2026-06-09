@@ -14,6 +14,13 @@ import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const backOfficeNavigation: OfficeNavigationItem[] = [
   {
+    id: "dashboard-other",
+    path: "/admin/dashboard-other",
+    label: "Administration de test",
+    description: "Vue analytique et configuration avancée (Page de test)",
+    Icon: LayoutDashboard,
+  },
+  {
     id: "dashboard",
     path: "/admin",
     label: "Administration",
@@ -86,6 +93,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
 
   {
     id: "memo-test",
+    path: "/admin/memo-test",
+    label: "memo-test",
+    description: "memo-test",
+    Icon: TestTube,
+  },
+    {
+    id: "-test",
     path: "/admin/memo-test",
     label: "memo-test",
     description: "memo-test",

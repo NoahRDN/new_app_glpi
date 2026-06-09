@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router";
 import { BackOfficeLayout } from "../layouts/BackOfficeLayout";
 import { ProtectedBackofficeRoute } from "../../features/backoffice-auth/components/ProtectedBackofficeRoute";
-import { DashboardPage } from "../../pages/other/backoffice/DashboardPage";
+import { DashboardOtherPage } from "../../pages/other/backoffice/DashboardOtherPage";
 import { TicketsPage } from "../../pages/other/backoffice/TicketsPage";
 import { ParcsPage } from "../../pages/other/backoffice/ParcPage";
 import { KnowledgeBasePage } from "../../pages/other/backoffice/KnowledgeBasePage";
@@ -13,6 +13,7 @@ import { AssetsPage } from "../../pages/backoffice/AssetsPage";
 import { ComputerPage } from "../../pages/backoffice/ComputerPage";
 import { PrinterPage } from "../../pages/backoffice/PrinterPage";
 import { MemoTest } from "../../pages/other/backoffice/MemoTest";
+import { DashboardPage } from "../../pages/backoffice/DashboardPage";
 
 export const backOfficeRoutes: RouteObject = {
   children: [
@@ -28,6 +29,10 @@ export const backOfficeRoutes: RouteObject = {
         </ProtectedBackofficeRoute>
       ),
       children: [
+        {
+          path: "dashboard-other",
+          element: <DashboardOtherPage />,
+        },
         {
           index: true,
           element: <DashboardPage />,
