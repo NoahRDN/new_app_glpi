@@ -1,13 +1,13 @@
-import { CustomerGrowthPanel } from "../../../features/backoffice/dashboard/components/CustomerGrowthPanel";
-import { SalesLocationsPanel } from "../../../features/backoffice/dashboard/components/SalesLocationsPanel";
-import { TransactionHistoryPanel } from "../../../features/backoffice/dashboard/components/TransactionHistoryPanel";
-import { RecentCustomersPanel } from "../../../features/backoffice/dashboard/components/RecentCustomersPanel";
-import { dashboardSummaryCards } from "../../../features/backoffice/dashboard/model/dashboard.mock";
+import { CustomerGrowthPanel } from "../../../features/other/dashboard/components/CustomerGrowthPanel";
+import { SalesLocationsPanel } from "../../../features/other/dashboard/components/SalesLocationsPanel";
+import { TransactionHistoryPanel } from "../../../features/other/dashboard/components/TransactionHistoryPanel";
+import { RecentCustomersPanel } from "../../../features/other/dashboard/components/RecentCustomersPanel";
+import { dashboardSummaryCards } from "../../../features/other/dashboard/model/dashboard.mock";
 import { PillFilter } from "../../../shared/ui/PillFilter";
 import { SectionPanel } from "../../../shared/ui/SectionPanel";
 import { StatCard } from "../../../shared/ui/StatCard";
 
-export function DashboardPage() {
+export function DashboardOtherPage() {
   return (
     <>
       <SectionPanel className="xl:col-span-12" title="Overview">
