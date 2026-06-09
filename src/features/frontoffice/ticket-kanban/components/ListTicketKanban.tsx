@@ -4,7 +4,6 @@ import { Button } from "../../../../shared/ui/Button";
 import { ticketFilterDefault } from "../../../../entities/ticket/model/ticket.config";
 import { groupTicketsByKanban } from "../lib/ticketKanban";
 import { ticketKanbanGroups } from "../model/ticketKanban.config";
-import { useTicketKanbanCounts } from "../hooks/useTicketKanbanCounts";
 import { SectionKanban } from "../../../../shared/ui/SectionKanban";
 import { Modal } from "../../../../shared/ui/Modal";
 import { TicketsAdd } from "../../ticket/components/TicketsAdd";
@@ -13,10 +12,6 @@ import { Loader } from "../../../../shared/ui/Loader";
 
 export function ListTicketKanban() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const {
-    data: ticketKanbanCounts,
-  } = useTicketKanbanCounts();
 
   const {
       data: ticketsAll,
@@ -61,7 +56,7 @@ export function ListTicketKanban() {
           backgroundColorSection={"#ffe6e0"} 
           isDisplayAddTicket={ticketKanbanGroup.key === "new"} 
           ticketKanbanGroupName={ticketKanbanGroup.label}  
-          totalTicketKanban={ticketKanbanCounts?.[ticketKanbanGroup.key] ?? 0} 
+          totalTicketKanban={groupTickets[ticketKanbanGroup.key].length}
         >
           {groupTickets && groupTickets[ticketKanbanGroup.key].map((groupTicket, index) => <Button key={index} type="button" isWithBackground={false}>{groupTicket.name}</Button>)}
         </SectionKanban>        
