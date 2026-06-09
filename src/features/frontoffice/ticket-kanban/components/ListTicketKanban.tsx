@@ -12,6 +12,7 @@ import type { TicketFilters } from "../../../../entities/ticket/model/ticket.typ
 import { ticketFilterDefault } from "../../../../entities/ticket/model/ticket.config";
 import { Select } from "../../../../shared/ui/Select";
 import { findTicketKanbanGroup, groupTicketsByKanban } from "../lib/ticketKanban";
+import { ticketKanbanGroups } from "../model/ticketKanban.config";
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -50,9 +51,11 @@ export function ListTicketKanban() {
     return ticketsPage?.data ?? [];
   }, [ticketsPage?.data]);
   
-  useMemo(() => {
+  const ticketsByKanban = useMemo(() => {
     return groupTicketsByKanban(tickets);
   }, [tickets]);
+
+  console.log("kanban: ",ticketsByKanban);
   const total = ticketsPage?.total ?? 0;
   const hasNextPage = (page + 1) * limit < total;
 
@@ -69,6 +72,17 @@ export function ListTicketKanban() {
   }
 
   return (<>
+    <div className="rounded-[30px] p-5 bg-var(--panel-bg)">
+      {
+        ticketKanbanGroups.map((ticketKanbanGroup) => {
+          return <div className="flex gap-1">
+            <h3 className="font-bold underline">{ticketKanbanGroup.key}: </h3>
+            <span>{ticketsByKanban[ticketKanbanGroup.key].length}</span>
+          </div>
+        } )
+      }
+    </div>
+
     <DataTable
       tableHeads={[
         <Input type="checkbox" />,
