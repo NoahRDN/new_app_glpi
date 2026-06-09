@@ -45,10 +45,10 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     path: "/create-ticket",
   },
   {
-    description: "Ticket en présentation Kaban",
+    description: "Ticket en présentation Kanban",
     Icon: Kanban,
-    id: "ticket-kaban",
-    label: "Ticket en présentation Kaban",
-    path: "/ticket-kaban",
+    id: "ticket-kanban",
+    label: "Ticket en présentation Kanban",
+    path: "/ticket-kanban",
   },
 ];

@@ -49,7 +49,7 @@ export const frontOfficeRoutes: RouteObject = {
           element: <TicketsPage />,
         },
         {
-          path: "ticket-kaban",
+          path: "ticket-kanban",
           element: <TicketsKanbanPage />,
         },
       ],

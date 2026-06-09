@@ -1,7 +1,7 @@
-import { ListTicket } from "../../features/backoffice/ticket/components/ListTicket";
+import { ListTicketKanban } from "../../features/frontoffice/ticket-kanban/components/ListTicketKanban";
 
 export function TicketsKanbanPage(){
     return <>
-        <ListTicket />
+        <ListTicketKanban />
     </>
 }
