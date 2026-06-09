@@ -98,7 +98,7 @@ export function ListTicket() {
       <div className="col-span-12 mt-4 flex items-center justify-between">
         <div className="flex gap-3 items-center">
           <p className="text-sm text-(--text-secondary)">
-            {tickets.length} ticket(s) affiché(s) sur {tickets.filter((ticket) => !ticket.is_deleted).length}
+            {tickets.length} ticket(s) affiché(s) sur {total}
           </p>
         
           <Select
@@ -140,17 +140,17 @@ export function ListTicket() {
     >
       {tickets.map((ticket, index) => (
         <tr key={ticket.id}>
-          <td className="px-4 py-3">
+          <td className="border border-(--panel-border) px-4 py-4">
             <Input type="checkbox" />
           </td>
-          <td className="px-4 py-3">{index + 1}</td>
-          <td className="px-4 py-3">{ticket.name}</td>
-          <td className="px-4 py-3">{ticket.status?.name ?? "-"}</td>
-          <td className="px-4 py-3">{ticket.priority}</td>
-          <td className="px-4 py-3">{ticket.user_recipient?.name ?? "-"}</td>
-          <td className="px-4 py-3">{ticket.category?.name ?? "-"}</td>
-          <td className="px-4 py-3">{formatDate(ticket.date_creation)}</td>
-          <td className="px-4 py-3">
+          <td className="border border-(--panel-border) px-4 py-4">{index + (page * limit) + 1}</td>
+          <td className="border border-(--panel-border) px-4 py-4">{ticket.name}</td>
+          <td className="border border-(--panel-border) px-4 py-4">{ticket.status?.name ?? "-"}</td>
+          <td className="border border-(--panel-border) px-4 py-4">{ticket.priority}</td>
+          <td className="border border-(--panel-border) px-4 py-4">{ticket.user_recipient?.name ?? "-"}</td>
+          <td className="border border-(--panel-border) px-4 py-4">{ticket.category?.name ?? "-"}</td>
+          <td className="border border-(--panel-border) px-4 py-4">{formatDate(ticket.date_creation)}</td>
+          <td className="border border-(--panel-border) px-4 py-4">
             <Button
               aria-label="Voir le détail du ticket"
               otherClassName="bg-blue-400"

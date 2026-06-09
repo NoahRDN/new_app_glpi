@@ -177,13 +177,13 @@ export function ListPrinter() {
             <td className="px-4">
               <Input type="checkbox" />
             </td>
-            <td className="px-4 py-3">{page * limit + index + 1}</td>
-            <td className="px-4 py-3">{printer.name}</td>
-            <td className="px-4 py-3">{printer.type?.name ?? "-"}</td>
-            <td className="px-4 py-3">{printer.status?.name ?? "-"}</td>
-            <td className="px-4 py-3">{printer.user?.name ?? "-"}</td>
-            <td className="px-4 py-3">{printer.location?.name ?? "-"}</td>
-            <td className="px-4 py-3">{printer.manufacturer?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{page * limit + index + 1}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{printer.name}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{printer.type?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{printer.status?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{printer.user?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{printer.location?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{printer.manufacturer?.name ?? "-"}</td>
             <td className="flex gap-3 px-4 py-3">
               <Button
                 aria-label="modification"

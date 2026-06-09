@@ -190,15 +190,15 @@ export function ListComputer() {
             <td className="px-4">
               <Input type="checkbox" />
             </td>
-            <td className="px-4 py-3">{page * limit + index + 1}</td>
-            <td className="px-4 py-3">{visibleComputer.name}</td>
-            <td className="px-4 py-3">{visibleComputer.type?.name ?? "-"}</td>
-            <td className="px-4 py-3">{visibleComputer.status?.name ?? "-"}</td>
-            <td className="px-4 py-3">{visibleComputer.user?.name ?? "-"}</td>
-            <td className="px-4 py-3">
+            <td className="border border-(--panel-border) px-4 py-4">{page * limit + index + 1}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.name}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.type?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.status?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.user?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">
               {visibleComputer.location?.name ?? "-"}
             </td>
-            <td className="px-4 py-3">
+            <td className="border border-(--panel-border) px-4 py-4">
               {visibleComputer.manufacturer?.name ?? "-"}
             </td>
             <td className="px-4 py-3 flex gap-3">

@@ -5,6 +5,8 @@ Ces fichiers permettent de tester la page `/import-data`.
 Fichiers CSV disponibles :
 - `glpi-users.csv`
 - `glpi-tickets.csv`
+- `glpi-tickets-statuses.csv`
+- `Import-data-juin-26 - Feuille 2 - 100.csv`
 - `glpi-computers.csv`
 - `glpi-computers-pagination.csv`
 - `glpi-printers-pagination.csv`

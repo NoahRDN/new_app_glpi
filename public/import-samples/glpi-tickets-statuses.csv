@@ -1,0 +1,13 @@
+name,content,status,priority,urgency,impact
+Incident login portail,L'utilisateur ne peut plus se connecter au portail interne,1,3,3,2
+Creation acces wifi invite,Demande d'acces wifi temporaire pour un intervenant externe,1,2,2,1
+Ticket assigne imprimante,Verifier la configuration de l'imprimante du service RH,2,3,3,2
+Preparation poste nouveau stagiaire,Installer les logiciels necessaires sur le poste du stagiaire,3,2,2,2
+Attente validation achat ecran,Le remplacement de l'ecran est en attente de validation budgetaire,4,3,2,2
+Incident VPN resolu,Le probleme de connexion VPN a ete corrige apres reinitialisation du compte,5,4,4,3
+Demande cloturee badge,Le badge d'acces a ete cree et remis au collaborateur,6,1,1,1
+Serveur fichiers inaccessible,Le partage reseau principal est inaccessible depuis ce matin,1,5,5,5
+Ajout utilisateur GLPI,Creer un compte technicien GLPI pour le nouveau support,3,2,2,1
+Poste maintenance planifiee,Planifier la maintenance preventive du poste de la direction,4,2,1,1
+Probleme scanner reception,Le scanner de la reception numerise en noir complet,2,3,4,2
+Demande souris sans fil,Fournir une souris sans fil pour le poste de l'accueil,6,1,1,1
