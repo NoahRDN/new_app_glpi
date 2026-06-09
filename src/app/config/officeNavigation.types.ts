@@ -6,4 +6,5 @@ export type OfficeNavigationItem = {
   id: string;
   label: string;
   path: string;
+  isHorizontalRowDown?: boolean;
 };

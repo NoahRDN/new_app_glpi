@@ -53,7 +53,7 @@ export function ListTicketKanban() {
         <SectionKanban 
           key={index}
           onCreatedTicket={() => setIsModalOpen(true)}
-          backgroundColorSection={"#ffe6e0"} 
+          backgroundColorSection={ticketKanbanGroup.backgroundColorSection} 
           isDisplayAddTicket={ticketKanbanGroup.key === "new"} 
           ticketKanbanGroupName={ticketKanbanGroup.label}  
           totalTicketKanban={groupTickets[ticketKanbanGroup.key].length}

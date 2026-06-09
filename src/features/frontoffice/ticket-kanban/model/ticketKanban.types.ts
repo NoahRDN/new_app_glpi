@@ -10,6 +10,7 @@ export type TicketKanbanGroup = {
   label: string;
   statusIds: number[];
   canCreateTicket?: boolean;
+  backgroundColorSection: string;
 };
 
 export type TicketKanban = Record<TicketKanbanGroupKey, Ticket[]>;

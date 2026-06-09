@@ -6,15 +6,18 @@ export const ticketKanbanGroups: TicketKanbanGroup[] = [
     label: "Nouveau",
     statusIds: [1],
     canCreateTicket: true,
+    backgroundColorSection:"#cdd4f8",
   },
   {
     key: "in_progress",
     label: "In Progress",
     statusIds: [2, 3, 4],
+    backgroundColorSection:"#f8cddc",
   },
   {
     key: "done",
     label: "Terminé",
     statusIds: [5, 6],
+    backgroundColorSection:"#cdf8d6",
   },
 ];
