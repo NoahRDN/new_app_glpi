@@ -10,10 +10,6 @@ import {
   deleteDocument,
 } from "../../../../entities/document/api/document.api";
 import {
-  createDocumentItem,
-  deleteDocumentItem,
-} from "../../../../entities/document/api/documentItem.api";
-import {
   createLocation,
   deleteLocation,
   findLocationByName,
@@ -764,10 +760,19 @@ async function importImageZipEntry(
     return 0;
   }
 
+  console.log("Image à uploader:", {
+    fileName: imageEntry.fileName,
+    reference: imageEntry.reference,
+    size: imageEntry.file.size,
+    type: imageEntry.file.type,
+  });
+
   const createdDocument = await createDocumentWithFile({
     comment: `Import image zip: ${zipFileName}`,
     file: imageEntry.file,
     fileName: imageEntry.fileName,
+    items_id: linkedAsset.itemId,
+    itemtype: linkedAsset.itemtype,
     name: imageEntry.reference || imageEntry.fileName,
   });
 
@@ -783,22 +788,6 @@ async function importImageZipEntry(
     label: `document#${documentId}`,
     run: () => deleteDocument(documentId),
   });
-
-  const createdDocumentItem = await createDocumentItem({
-    input: {
-      documents_id: documentId,
-      items_id: linkedAsset.itemId,
-      itemtype: linkedAsset.itemtype,
-    },
-  });
-  const documentItemId = extractCreatedId(createdDocumentItem);
-
-  if (documentItemId !== null) {
-    rollbackActions.push({
-      label: `documentItem#${documentItemId}`,
-      run: () => deleteDocumentItem(documentItemId),
-    });
-  }
 
   return 1;
 }

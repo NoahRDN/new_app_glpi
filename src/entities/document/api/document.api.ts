@@ -19,6 +19,8 @@ export type CreateDocumentWithFilePayload = {
   comment?: string;
   file: Blob;
   fileName: string;
+  items_id?: number;
+  itemtype?: string;
   name: string;
 };
 
@@ -53,6 +55,8 @@ export async function createDocumentWithFile(
       input: {
         comment: payload.comment,
         name: payload.name,
+        items_id: payload.items_id,
+        itemtype: payload.itemtype,
         _only_if_upload_succeed: true,
       },
     }),
