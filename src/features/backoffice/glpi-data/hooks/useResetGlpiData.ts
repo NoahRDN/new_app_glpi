@@ -33,19 +33,11 @@ export function useResetGlpiData() {
             continue;
           }
 
-          if (item.is_deleted === undefined) {
-            errors.push({
-              id: "unknown",
-              message: "Ligne sans situation de remove",
-            });
+          if (item.is_deleted === true) {
             continue;
           }
 
-          if (item.is_deleted) {
-            continue;
-          }
-
-            totalFound = items.length;
+          totalFound = items.length;
 
           try {
             const itemIsProtected = resource.protectedIds?.includes(item.id);

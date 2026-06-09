@@ -2,8 +2,13 @@ export type GlpiDataResourceId =
   | "users"
   | "tickets"
   | "computers"
+  | "monitors"
   | "printers"
+  | "states"
   | "locations"
+  | "manufacturers"
+  | "computerModels"
+  | "monitorModels"
   | "groups"
   | "documents";
 
@@ -33,7 +38,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Tickets de support et demandes.",
-    endpoint: "/Assets/Ticket",
+    endpoint: "/Assistance/Ticket",
     id: "tickets",
     label: "Tickets",
     optionalColumns: ["status", "priority", "urgency", "impact"],
@@ -50,6 +55,15 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     resetEnabled: true,
   },
   {
+    description: "Moniteurs du parc informatique.",
+    endpoint: "/Assets/Monitor",
+    id: "monitors",
+    label: "Moniteurs",
+    optionalColumns: ["serial", "otherserial", "comment"],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
     description: "Imprimantes du parc informatique.",
     endpoint: "/Assets/Printer",
     id: "printers",
@@ -59,8 +73,17 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     resetEnabled: true,
   },
   {
+    description: "États des matériels GLPI.",
+    endpoint: "/Dropdowns/State",
+    id: "states",
+    label: "États",
+    optionalColumns: [],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
     description: "Emplacements et sites.",
-    endpoint: "/Assets/Location",
+    endpoint: "/Dropdowns/Location",
     id: "locations",
     label: "Emplacements",
     optionalColumns: ["comment"],
@@ -68,8 +91,35 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     resetEnabled: true,
   },
   {
+    description: "Fabricants GLPI.",
+    endpoint: "/Dropdowns/Manufacturer",
+    id: "manufacturers",
+    label: "Fabricants",
+    optionalColumns: [],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
+    description: "Modèles d'ordinateurs GLPI.",
+    endpoint: "/Dropdowns/ComputerModel",
+    id: "computerModels",
+    label: "Modèles ordinateur",
+    optionalColumns: [],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
+    description: "Modèles de moniteurs GLPI.",
+    endpoint: "/Dropdowns/MonitorModel",
+    id: "monitorModels",
+    label: "Modèles moniteur",
+    optionalColumns: [],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
     description: "Groupes fonctionnels GLPI.",
-    endpoint: "/Assets/Group",
+    endpoint: "/Administration/Group",
     id: "groups",
     label: "Groupes",
     optionalColumns: ["comment"],
@@ -78,7 +128,7 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
   },
   {
     description: "Documents GLPI crees a partir d'archives images.",
-    endpoint: "/Assets/Document",
+    endpoint: "/Management/Document",
     id: "documents",
     label: "Documents",
     optionalColumns: ["filename", "comment"],
