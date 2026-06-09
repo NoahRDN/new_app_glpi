@@ -5,7 +5,10 @@ import {
   deleteComputerModel,
   findComputerModelByName,
 } from "../../../../entities/computer-model/api/computerModel.api";
-import { createDocument, deleteDocument } from "../../../../entities/document/api/document.api";
+import {
+  createDocumentWithFile,
+  deleteDocument,
+} from "../../../../entities/document/api/document.api";
 import {
   createDocumentItem,
   deleteDocumentItem,
@@ -719,12 +722,11 @@ async function importImageZipEntry(
   context: EvalImportContext,
   rollbackActions: RollbackAction[],
 ) {
-  const createdDocument = await createDocument({
-    input: {
-      comment: `Import image zip: ${zipFileName}`,
-      filename: imageEntry.fileName,
-      name: imageEntry.reference || imageEntry.fileName,
-    },
+  const createdDocument = await createDocumentWithFile({
+    comment: `Import image zip: ${zipFileName}`,
+    file: imageEntry.file,
+    fileName: imageEntry.fileName,
+    name: imageEntry.reference || imageEntry.fileName,
   });
 
   const documentId = extractCreatedId(createdDocument);

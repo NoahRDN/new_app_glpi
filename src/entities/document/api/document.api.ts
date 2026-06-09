@@ -2,6 +2,7 @@ import {
   glpiLegacyDelete,
   glpiLegacyGet,
   glpiLegacyPost,
+  glpiLegacyPostFormData,
   glpiLegacyPut,
 } from "../../../shared/api/glpiLegacyClient";
 
@@ -12,6 +13,13 @@ export type Document = {
 };
 
 export type CreateDocument = Record<string, unknown>;
+
+export type CreateDocumentWithFilePayload = {
+  comment?: string;
+  file: Blob;
+  fileName: string;
+  name: string;
+};
 
 export type UpdateDocument = Record<string, unknown> & {
   id: number;
@@ -27,6 +35,25 @@ export async function getDocument(documentId: number | string): Promise<Document
 
 export async function createDocument(payload: CreateDocument): Promise<Document> {
   return glpiLegacyPost<Document>("/Document", payload);
+}
+
+export async function createDocumentWithFile(
+  payload: CreateDocumentWithFilePayload,
+): Promise<Document> {
+  const formData = new FormData();
+
+  formData.append(
+    "uploadManifest",
+    JSON.stringify({
+      input: {
+        comment: payload.comment,
+        name: payload.name,
+      },
+    }),
+  );
+  formData.append("filename[0]", payload.file, payload.fileName);
+
+  return glpiLegacyPostFormData<Document>("/Document", formData);
 }
 
 export async function updateDocument(payload: UpdateDocument): Promise<Document> {

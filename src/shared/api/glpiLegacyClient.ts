@@ -124,12 +124,67 @@ async function request<T>(
   return response.json() as Promise<T>;
 }
 
+async function requestFormData<T>(
+  path: string,
+  method: Exclude<LegacyRequestMethod, "GET">,
+  formData: FormData,
+  retry = true,
+): Promise<T> {
+  const token = await initLegacySession();
+
+  let response: Response;
+
+  try {
+    response = await fetch(buildLegacyUrl(path), {
+      method,
+      headers: {
+        ...getBaseHeaders(),
+        "Session-Token": token,
+      },
+      body: formData,
+    });
+  } catch {
+    throw new AppError({
+      message: `Network error while calling GLPI legacy API ${method} ${path}`,
+      userMessage: "Impossible de contacter l’API legacy GLPI.",
+      code: "NETWORK_ERROR",
+    });
+  }
+
+  if (!response.ok) {
+    const details = await response.text();
+
+    if (retry && isSessionInvalid(response.status, details)) {
+      sessionToken = null;
+      return requestFormData<T>(path, method, formData, false);
+    }
+
+    throw new AppError({
+      message: `GLPI legacy API ${method} ${path} failed: ${response.status} ${response.statusText}`,
+      userMessage: "Une erreur est survenue pendant l’envoi du fichier vers l’API legacy GLPI.",
+      code: "GLPI_LEGACY_API_ERROR",
+      status: response.status,
+      details,
+    });
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json() as Promise<T>;
+}
+
 export function glpiLegacyGet<T>(path: string) {
   return request<T>(path, "GET");
 }
 
 export function glpiLegacyPost<T>(path: string, body: unknown) {
   return request<T>(path, "POST", body);
+}
+
+export function glpiLegacyPostFormData<T>(path: string, formData: FormData) {
+  return requestFormData<T>(path, "POST", formData);
 }
 
 export function glpiLegacyPut<T>(path: string, body: unknown) {
