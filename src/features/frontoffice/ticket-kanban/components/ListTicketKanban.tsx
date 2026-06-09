@@ -46,7 +46,10 @@ export function ListTicketKanban() {
     refetch,
   } = useTicketsPage(page, limit, debouncedFilters);
 
-  const tickets = ticketsPage?.data ?? [];
+  const tickets = useMemo(() => {
+    return ticketsPage?.data ?? [];
+  }, [ticketsPage?.data]);
+  
   useMemo(() => {
     return groupTicketsByKanban(tickets);
   }, [tickets]);
