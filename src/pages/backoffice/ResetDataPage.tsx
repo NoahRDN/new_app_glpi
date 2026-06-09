@@ -31,7 +31,7 @@ export function ResetDataPage() {
   return (
     <>
       <section className="col-span-12 rounded-[18px] border p-6 xl:col-span-5" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
-        <Button otherClassName="my-5 bg-red-600 w-full justify-center" disabled={selectedResources.length === 0 || isResetting} onClick={handleReset}>
+        <Button className="my-5 bg-red-600 w-full justify-center" disabled={selectedResources.length === 0 || isResetting} onClick={handleReset}>
           <Trash2 size={18} />
           {isResetting ? "Reinitialisation..." : "Reinitialiser"}
         </Button>

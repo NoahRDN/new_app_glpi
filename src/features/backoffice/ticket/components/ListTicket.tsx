@@ -153,7 +153,7 @@ export function ListTicket() {
           <td className="border border-(--panel-border) px-4 py-4">
             <Button
               aria-label="Voir le détail du ticket"
-              otherClassName="bg-blue-400"
+              className="bg-blue-400"
               onClick={() => navigate(`/admin/tickets/${ticket.id}`)}
             >
               <Eye size={18} />

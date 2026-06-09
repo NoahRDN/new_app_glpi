@@ -116,7 +116,7 @@ export function ListComputer() {
             className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4"
           >
             <Button
-                otherClassName="mr-4"
+                className="mr-4"
                 onClick={() => setIsModalOpen(true)}
             >Action Groupé</Button>
             <Input
@@ -203,7 +203,7 @@ export function ListComputer() {
             </td>
             <td className="px-4 py-3 flex gap-3">
               <Button
-                otherClassName="bg-blue-500"
+                className="bg-blue-500"
                 isWithBackground={false}
                 aria-label="modification"
                 onClick={() => {
@@ -213,7 +213,7 @@ export function ListComputer() {
                 <PenLine size={18} />
               </Button>
               <Button 
-                otherClassName="bg-red-500"
+                className="bg-red-500"
                 disabled={isDeletingComputer}
                 aria-label="suppression"
                 onClick={async () => {
@@ -228,7 +228,7 @@ export function ListComputer() {
                   await deleteComputerAsync(visibleComputer.id);
                 }}
               ><Trash2 size={18} /></Button>
-              <Button otherClassName="bg-blue-400" aria-label="Voir le détail"><Eye size={18} /></Button>
+              <Button className="bg-blue-400" aria-label="Voir le détail"><Eye size={18} /></Button>
             </td>
           </tr>
         ))}

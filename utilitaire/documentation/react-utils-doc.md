@@ -1196,7 +1196,7 @@ Il faut mettre :
 
 <Button
   type="button"
-  otherClassName="w-full flex items-center flex-col"
+  className="w-full flex items-center flex-col"
   isWithBackground={false}
   onClick={onClose}
 >
@@ -1270,7 +1270,7 @@ const navigate = useNavigate();
 
 Et sur ton bouton :
 
-<Button otherClassName="mt-3" onClick={() => navigate(-1)}>
+<Button className="mt-3" onClick={() => navigate(-1)}>
   Retour
 </Button>
 

@@ -27,6 +27,33 @@ export async function getTicketsPage(
   return glpiGetPaginated<Ticket>(`/Assistance/Ticket?${params.toString()}`);
 }
 
+export async function getAllTickets(
+  filters: TicketFilters,
+): Promise<Ticket[]> {
+  const firstPage = await getTicketsPage(
+    0,
+    100,
+    filters,
+  );
+
+  const total = firstPage.total;
+  const totalPages = Math.ceil(total / 100);
+
+  const allItems = [...firstPage.data];
+
+  for (let page = 1; page < totalPages; page++) {
+    const nextPage = await getTicketsPage(
+      page,
+      100,
+      filters,
+    );
+
+    allItems.push(...nextPage.data);
+  }
+
+  return allItems;
+}
+
 export async function getTicket(ticketId: number | string): Promise<Ticket> {
   return glpiGet<Ticket>(`/Assistance/Ticket/${ticketId}`);
 }

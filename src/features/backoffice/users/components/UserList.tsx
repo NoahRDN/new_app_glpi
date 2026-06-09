@@ -34,14 +34,14 @@ export function UserList(){
                 toolbar={
                     <>
                     <Button
-                        otherClassName="mr-4"
+                        className="mr-4"
                         onClick={() => setIsModalOpen(true)}
                     >Action Groupé</Button>
                     <Button
                         onClick={() => setIsModalOpen(true)}
                     ><Plus size={20} />Ajouter</Button>
                     <Button
-                        otherClassName="ml-4"
+                        className="ml-4"
                         onClick={() => setIsModalOpen(true)}
                     >Actualiser</Button>
                     </>
@@ -70,7 +70,7 @@ export function UserList(){
                             >
                                 <PenLine />
                             </Button>
-                            <Button otherClassName="bg-red-500"
+                            <Button className="bg-red-500"
                                 onClick={
                                      () => {
                                         setIsModalDelete(true);
@@ -119,14 +119,14 @@ export function UserList(){
                     <p className="text-center mb-7">Voulez vous vraiment supprimez?</p>
                     <div className="grid grid-cols-2 gap-4">
                         <Button 
-                            otherClassName="bg-red-600 w-full justify-center"
+                            className="bg-red-600 w-full justify-center"
                             onClick={() => {
                                 setIsModalDelete(false)
                                 setIsModalOpen(false)
                             }} 
                         >Annuler</Button>
                         <Button
-                            otherClassName="w-full justify-center"
+                            className="w-full justify-center"
                             onClick={
                                 async () => {
                                     await deleteUserHooks(userDelete.id);
@@ -143,7 +143,7 @@ export function UserList(){
                     <p className="text-center mb-7 text-green-600 bg-green-100 rounded-2xl">"{userDelete.username}" a été bien supprimer</p>
                     <div className="grid grid-cols-1 gap-4">
                         <Button
-                            otherClassName="w-full justify-center"
+                            className="w-full justify-center"
                             onClick={
                                 async () => {
                                     setIsSuccessDeleteUser(false)

@@ -101,7 +101,7 @@ export function ListPrinter() {
         ]}
         toolbar={(
           <div className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4">
-            <Button otherClassName="mr-4" onClick={() => setIsModalOpen(true)}>
+            <Button className="mr-4" onClick={() => setIsModalOpen(true)}>
               Action Groupé
             </Button>
 
@@ -188,7 +188,7 @@ export function ListPrinter() {
               <Button
                 aria-label="modification"
                 isWithBackground={false}
-                otherClassName="bg-blue-500"
+                className="bg-blue-500"
                 onClick={() => setPrinterToUpdate(printer)}
               >
                 <PenLine size={18} />
@@ -196,7 +196,7 @@ export function ListPrinter() {
               <Button
                 aria-label="suppression"
                 disabled={isDeletingPrinter}
-                otherClassName="bg-red-500"
+                className="bg-red-500"
                 onClick={async () => {
                   const isConfirmed = confirm(
                     `Voulez-vous vraiment supprimer "${printer.name}" ?`,
@@ -211,7 +211,7 @@ export function ListPrinter() {
               >
                 <Trash2 size={18} />
               </Button>
-              <Button aria-label="Voir le détail" otherClassName="bg-blue-400">
+              <Button aria-label="Voir le détail" className="bg-blue-400">
                 <Eye size={18} />
               </Button>
             </td>

@@ -74,14 +74,14 @@ export function UpdatePrinterForm({
         <Button
           type="button"
           isWithBackground={false}
-          otherClassName="w-full flex items-center flex-col"
+          className="w-full flex items-center flex-col"
           onClick={onClose}
         >
           Annuler
         </Button>
         <Button
           type="submit"
-          otherClassName="w-full flex items-center flex-col"
+          className="w-full flex items-center flex-col"
           disabled={isUpdatingPrinter}
         >
           {isUpdatingPrinter ? "Modification..." : "Modifier"}

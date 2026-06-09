@@ -453,7 +453,7 @@ export function ImportDataPage() {
           </span>
         </label>
 
-        <Button otherClassName="mt-5" disabled={!canImport || isImporting} onClick={handleImport}>
+        <Button className="mt-5" disabled={!canImport || isImporting} onClick={handleImport}>
           <Upload size={18} />
           {isImporting ? "Import en cours..." : "Importer les fichiers"}
         </Button>
