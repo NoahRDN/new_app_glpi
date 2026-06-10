@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { CreateTicketPayload } from "../../../../entities/ticket/model/ticket.types";
 import { getDeveloperErrorDetails, getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Input } from "../../../../shared/ui/Input";
@@ -15,6 +16,7 @@ import { generalViewAssetItemsFiltersDefaultValues } from "../../general-view-as
 import { useAllGeneralViewAssetItems } from "../../general-view-asset-items/hooks/useAllGeneralViewAssetItems";
 import type { GeneralViewAssetItems } from "../../general-view-asset-items/model/generalViewAssetItems.types";
 import { linkAssetToTicket } from "../../../../entities/ticket/api/ticketItem.api";
+import { getUsers } from "../../../../entities/user/api/user.api";
 
 type SelectedTicketElement = {
   itemtype: string;       
@@ -34,6 +36,7 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
     const [assetItemSelected, setAssetItemSelected] = useState("");
     const [selectedElements, setSelectedElements] = useState<SelectedTicketElement[]>([]);
     const [myAssetItemSelected, setMyAssetItemSelected] = useState("");
+    const [selectedUserId, setSelectedUserId] = useState<number | undefined>(undefined);
 
     const {
         mutateAsync: createTicketAsync,
@@ -50,10 +53,22 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
     } = useAssets();
 
     const {
+        data: users = [],
+        isError: isUsersError,
+        error: usersError,
+    } = useQuery({
+        queryKey: ["frontoffice-ticket-users"],
+        queryFn: getUsers,
+    });
+
+    const {
         data: allGeneralViewAssetItemsPage,
         isError: isAllGeneralViewAssetItemsError,
         error: allGeneralViewAssetItemsError,
-    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues, userId:41});
+    } = useAllGeneralViewAssetItems({
+        ...generalViewAssetItemsFiltersDefaultValues,
+        userId: selectedUserId,
+    });
 
     const {
         data: assetItemsSelected,
@@ -224,6 +239,14 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
             </MyError>
         </div>
     }
+
+    if (isUsersError) {
+        return <div>
+            <MyError>
+                {getUserErrorMessage(usersError, "Erreur lors du chargement des utilisateurs")}
+            </MyError>
+        </div>
+    }
     
     if (isCreatePrinterError) {
         return <MyError>
@@ -250,6 +273,32 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
 
     return<>
         <form className="flex gap-3 flex-col" onSubmit={handleSubmit}>
+            <Label htmlFor="ticketUser">Utilisateur</Label>
+            <Select
+                id="ticketUser"
+                value={selectedUserId ? String(selectedUserId) : ""}
+                onChange={(event) => {
+                    const value = event.target.value;
+
+                    setSelectedUserId(value ? Number(value) : undefined);
+                    setMyAssetItemSelected("");
+                }}
+            >
+                <option value="">Choisir un utilisateur</option>
+                {users
+                    .filter((user) => !user.is_deleted)
+                    .map((user) => {
+                        const fullName = `${user.firstname} ${user.realname}`.trim();
+                        const label = fullName.length > 0 ? fullName : user.username;
+
+                        return (
+                            <option key={user.id} value={String(user.id)}>
+                                {label} ({user.username})
+                            </option>
+                        );
+                    })}
+            </Select>
+
             <Label htmlFor="ticketName" id="titre">Titre ticket</Label>
             <Input 
                 value={form.name}
@@ -286,6 +335,12 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                     }}
                     >
                     <option value="">--------</option>
+
+                    {selectedUserId === undefined && (
+                        <option value="" disabled>
+                            Sélectionnez d&apos;abord un utilisateur
+                        </option>
+                    )}
 
                     {Object.entries(groupedAssetsByItemType).map(([itemType, items]) => (
                         <optgroup key={itemType} label={itemType}>
