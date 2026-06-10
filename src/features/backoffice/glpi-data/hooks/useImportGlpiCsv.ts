@@ -42,7 +42,11 @@ import {
   extractAdditionalMessages,
   extractErrorDetail,
 } from "../../../../shared/errors/AppError";
-import { createGlpiResourceItem, deleteGlpiResourceItem } from "../api/glpiDataResource.api";
+import {
+  createGlpiResourceItem,
+  deleteGlpiResourceItem,
+  updateGlpiResourceItem,
+} from "../api/glpiDataResource.api";
 import { extractGlpiImageFilesFromZip } from "../lib/parseGlpiImagesZip";
 import { resetGlpiResources } from "../lib/resetGlpiResources";
 import { getGlpiDataResource, type GlpiDataResourceId } from "../model/glpiDataResource.config";
@@ -679,12 +683,13 @@ async function importEvalTicketsFile(
         continue;
       }
 
+      const finalStatus = getTicketStatusValue(data.statusLabel);
       const payload = {
         content: String(data.content ?? "").trim(),
         external_id: String(data.refTicket ?? "").trim() || undefined,
         name: String(data.name ?? "").trim(),
         priority: getTicketPriorityValue(data.priorityLabel),
-        status: getTicketStatusValue(data.statusLabel),
+        status: 1,
         type: getTicketTypeValue(data.typeLabel),
       };
 
@@ -733,6 +738,14 @@ async function importEvalTicketsFile(
 
           ticketLinkCount += 1;
         }
+      }
+
+      if (ticketId !== null && finalStatus !== 1) {
+        await updateGlpiResourceItem(
+          getGlpiDataResource("tickets"),
+          ticketId,
+          { status: finalStatus },
+        );
       }
 
       importedCount += 1;
