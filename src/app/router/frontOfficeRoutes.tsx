@@ -8,6 +8,7 @@ import { LoginPage } from "../../pages/other/frontoffice/LoginPage";
 import { AccountPage } from "../../pages/other/frontoffice/AccountPage";
 import { GeneralViewElementPage } from "../../pages/frontoffice/GeneralViewElementPage";
 import { TicketsPage } from "../../pages/frontoffice/TicketsPage";
+import { TicketsKanbanPage } from "../../pages/frontoffice/TicketsKanbanPage";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -46,6 +47,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "create-ticket",
           element: <TicketsPage />,
+        },
+        {
+          path: "ticket-kanban",
+          element: <TicketsKanbanPage />,
         },
       ],
     },

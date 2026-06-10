@@ -70,14 +70,14 @@ export function CreateComputerForm({ onCreated, onClose}: CreateComputerFormProp
       <div className="flex gap-3">
         <Button 
           type="button"
-          otherClassName="w-full flex items-center flex-col" 
+          className="w-full flex items-center flex-col" 
           isWithBackground={false}
           onClick={onClose} 
         >
           Annuler
         </Button>
 
-        <Button type="submit" otherClassName="w-full flex items-center flex-col"  disabled={isCreatingComputer}>
+        <Button type="submit" className="w-full flex items-center flex-col"  disabled={isCreatingComputer}>
           {isCreatingComputer ? "Création..." : "Créer"}
         </Button>
       </div>

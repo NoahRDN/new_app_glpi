@@ -453,7 +453,7 @@ export function ImportDataPage() {
           </span>
         </label>
 
-        <Button otherClassName="mt-5" disabled={!canImport || isImporting} onClick={handleImport}>
+        <Button className="mt-5" disabled={!canImport || isImporting} onClick={handleImport}>
           <Upload size={18} />
           {isImporting ? "Import en cours..." : "Importer les fichiers"}
         </Button>
@@ -704,8 +704,8 @@ export function ImportDataPage() {
                             <tbody>
                               {file.entries.slice(0, 10).map((entry) => (
                                 <tr key={`${file.fileName}-${entry.fileName}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
-                                  <td className="px-4 py-3">{entry.fileName}</td>
-                                  <td className="px-4 py-3">{entry.reference}</td>
+                                  <td className="border border-(--panel-border) px-4 py-4">{entry.fileName}</td>
+                                  <td className="border border-(--panel-border) px-4 py-4">{entry.reference}</td>
                                 </tr>
                               ))}
                             </tbody>

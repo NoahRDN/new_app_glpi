@@ -82,7 +82,7 @@ export function UserUpdate({ onClose, onUserUpdated, userToUpdate }: UserUpdateP
 
         <div className="flex gap-3 justify-between">
           <Button
-            otherClassName="w-full flex items-center flex-col"
+            className="w-full flex items-center flex-col"
             isWithBackground={false}
             onClick={onClose}
             type="button"
@@ -91,7 +91,7 @@ export function UserUpdate({ onClose, onUserUpdated, userToUpdate }: UserUpdateP
           </Button>
           <Button
             type="submit"
-            otherClassName="w-full flex items-center flex-col"
+            className="w-full flex items-center flex-col"
             disabled={isUpdating}
           >
             {isUpdating ? "Modification...." : "Modifier"}

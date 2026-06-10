@@ -17,7 +17,7 @@ import { AssetImages } from "../../../shared/asset-images/components/AssetImages
 export function ListGeneralViewItem(){
     const [filters, setFilters] = useState<GeneralViewAssetItemsFilters>({...generalViewAssetItemsFiltersDefaultValues})
     const [page, setPage] = useState(0);
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(5);
 
     const debouncedFilters = useDebounce(filters, 400);
 

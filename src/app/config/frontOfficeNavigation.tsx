@@ -1,7 +1,29 @@
-import { Globe, House, LifeBuoy, MonitorSmartphone, TicketPlus, UserRound } from "lucide-react";
+import { Globe, House, Kanban, LifeBuoy, MonitorSmartphone, TicketPlus, UserRound } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const frontOfficeNavigation: OfficeNavigationItem[] = [
+  {
+    description: "Vue General Element",
+    Icon: Globe,
+    id: "asset-general-element",
+    label: "Vue General Element",
+    path: "/asset-general-element",
+  },
+  {
+    description: "Création ticket",
+    Icon: TicketPlus,
+    id: "create-ticket",
+    label: "Création Ticket",
+    path: "/create-ticket",
+  },
+  {
+    description: "Ticket en présentation Kanban",
+    Icon: Kanban,
+    id: "ticket-kanban",
+    label: "Ticket en présentation Kanban",
+    path: "/ticket-kanban",
+    isHorizontalRowDown: true,
+  },
   {
     description: "Page d'accueil du portail",
     Icon: House,
@@ -30,18 +52,6 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     label: "Mon espace",
     path: "/account",
   },
-  {
-    description: "Vue General Element",
-    Icon: Globe,
-    id: "asset-general-element",
-    label: "Vue General Element",
-    path: "/asset-general-element",
-  },
-  {
-    description: "Création ticket",
-    Icon: TicketPlus,
-    id: "create-ticket",
-    label: "Création Ticket",
-    path: "/create-ticket",
-  },
+ 
+  
 ];

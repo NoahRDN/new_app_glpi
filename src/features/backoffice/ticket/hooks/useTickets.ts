@@ -1,12 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { getTicket, getTickets } from "../../../../entities/ticket/api/ticket.api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getTicket, getTicketsPage } from "../../../../entities/ticket/api/ticket.api";
+import type { TicketFilters } from "../../../../entities/ticket/model/ticket.types";
 
 export const ticketsQueryKey = ["assistance", "tickets"] as const;
 
-export function useTickets() {
+export function useTicketsPage(page: number, limit: number, filters: TicketFilters) {
   return useQuery({
-    queryKey: ticketsQueryKey,
-    queryFn: getTickets,
+    queryKey: [...ticketsQueryKey, page, limit, filters],
+    queryFn: () => getTicketsPage(page, limit, filters),
+    placeholderData: keepPreviousData,
     staleTime: 30_000,
     retry: 1,
   });

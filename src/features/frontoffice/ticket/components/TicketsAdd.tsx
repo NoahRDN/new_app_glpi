@@ -23,7 +23,13 @@ type SelectedTicketElement = {
   name: string;
 };
 
-export function TicketsAdd(){
+
+type TicketsAddProps = {
+  onClose?: () => void;
+  isModal?: boolean
+};
+
+export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
     const [assetTypeItemSelected, setAssetTypeItemSelected] = useState("");
     const [assetItemSelected, setAssetItemSelected] = useState("");
     const [selectedElements, setSelectedElements] = useState<SelectedTicketElement[]>([]);
@@ -47,13 +53,13 @@ export function TicketsAdd(){
         data: allGeneralViewAssetItemsPage,
         isError: isAllGeneralViewAssetItemsError,
         error: allGeneralViewAssetItemsError,
-    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues, userId:2});
+    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues, userId:41});
 
     const {
         data: assetItemsSelected,
         isError: isAssetItemsSelectedError,
         error: assetItemsSelectedError,
-    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues,itemtypes: [assetTypeItemSelected] ,userId:2});
+    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues,itemtypes: [assetTypeItemSelected]});
 
     const [form, setForm] = useState<CreateTicketPayload>({...createTicketDefault});
 
@@ -236,7 +242,7 @@ export function TicketsAdd(){
             <div className="rounded-[30px] p-5 bg-green-200 text-green-500">
                 Votre Ticket a été créer avec succès
             </div>
-            <Button otherClassName="mt-3" onClick={() => window.location.reload()}>
+            <Button className="mt-3" onClick={() => window.location.reload()}>
                 Retour
             </Button>
         </>
@@ -325,7 +331,7 @@ export function TicketsAdd(){
             </div>
             
             <div>
-                <Button type="button" otherClassName="justify-center" onClick={handleAddElement}><Plus />Add</Button>
+                <Button type="button" className="justify-center" onClick={handleAddElement}><Plus />Add</Button>
             </div>
             {selectedElements.length > 0 && (
                 <div className="rounded-2xl border border-(--panel-border) p-4">
@@ -363,9 +369,25 @@ export function TicketsAdd(){
                     </div>
                 </div>
                 )}
-            <Button type="submit" otherClassName="justify-center">
+            {isModal ?
+            <div className="flex gap-3">
+                    <Button
+                        type="button"
+                        isWithBackground={false}
+                        className="w-full flex items-center flex-col"
+                        onClick={onClose}
+                    >
+                        Annuler
+                    </Button>
+                    <Button type="submit" className="w-full flex items-center flex-col">
+                        {isCreatingTicket ? "Création Ticket..." : "Valider"}
+                    </Button>
+                </div>
+            : <Button type="submit" className="justify-center">
                 {isCreatingTicket ? "Création Ticket..." : "Valider"}
-            </Button>
+            </Button>}
         </form>
+
+        
     </>
 }

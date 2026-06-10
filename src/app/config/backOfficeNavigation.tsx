@@ -14,13 +14,6 @@ import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const backOfficeNavigation: OfficeNavigationItem[] = [
   {
-    id: "dashboard-other",
-    path: "/admin/dashboard-other",
-    label: "Administration TEST",
-    description: "Vue analytique et configuration avancée (Page de test)",
-    Icon: LayoutDashboard,
-  },
-  {
     id: "dashboard",
     path: "/admin",
     label: "Dashboard",
@@ -33,6 +26,28 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     label: "Tickets",
     description: "Synthèse globale et activité récente",
     Icon: SquareKanban,
+  },
+  {
+    id: "import-data",
+    path: "/admin/import-data",
+    label: "Import data",
+    description: "Import CSV multi-ressources GLPI",
+    Icon: FileSpreadsheet,
+  },
+  {
+    id: "reset-data",
+    path: "/admin/reset-data",
+    label: "Reset data",
+    description: "Réinitialisation multi-ressources GLPI",
+    Icon: RotateCcw,
+    isHorizontalRowDown: true,
+  },
+  {
+    id: "dashboard-other",
+    path: "/admin/dashboard-other",
+    label: "Administration TEST",
+    description: "Vue analytique et configuration avancée (Page de test)",
+    Icon: LayoutDashboard,
   },
   {
     id: "parcs",
@@ -63,20 +78,6 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     Icon: User,
   },
   {
-    id: "import-data",
-    path: "/admin/import-data",
-    label: "Import data",
-    description: "Import CSV multi-ressources GLPI",
-    Icon: FileSpreadsheet,
-  },
-  {
-    id: "reset-data",
-    path: "/admin/reset-data",
-    label: "Reset data",
-    description: "Réinitialisation multi-ressources GLPI",
-    Icon: RotateCcw,
-  },
-  {
     id: "computers",
     path: "/admin/computers",
     label: "Computer",
@@ -90,7 +91,6 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     description: "Données détailler sur le printer",
     Icon: Printer,
   },
-
   {
     id: "memo-test",
     path: "/admin/memo-test",

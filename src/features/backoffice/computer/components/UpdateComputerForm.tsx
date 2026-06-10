@@ -79,7 +79,7 @@ export function UpdateComputerForm({
       <div className="flex gap-3">
         <Button
           type="button"
-          otherClassName="w-full flex items-center flex-col"
+          className="w-full flex items-center flex-col"
           isWithBackground={false}
           onClick={onClose}
         >
@@ -88,7 +88,7 @@ export function UpdateComputerForm({
 
         <Button
           type="submit"
-          otherClassName="w-full flex items-center flex-col"
+          className="w-full flex items-center flex-col"
           disabled={isUpdatingComputer}
         >
           {isUpdatingComputer ? "Modification..." : "Modifier"}

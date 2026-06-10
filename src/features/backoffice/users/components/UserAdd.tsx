@@ -75,13 +75,13 @@ export function UserAdd({onClose, onUserCreated} : UserAddProps){
             </div>
             <div className="flex gap-3 justify-between">
                 <Button
-                    otherClassName="w-full flex items-center flex-col" 
+                    className="w-full flex items-center flex-col" 
                     isWithBackground={false}
                     onClick={onClose}
                 >Annuler</Button>  
                 <Button 
                     type="submit"
-                    otherClassName="w-full flex items-center flex-col" 
+                    className="w-full flex items-center flex-col" 
                     disabled={isAdding}
                 >
                     {isAdding ? "Ajout...." : "Ajouter" }    

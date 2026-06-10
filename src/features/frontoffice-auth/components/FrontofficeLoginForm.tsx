@@ -48,7 +48,7 @@ export function FrontofficeLoginForm() {
         />
       </div>
 
-      <Button otherClassName="w-full justify-center" type="submit">
+      <Button className="w-full justify-center" type="submit">
         Se connecter au frontoffice
       </Button>
     </form>

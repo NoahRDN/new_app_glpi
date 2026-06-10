@@ -13,16 +13,23 @@ type OfficeLayoutShellProps = {
 
 function GlpiNewAppLogo({ subtitle }: { subtitle?: string }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative h-8 w-8">
-        <span className="absolute left-0 top-3 h-2.5 w-2.5 rounded-full bg-(--accent-blue)" />
-        <span className="absolute left-2.5 top-0 h-3.5 w-3.5 rounded-full bg-(--accent-blue)" />
-        <span className="absolute right-0 top-1.5 h-2.5 w-2.5 rounded-full bg-(--accent-green)" />
-        <span className="absolute left-3 top-4 h-3.5 w-3.5 rounded-full bg-(--accent-purple)" />
-      </div>
+    <div className="flex flex-col items-center gap-3 text-center">
+      <img
+        className="h-14 w-auto object-contain"
+        src="/logo.png"
+        alt="Logo GLPI New App"
+      />
+
       <div>
-        <p className="text-[2rem] font-semibold tracking-tight">GLPI New App</p>
-        {subtitle ? <p className="text-xs text-(--text-secondary)">{subtitle}</p> : null}
+        <p className="text-xl font-semibold leading-tight tracking-tight">
+          GLPI New App
+        </p>
+
+        {subtitle ? (
+          <p className="text-xs text-[var(--text-secondary)]">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -61,23 +68,25 @@ export function OfficeLayoutShell({
             const Icon = item.Icon;
 
             return (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                end={item.path === "/" || item.path === "/admin"}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-[15px] transition ${
-                    isActive
-                      ? "bg-(--sidebar-active) text-(--accent-blue)"
-                      : "text-(--sidebar-text-soft) hover:bg-(--sidebar-soft)"
-                  }`
-                }
-              >
-                <span className="shrink-0">
-                  <Icon size={18} strokeWidth={1.7} />
-                </span>
-                <span className="font-semibold">{item.label}</span>
-              </NavLink>
+              <div key={item.id}>
+                <NavLink
+                  to={item.path}
+                  end={item.path === "/" || item.path === "/admin"}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-[15px] transition ${
+                      isActive
+                        ? "bg-(--sidebar-active) text-(--accent-blue)"
+                        : "text-(--sidebar-text-soft) hover:bg-(--sidebar-soft)"
+                    }`
+                  }
+                >
+                  <span className="shrink-0">
+                    <Icon size={18} strokeWidth={1.7} />
+                  </span>
+                  <span className="font-semibold">{item.label}</span>
+                </NavLink>
+                {item.isHorizontalRowDown && <hr className="mt-7 border-t border-[var(--panel-border)]" />}
+              </div>
             );
           })}
         </nav>

@@ -12,6 +12,7 @@ export async function getGeneralViewAssetItemsPage({
   limit: number,
   filters: GeneralViewAssetItemsFilters
 }): Promise<GeneralViewAssetItemsPage> {
+  
   const assets = await getAssets();
 
   const selectedAssets =
@@ -38,10 +39,8 @@ export async function getGeneralViewAssetItemsPage({
     if (filter.length > 0) {
       countParams.set("filter", filter);
     }
-
-    const countPage = await glpiGetPaginated<GlpiAssetCommon>(
-      `${asset.href}?${countParams.toString()}`,
-    );
+    const url = `${asset.href}?${countParams.toString()}`;
+    const countPage = await glpiGetPaginated<GlpiAssetCommon>(url);
 
     const assetTotal = countPage.total;
     total += assetTotal;

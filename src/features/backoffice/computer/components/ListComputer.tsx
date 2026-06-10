@@ -17,7 +17,7 @@ import { useDeleteComputer } from "../hooks/useDeleteComputer";
 export function ListComputer() {
   const [filters, setFilters] = useState<ComputerFilters>(computerFiltersDefaultValues);
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState<number>(20);
+  const [limit, setLimit] = useState<number>(5);
   const debouncedFilters = useDebounce(filters, 400);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [computerToUpdate, setComputerToUpdate] = useState<Computer | null>(null);
@@ -116,7 +116,7 @@ export function ListComputer() {
             className="mb-6 flex items-center justify-between gap-4 rounded-[22px] px-5 py-4"
           >
             <Button
-                otherClassName="mr-4"
+                className="mr-4"
                 onClick={() => setIsModalOpen(true)}
             >Action Groupé</Button>
             <Input
@@ -190,20 +190,20 @@ export function ListComputer() {
             <td className="px-4">
               <Input type="checkbox" />
             </td>
-            <td className="px-4 py-3">{page * limit + index + 1}</td>
-            <td className="px-4 py-3">{visibleComputer.name}</td>
-            <td className="px-4 py-3">{visibleComputer.type?.name ?? "-"}</td>
-            <td className="px-4 py-3">{visibleComputer.status?.name ?? "-"}</td>
-            <td className="px-4 py-3">{visibleComputer.user?.name ?? "-"}</td>
-            <td className="px-4 py-3">
+            <td className="border border-(--panel-border) px-4 py-4">{page * limit + index + 1}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.name}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.type?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.status?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">{visibleComputer.user?.name ?? "-"}</td>
+            <td className="border border-(--panel-border) px-4 py-4">
               {visibleComputer.location?.name ?? "-"}
             </td>
-            <td className="px-4 py-3">
+            <td className="border border-(--panel-border) px-4 py-4">
               {visibleComputer.manufacturer?.name ?? "-"}
             </td>
             <td className="px-4 py-3 flex gap-3">
               <Button
-                otherClassName="bg-blue-500"
+                className="bg-blue-500"
                 isWithBackground={false}
                 aria-label="modification"
                 onClick={() => {
@@ -213,7 +213,7 @@ export function ListComputer() {
                 <PenLine size={18} />
               </Button>
               <Button 
-                otherClassName="bg-red-500"
+                className="bg-red-500"
                 disabled={isDeletingComputer}
                 aria-label="suppression"
                 onClick={async () => {
@@ -228,7 +228,7 @@ export function ListComputer() {
                   await deleteComputerAsync(visibleComputer.id);
                 }}
               ><Trash2 size={18} /></Button>
-              <Button otherClassName="bg-blue-400" aria-label="Voir le détail"><Eye size={18} /></Button>
+              <Button className="bg-blue-400" aria-label="Voir le détail"><Eye size={18} /></Button>
             </td>
           </tr>
         ))}
