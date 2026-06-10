@@ -10,7 +10,6 @@ export function useUpdateTicketStatus() {
       ticketId: number;
       statusId: number;
     }) => {
-        console.log("PATCH ticket status:", params);
         return updateTicket({
             id: params.ticketId,
             status: {

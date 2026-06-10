@@ -13,8 +13,7 @@ import { useUpdateTicketStatus } from "../hooks/useUpdateTicketStatus";
 
 export function ListTicketKanban() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [, setDraggedTicketId] = useState<number | null>(null);
-
+  const [draggingTicketId, setDraggingTicketId] = useState<number | null>(null);
   const {
     mutateAsync: updateTicketStatusAsync,
   } = useUpdateTicketStatus();
@@ -76,11 +75,13 @@ export function ListTicketKanban() {
               type="button"
               isWithBackground={false}
               draggable
+              className={draggingTicketId === groupTicket.id ? "opacity-40" : ""}
               onDragStart={(event) => {
+                setDraggingTicketId(groupTicket.id);
                 event.dataTransfer.setData("ticketId", String(groupTicket.id));
               }}
               onDragEnd={() => {
-                setDraggedTicketId(null);
+                setDraggingTicketId(null);
               }}
             >
               {groupTicket.name}

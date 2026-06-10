@@ -1303,3 +1303,350 @@ transforme l’objet en tableau de paires :
     { id: 10, itemType: "Ordinateur", name: "PC-001" },
   ]]
 ]
+
+## dataTransfer vs localStorage
+
+Un peu dans l’idée, parce que les deux utilisent des données sous forme clé/valeur :
+
+setData("ticketId", "42")
+getData("ticketId")
+
+Mais ce n’est pas du tout pareil dans la durée.
+
+localStorage :
+
+reste stocké même après refresh
+est global au navigateur pour ton site
+sert à persister des données
+
+dataTransfer :
+
+existe seulement pendant le drag-and-drop actuel
+disparaît à la fin du déplacement
+sert uniquement à transporter une donnée entre dragStart et drop
+
+Donc dataTransfer, c’est plutôt comme un “petit sac temporaire” que le navigateur donne à l’élément pendant qu’il est glissé.
+
+## Rôle de onDragStart
+onDragStart={(event) => {
+  event.dataTransfer.setData("ticketId", String(groupTicket.id));
+}}
+
+Cet événement se déclenche au moment où tu commences à glisser le ticket.
+
+Son rôle ici :
+
+Je prends l’id du ticket actuel
+je le mets dans dataTransfer
+pour que la colonne qui recevra le drop sache quel ticket a été déplacé
+
+Sans ça, la colonne saurait qu’un élément a été déposé, mais elle ne saurait pas quel ticket.
+
+## Rôle de onDragEnd
+
+onDragEnd se déclenche quand le drag se termine, peu importe le résultat :
+
+tu as déposé dans une colonne
+ou tu as relâché ailleurs
+ou le drag a été annulé
+
+Dans l’ancienne version, on utilisait un state :
+
+const [draggedTicketId, setDraggedTicketId] = useState<number | null>(null);
+
+Donc on faisait :
+
+onDragStart={() => setDraggedTicketId(groupTicket.id)}
+onDragEnd={() => setDraggedTicketId(null)}
+
+L’objectif était de nettoyer le state après le drag.
+
+Mais maintenant que tu utilises dataTransfer, tu n’as plus forcément besoin de onDragEnd, parce que l’id du ticket est transporté directement par l’événement du navigateur.
+
+Donc avec cette version :
+
+onDragStart={(event) => {
+  event.dataTransfer.setData("ticketId", String(groupTicket.id));
+}}
+
+tu peux ne pas mettre onDragEnd.
+
+## Comment la nouvelle section reçoit le bouton déplacé ?
+
+Important : la section ne reçoit pas vraiment le bouton dans son HTML automatiquement.
+
+Quand tu déposes le ticket sur une colonne, le navigateur déclenche :
+
+onDrop
+
+sur la section où tu as lâché la souris.
+
+La section récupère alors l’id du ticket :
+
+const ticketId = Number(event.dataTransfer.getData("ticketId"));
+
+Puis elle appelle :
+
+onTicketDrop(ticketId);
+
+Ensuite le parent fait :
+
+await updateTicketStatusAsync({
+  ticketId,
+  statusId: ticketKanbanGroup.targetStatusId,
+});
+
+Donc le vrai changement est :
+
+drop dans colonne
+→ récupération de ticketId
+→ appel API PATCH
+→ changement du statut dans GLPI
+→ React Query recharge les tickets
+→ le ticket apparaît dans la nouvelle colonne
+
+Ce n’est pas le navigateur qui déplace le bouton dans le DOM. C’est React qui réaffiche la liste après changement de données.
+
+## Pourquoi onTicketDrop n’est pas async dans SectionKanbanProps
+
+Tu as :
+
+onTicketDrop: (ticketId: number) => void;
+
+mais dans le parent tu passes :
+
+onTicketDrop={async (ticketId) => {
+  await updateTicketStatusAsync({
+    ticketId,
+    statusId: ticketKanbanGroup.targetStatusId,
+  });
+}}
+
+Ça marche parce qu’en TypeScript, une fonction async peut être passée à un callback typé void si le composant n’a pas besoin d’attendre le résultat.
+
+Mais pour être plus propre, tu peux typer comme ça :
+
+onTicketDrop: (ticketId: number) => void | Promise<void>;
+
+Donc dans SectionKanban :
+
+type SectionKanbanProps = {
+  children?: ReactNode;
+  totalTicketKanban: number;
+  ticketKanbanGroupName: string;
+  isDisplayAddTicket: boolean;
+  backgroundColorSection: string;
+  onCreatedTicket: () => void;
+  onTicketDrop: (ticketId: number) => void | Promise<void>;
+  isUpdating?: boolean;
+};
+
+Et si tu veux vraiment attendre l’action dans SectionKanban, tu peux faire :
+
+onDrop={async (event) => {
+  event.preventDefault();
+
+  const ticketId = Number(event.dataTransfer.getData("ticketId"));
+
+  if (Number.isNaN(ticketId)) {
+    return;
+  }
+
+  await onTicketDrop(ticketId);
+}}
+
+Mais ce n’est pas obligatoire tant que tu n’as pas besoin d’afficher un état de chargement dans la section.
+
+## HTML Drag and Drop.
+### onDragStart, onDrag, onDragEnd
+
+Ces trois événements appartiennent au système HTML Drag and Drop.
+
+### onDragStart
+onDragStart={(event) => {
+  event.dataTransfer.setData("ticketId", String(groupTicket.id));
+}}
+
+Il se déclenche une seule fois, au moment où tu commences vraiment à glisser l’élément.
+
+Exemple :
+
+Je clique sur Ticket #12
+Je commence à le déplacer
+→ onDragStart se déclenche
+→ on stocke ticketId = "12" dans dataTransfer
+
+C’est ici qu’on prépare les informations à transporter.
+
+### onDrag
+onDrag={(event) => {
+  console.log("drag en cours");
+}}
+
+Il se déclenche plusieurs fois pendant le déplacement.
+
+Tant que tu déplaces l’élément avec la souris, onDrag peut se déclencher beaucoup de fois.
+
+Donc attention : ne mets pas d’appel API dans onDrag, sinon tu risques d’appeler ton API des dizaines ou centaines de fois.
+
+Tu peux l’utiliser pour des choses visuelles légères, par exemple :
+
+afficher une classe CSS
+suivre une position
+debugger
+
+Mais pas pour modifier la base.
+
+### onDragEnd
+onDragEnd={() => {
+  console.log("drag terminé");
+}}
+
+Il se déclenche à la fin du drag, que le drop ait réussi ou non.
+
+Exemples :
+
+tu déposes dans une colonne valide → onDragEnd
+tu relâches hors d’une colonne → onDragEnd
+tu annules le déplacement → onDragEnd
+
+Son rôle est souvent de nettoyer l’état visuel :
+
+onDragStart={() => setIsDragging(true)}
+onDragEnd={() => setIsDragging(false)}
+
+Dans ton code actuel, comme tu utilises dataTransfer, tu n’as pas forcément besoin de onDragEnd, sauf si tu veux ajouter un effet visuel.
+
+## REMARQUE dans HTML Drag and Drop.
+
+Pour le drag-and-drop HTML natif, oui, il faut généralement rendre l’élément draggable :
+
+<Button draggable>
+  Ticket
+</Button>
+
+Sans draggable, le navigateur ne considère pas forcément ton élément comme un élément déplaçable.
+
+Certaines choses sont naturellement draggable, comme :
+
+images
+liens
+texte sélectionné
+
+Mais pour un bouton, une div, une carte React, tu dois mettre :
+
+draggable
+
+## onDragEnter
+
+Il se déclenche quand l’élément glissé entre dans la zone.
+
+Exemple : tu prends un ticket, tu le déplaces vers la colonne “In Progress”. Dès que ta souris entre dans le rectangle de cette colonne, onDragEnter se déclenche.
+
+Utilisation typique : changer le style de la colonne.
+
+onDragEnter={() => {
+  setIsDragOver(true);
+}}
+
+Exemple visuel :
+
+Le ticket arrive sur la colonne
+→ la colonne devient entourée en bleu
+
+## onDragLeave
+
+Il se déclenche quand l’élément glissé quitte la zone.
+
+Exemple : tu passes au-dessus de la colonne “In Progress”, puis tu sors vers une autre colonne. onDragLeave se déclenche.
+
+Utilisation typique : retirer le style de survol.
+
+onDragLeave={() => {
+  setIsDragOver(false);
+}}
+
+Exemple :
+
+Le ticket quitte la colonne
+→ on enlève le contour bleu
+
+## onDragEnd
+
+Il se déclenche quand le drag est terminé, peu importe où tu as relâché.
+
+Exemples :
+
+tu déposes le ticket dans une colonne valide
+→ onDragEnd se déclenche
+
+tu relâches le ticket hors des colonnes
+→ onDragEnd se déclenche aussi
+
+Utilisation typique : nettoyer un état global.
+
+onDragEnd={() => {
+  setDraggingTicketId(null);
+  setIsDragging(false);
+}}
+
+Donc :
+
+onDragStart → début
+onDragEnd   → fin
+
+## event.target et event.currentTarget
+
+Imagine ton HTML comme ceci :
+
+<div class="section-kanban">      ← SectionKanban
+  <div class="header">
+    <h3>In Progress</h3>
+  </div>
+
+  <button>D'accord</button>       ← enfant de SectionKanban
+  <button>Michauffe</button>      ← enfant de SectionKanban
+</div>
+
+Tu mets l’événement ici :
+
+<div
+  onDragLeave={(event) => {
+    console.log(event.target);
+    console.log(event.currentTarget);
+  }}
+>
+
+Donc le handler est attaché à la div principale.
+
+event.currentTarget
+
+C’est l’élément qui possède le handler.
+
+Ici, ce sera toujours :
+
+la div SectionKanban
+
+Donc :
+
+event.currentTarget
+
+= la colonne entière.
+
+event.target
+
+C’est l’élément précis concerné par l’événement.
+
+Si ta souris est sur le fond de la colonne :
+
+event.target = la div SectionKanban
+
+Si ta souris est sur le bouton D'accord :
+
+event.target = le bouton D'accord
+
+Si ta souris est sur le texte dans le bouton :
+
+event.target = le texte ou un élément interne du bouton
+
+Donc même si ton onDragLeave est écrit sur la section, l’événement peut être lié à un enfant.
