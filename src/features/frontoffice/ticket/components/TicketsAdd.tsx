@@ -54,7 +54,7 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
         data: allGeneralViewAssetItemsPage,
         isError: isAllGeneralViewAssetItemsError,
         error: allGeneralViewAssetItemsError,
-    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues, userId:2});
+    } = useAllGeneralViewAssetItems({...generalViewAssetItemsFiltersDefaultValues, userId:41});
 
     const {
         data: assetItemsSelected,

@@ -55,7 +55,7 @@ export function UserList(){
                     <tr key={user.id} >
                         <td className="px-4">
                             <Input type="checkbox" />
-                        </td>DataTable
+                        </td>
                         <td className="px-4">{user.id}</td>
                         <td className="px-4">{user.username}</td>
                         <td className="px-4">{user.realname}</td>

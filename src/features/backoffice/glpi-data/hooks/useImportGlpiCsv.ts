@@ -32,7 +32,11 @@ import {
 } from "../../../../entities/state/api/state.api";
 import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
-import { getUsers } from "../../../../entities/user/api/user.api";
+import {
+  createUserFromName,
+  deleteUser,
+  findUserByName,
+} from "../../../../entities/user/api/user.api";
 import { AppError, extractErrorDetail } from "../../../../shared/errors/AppError";
 import { createGlpiResourceItem, deleteGlpiResourceItem } from "../api/glpiDataResource.api";
 import { extractGlpiImageFilesFromZip } from "../lib/parseGlpiImagesZip";
@@ -261,27 +265,6 @@ function getTicketPriorityValue(value: string | number | boolean | undefined) {
   return 3;
 }
 
-function buildFullName(firstname: string, realname: string) {
-  return `${firstname} ${realname}`.trim().toLowerCase();
-}
-
-function buildUserLookup(users: Awaited<ReturnType<typeof getUsers>>) {
-  const byName = new Map<string, number>();
-
-  users.forEach((user) => {
-    if (user.is_deleted) {
-      return;
-    }
-
-    byName.set(normalizeKey(user.username), user.id);
-    byName.set(buildFullName(user.firstname, user.realname), user.id);
-    byName.set(buildFullName(user.realname, user.firstname), user.id);
-    byName.set(normalizeKey(user.realname), user.id);
-  });
-
-  return byName;
-}
-
 function getImportErrorMessage(error: unknown) {
   if (error instanceof AppError) {
     return extractErrorDetail(error.details ?? "") ?? error.message;
@@ -375,6 +358,53 @@ function createNameResolver<T extends { id: number; name: string }>(params: {
   };
 }
 
+function createUserResolver(params: {
+  rollbackActions: RollbackAction[];
+}) {
+  const cache = new Map<string, number>();
+
+  return async function resolveUserIdByName(name: string | number | boolean | undefined) {
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+
+    if (normalizedName.length === 0) {
+      return undefined;
+    }
+
+    const cacheKey = normalizeKey(normalizedName);
+    const cachedId = cache.get(cacheKey);
+
+    if (cachedId !== undefined) {
+      return cachedId;
+    }
+
+    const existingUser = await findUserByName(normalizedName);
+
+    if (existingUser) {
+      cache.set(cacheKey, existingUser.id);
+      return existingUser.id;
+    }
+
+    try {
+      const createdUser = await createUserFromName(normalizedName);
+      params.rollbackActions.push({
+        label: `user#${createdUser.id}`,
+        run: () => deleteUser(createdUser.id),
+      });
+      cache.set(cacheKey, createdUser.id);
+      return createdUser.id;
+    } catch (caughtError) {
+      const userAfterFailedCreate = await findUserByName(normalizedName);
+
+      if (userAfterFailedCreate) {
+        cache.set(cacheKey, userAfterFailedCreate.id);
+        return userAfterFailedCreate.id;
+      }
+
+      throw caughtError;
+    }
+  };
+}
+
 function extractCreatedId(value: unknown) {
   if (typeof value === "object" && value !== null && "id" in value) {
     const id = (value as { id?: unknown }).id;
@@ -427,8 +457,9 @@ async function importEvalAssetsFile(
     rollbackActions,
     rollbackLabel: "monitorModel",
   });
-  const users = await getUsers();
-  const userLookup = buildUserLookup(users);
+  const resolveUserId = createUserResolver({
+    rollbackActions,
+  });
 
   let importedCount = 0;
   let computerCount = 0;
@@ -449,13 +480,12 @@ async function importEvalAssetsFile(
       continue;
     }
 
-    const userId = userLookup.get(normalizeKey(data.userName as string));
     const commonPayload = {
       location_id: await resolveLocationId(data.locationName),
       manufacturer_id: await resolveManufacturerId(data.manufacturerName),
       otherserial: inventoryNumber || undefined,
       status_id: await resolveStateId(data.statusLabel),
-      user_id: userId,
+      user_id: await resolveUserId(data.userName),
     };
 
     if (normalizeKey(itemType) === "monitor") {
