@@ -60,28 +60,30 @@ export type Computer = {
 
 export type GlpiComputer = Computer;
 
-export type ComputerPayloadReferenceId = number;
+export type ComputerPayloadReference = {
+  id: number;
+};
 
 export type CreateComputer = {
   comment?: string;
   contact?: string;
   contact_num?: string;
-  entity_id?: ComputerPayloadReferenceId;
-  group_tech_ids?: ComputerPayloadReferenceId[];
-  group_ids?: ComputerPayloadReferenceId[];
+  entity?: ComputerPayloadReference;
+  group_tech?: ComputerPayloadReference[];
+  group?: ComputerPayloadReference[];
   is_recursive?: boolean;
   is_template?: boolean;
-  location_id?: ComputerPayloadReferenceId;
-  manufacturer_id?: ComputerPayloadReferenceId;
-  model_id?: ComputerPayloadReferenceId;
+  location?: ComputerPayloadReference;
+  manufacturer?: ComputerPayloadReference;
+  model?: ComputerPayloadReference;
   name: string;
-  network_id?: ComputerPayloadReferenceId;
+  network?: ComputerPayloadReference;
   otherserial?: string;
   serial?: string;
-  status_id?: ComputerPayloadReferenceId;
-  type_id?: ComputerPayloadReferenceId;
-  user_id?: ComputerPayloadReferenceId;
-  user_tech_id?: ComputerPayloadReferenceId;
+  status?: ComputerPayloadReference;
+  type?: ComputerPayloadReference;
+  user?: ComputerPayloadReference;
+  user_tech?: ComputerPayloadReference;
   uuid?: string;
 };
 
@@ -96,4 +98,3 @@ export type ComputerFilters = {
   statusId?: number | null;
   manufacturerId?: number | null;
 };
-

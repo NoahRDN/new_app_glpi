@@ -10,14 +10,37 @@ export type MonitorReference = {
   name: string;
 };
 
+export type MonitorPayloadReference = {
+  id: number;
+};
+
 export type Monitor = {
   [key: string]: unknown;
   id: number;
   name: string;
 };
 
-export type CreateMonitor = Record<string, unknown> & {
+export type CreateMonitor = {
+  comment?: string;
+  contact?: string;
+  contact_num?: string;
+  entity?: MonitorPayloadReference;
+  group?: MonitorPayloadReference[];
+  group_tech?: MonitorPayloadReference[];
+  is_recursive?: boolean;
+  is_template?: boolean;
+  location?: MonitorPayloadReference;
+  manufacturer?: MonitorPayloadReference;
+  model?: MonitorPayloadReference;
   name: string;
+  network?: MonitorPayloadReference;
+  otherserial?: string;
+  serial?: string;
+  status?: MonitorPayloadReference;
+  type?: MonitorPayloadReference;
+  user?: MonitorPayloadReference;
+  user_tech?: MonitorPayloadReference;
+  uuid?: string;
 };
 
 export type UpdateMonitor = Partial<CreateMonitor> & {

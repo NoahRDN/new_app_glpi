@@ -229,6 +229,14 @@ function normalizeKey(value: string | number | null | undefined) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function toReference(id: number | undefined) {
+  if (id === undefined) {
+    return undefined;
+  }
+
+  return { id };
+}
+
 function parseItemsList(value: string | number | boolean | undefined) {
   if (typeof value !== "string" || value.trim().length === 0) {
     return [];
@@ -584,17 +592,17 @@ async function importEvalAssetsFile(
       }
 
       const commonPayload = {
-        location_id: await resolveLocationId(data.locationName),
-        manufacturer_id: await resolveManufacturerId(data.manufacturerName),
+        location: toReference(await resolveLocationId(data.locationName)),
+        manufacturer: toReference(await resolveManufacturerId(data.manufacturerName)),
         otherserial: inventoryNumber || undefined,
-        status_id: await resolveStateId(data.statusLabel),
-        user_id: await resolveUserId(data.userName),
+        status: toReference(await resolveStateId(data.statusLabel)),
+        user: toReference(await resolveUserId(data.userName)),
       };
 
       if (normalizeKey(itemType) === "monitor") {
         const createdMonitor = await createMonitor({
           ...commonPayload,
-          model_id: await resolveMonitorModelId(data.modelName),
+          model: toReference(await resolveMonitorModelId(data.modelName)),
           name,
         });
         rollbackActions.push({
@@ -621,7 +629,7 @@ async function importEvalAssetsFile(
 
       const createdComputer = await createComputer({
         ...commonPayload,
-        model_id: await resolveComputerModelId(data.modelName),
+        model: toReference(await resolveComputerModelId(data.modelName)),
         name,
       });
       rollbackActions.push({
