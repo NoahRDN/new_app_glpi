@@ -1,0 +1,52 @@
+﻿Name,Status,Location,Manufacturer,Item_Type,Model,Inventory_Number,User
+PC-ADM-003,En production,Comptabilité,Dell,Computer,OptiPlex 7010,ITU-2026-0001,Rasoanaivo Marie
+PC-ADM-004,En production,Laboratoire IA,HP,Computer,ProDesk 400 G9,ITU-2026-0002,Rakotondranaivo Paul
+PC-LAB-004,En production,Salle réseau,Lenovo,Computer,ThinkCentre M75,ITU-2026-0003,Rabe Hanitra
+LAP-DIR-001,En production,Accueil,Dell,Computer,Latitude 5540,ITU-2026-0004,ITU Labs
+LAP-FORM-001,En production,Direction,HP,Computer,EliteBook 840 G10,ITU-2026-0005,Andrianina Zo
+PC-SUP-001,Maintenance,Salle formation,Asus,Computer,ExpertCenter D7,ITU-2026-0006,Randrianarisoa Hery
+MN-ADM-001,En production,Datacenter,Dell,Monitor,P2422H,ITU-2026-0007,Razafindrakoto Lina
+MN-COMPTA-001,En production,Support IT,LG,Monitor,24MP400,ITU-2026-0008,Support IT
+MN-LAB-001,Maintenance,Bibliothèque,Samsung,Monitor,S24R350,ITU-2026-0009,Service Comptable
+MN-FORM-003,En production,Administration,Dell,Monitor,E2423H,ITU-2026-0010,Direction Générale
+MN-DIR-001,En production,Comptabilité,HP,Monitor,M24f,ITU-2026-0011,Formation ITU
+SW-CORE-001,Stock,Laboratoire IA,Cisco,NetworkEquipment,Catalyst 2960X,ITU-2026-0012,Rakoto Jean
+RTR-MAIN-001,En production,Salle réseau,MikroTik,NetworkEquipment,RB4011,ITU-2026-0013,Rasoanaivo Marie
+AP-FORM-001,En production,Accueil,Ubiquiti,NetworkEquipment,UniFi U6 Lite,ITU-2026-0014,Rakotondranaivo Paul
+FW-MAIN-001,Hors service,Direction,Fortinet,NetworkEquipment,FortiGate 60F,ITU-2026-0015,Rabe Hanitra
+SW-LAB-001,En production,Salle formation,TP-Link,NetworkEquipment,TL-SG1024,ITU-2026-0016,ITU Labs
+KB-ADM-001,En production,Datacenter,Logitech,Peripheral,K120,ITU-2026-0017,Andrianina Zo
+MOUSE-ADM-001,En attente,Support IT,Logitech,Peripheral,M90,ITU-2026-0018,Randrianarisoa Hery
+SCANNER-COMPTA-001,En production,Bibliothèque,Canon,Peripheral,LiDE 400,ITU-2026-0019,Razafindrakoto Lina
+WEBCAM-FORM-001,En production,Administration,Logitech,Peripheral,C920,ITU-2026-0020,Support IT
+PROJECTEUR-SALLE-001,En production,Comptabilité,Epson,Peripheral,EB-E01,ITU-2026-0021,Service Comptable
+TEL-ACC-001,En production,Laboratoire IA,Yealink,Phone,T31P,ITU-2026-0022,Direction Générale
+TEL-DIR-001,En production,Salle réseau,Cisco,Phone,IP Phone 7841,ITU-2026-0023,Formation ITU
+TEL-SUP-001,Maintenance,Accueil,Grandstream,Phone,GXP1625,ITU-2026-0024,Rakoto Jean
+TEL-COMPTA-001,En production,Direction,Yealink,Phone,T33G,ITU-2026-0025,Rasoanaivo Marie
+TEL-FORM-001,En production,Salle formation,Fanvil,Phone,X3S,ITU-2026-0026,Rakotondranaivo Paul
+PRN-ADM-001,Stock,Datacenter,HP,Printer,LaserJet Pro M404dn,ITU-2026-0027,Rabe Hanitra
+PRN-COMPTA-001,En production,Support IT,Canon,Printer,i-SENSYS MF445dw,ITU-2026-0028,ITU Labs
+PRN-FORM-001,En production,Bibliothèque,Epson,Printer,EcoTank L3250,ITU-2026-0029,Andrianina Zo
+PRN-DIR-001,Hors service,Administration,Brother,Printer,HL-L2370DN,ITU-2026-0030,Randrianarisoa Hery
+PRN-LAB-001,En production,Comptabilité,HP,Printer,LaserJet MFP M428fdn,ITU-2026-0031,Razafindrakoto Lina
+LIC-WIN-001,En production,Laboratoire IA,Microsoft,SoftwareLicense,Windows 11 Pro,ITU-2026-0032,Support IT
+LIC-OFFICE-001,En attente,Salle réseau,Microsoft,SoftwareLicense,Office 365 Business,ITU-2026-0033,Service Comptable
+LIC-AV-001,En production,Accueil,ESET,SoftwareLicense,Endpoint Security,ITU-2026-0034,Direction Générale
+LIC-IDE-001,En production,Direction,JetBrains,SoftwareLicense,IntelliJ IDEA,ITU-2026-0035,Formation ITU
+LIC-DB-001,En production,Salle formation,Oracle,SoftwareLicense,MySQL Enterprise,ITU-2026-0036,Rakoto Jean
+CERT-GLPI-001,En production,Datacenter,Let’s Encrypt,Certificate,TLS DV,ITU-2026-0037,Rasoanaivo Marie
+CERT-MAIL-001,En production,Support IT,DigiCert,Certificate,SSL Standard,ITU-2026-0038,Rakotondranaivo Paul
+CERT-VPN-001,Maintenance,Bibliothèque,Fortinet,Certificate,VPN Certificate,ITU-2026-0039,Rabe Hanitra
+CERT-INTRANET-001,En production,Administration,Sectigo,Certificate,SSL OV,ITU-2026-0040,ITU Labs
+CERT-API-001,En production,Comptabilité,Let’s Encrypt,Certificate,API TLS,ITU-2026-0041,Andrianina Zo
+UNM-CAMERA-001,Stock,Laboratoire IA,Hikvision,Unmanaged,DS-2CD2143G0,ITU-2026-0042,Randrianarisoa Hery
+UNM-ONDULEUR-001,En production,Salle réseau,APC,Unmanaged,Back-UPS 950,ITU-2026-0043,Razafindrakoto Lina
+UNM-TV-001,En production,Accueil,Samsung,Unmanaged,Smart Monitor M7,ITU-2026-0044,Support IT
+UNM-NAS-001,Hors service,Direction,Synology,Unmanaged,DS220+,ITU-2026-0045,Service Comptable
+UNM-BADGEUSE-001,En production,Salle formation,ZKTeco,Unmanaged,K40,ITU-2026-0046,Direction Générale
+APP-GLPI-001,En production,Datacenter,Teclib,Appliance,GLPI 10,ITU-2026-0047,Formation ITU
+APP-ERP-001,En attente,Support IT,Odoo,Appliance,Odoo Community,ITU-2026-0048,Rakoto Jean
+APP-MAIL-001,En production,Bibliothèque,Google,Appliance,Google Workspace,ITU-2026-0049,Rasoanaivo Marie
+APP-GIT-001,En production,Administration,GitHub,Appliance,GitHub Organization,ITU-2026-0050,Rakotondranaivo Paul
+APP-BI-001,En production,Comptabilité,Metabase,Appliance,Metabase OSS,ITU-2026-0051,Rabe Hanitra
