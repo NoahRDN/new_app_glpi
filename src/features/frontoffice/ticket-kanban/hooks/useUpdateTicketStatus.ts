@@ -10,10 +10,13 @@ export function useUpdateTicketStatus() {
       ticketId: number;
       statusId: number;
     }) => {
-      return updateTicket({
-        id: params.ticketId,
-        status_id: params.statusId,
-      });
+        console.log("PATCH ticket status:", params);
+        return updateTicket({
+            id: params.ticketId,
+            status: {
+                id: params.statusId,
+            },
+        });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

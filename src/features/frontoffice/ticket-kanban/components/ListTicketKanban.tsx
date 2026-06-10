@@ -69,6 +69,12 @@ export function ListTicketKanban() {
               statusId: ticketKanbanGroup.targetStatusId,
             });
 
+            console.log("Drop ticket:", {
+              draggedTicketId,
+              targetStatusId: ticketKanbanGroup.targetStatusId,
+              targetColumn: ticketKanbanGroup.key,
+            });
+
             setDraggedTicketId(null);
           }}
           backgroundColorSection={ticketKanbanGroup.backgroundColorSection}
