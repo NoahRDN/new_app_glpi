@@ -9,7 +9,7 @@ type SectionKanbanProps = {
     isDisplayAddTicket: boolean,
     backgroundColorSection: string,
     onCreatedTicket: () => void;
-    onTicketDrop: () => void;
+    onTicketDrop: (ticketId: number) => void;
     isUpdating?: boolean;
 }
 
@@ -23,7 +23,14 @@ export function SectionKanban({onTicketDrop, onCreatedTicket, isDisplayAddTicket
             }}
             onDrop={(event) => {
                 event.preventDefault();
-                onTicketDrop();
+
+                const ticketId = Number(event.dataTransfer.getData("ticketId"));
+
+                if (Number.isNaN(ticketId)) {
+                    return;
+                }
+
+                onTicketDrop(ticketId);
             }}
         >
             <div className="flex justify-between">

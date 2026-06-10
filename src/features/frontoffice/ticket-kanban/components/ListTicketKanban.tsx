@@ -13,7 +13,7 @@ import { useUpdateTicketStatus } from "../hooks/useUpdateTicketStatus";
 
 export function ListTicketKanban() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [draggedTicketId, setDraggedTicketId] = useState<number | null>(null);
+  const [, setDraggedTicketId] = useState<number | null>(null);
 
   const {
     mutateAsync: updateTicketStatusAsync,
@@ -59,23 +59,11 @@ export function ListTicketKanban() {
         <SectionKanban
           key={ticketKanbanGroup.key}
           onCreatedTicket={() => setIsModalOpen(true)}
-          onTicketDrop={async () => {
-            if (draggedTicketId === null) {
-              return;
-            }
-
+          onTicketDrop={async (ticketId) => {
             await updateTicketStatusAsync({
-              ticketId: draggedTicketId,
+              ticketId,
               statusId: ticketKanbanGroup.targetStatusId,
             });
-
-            console.log("Drop ticket:", {
-              draggedTicketId,
-              targetStatusId: ticketKanbanGroup.targetStatusId,
-              targetColumn: ticketKanbanGroup.key,
-            });
-
-            setDraggedTicketId(null);
           }}
           backgroundColorSection={ticketKanbanGroup.backgroundColorSection}
           isDisplayAddTicket={ticketKanbanGroup.key === "new"}
@@ -88,8 +76,8 @@ export function ListTicketKanban() {
               type="button"
               isWithBackground={false}
               draggable
-              onDragStart={() => {
-                setDraggedTicketId(groupTicket.id);
+              onDragStart={(event) => {
+                event.dataTransfer.setData("ticketId", String(groupTicket.id));
               }}
               onDragEnd={() => {
                 setDraggedTicketId(null);
