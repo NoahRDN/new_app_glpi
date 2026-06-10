@@ -42,12 +42,6 @@ export async function getGeneralViewAssetItemsPage({
     const url = `${asset.href}?${countParams.toString()}`;
     const countPage = await glpiGetPaginated<GlpiAssetCommon>(url);
 
-    console.log(page,
-      limit,
-      filters,
-      countPage,
-      url)
-
     const assetTotal = countPage.total;
     total += assetTotal;
 
