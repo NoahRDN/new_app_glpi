@@ -9,9 +9,15 @@ import { Modal } from "../../../../shared/ui/Modal";
 import { TicketsAdd } from "../../ticket/components/TicketsAdd";
 import { useAllTickets } from "../../ticket/hooks/useAllTickets";
 import { Loader } from "../../../../shared/ui/Loader";
+import { useUpdateTicketStatus } from "../hooks/useUpdateTicketStatus";
 
 export function ListTicketKanban() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [draggedTicketId, setDraggedTicketId] = useState<number | null>(null);
+
+  const {
+    mutateAsync: updateTicketStatusAsync,
+  } = useUpdateTicketStatus();
 
   const {
       data: ticketsAll,
@@ -40,7 +46,7 @@ export function ListTicketKanban() {
 
     <Modal
       isOpen={isModalOpen}
-      title="Création Computer"
+      title="Création ticket"
       onClose={() => {
           setIsModalOpen(false)
       }}
@@ -49,17 +55,44 @@ export function ListTicketKanban() {
     </Modal>
 
     <div className="col-span-12 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {ticketKanbanGroups.map((ticketKanbanGroup, index) => (
-        <SectionKanban 
-          key={index}
+      {ticketKanbanGroups.map((ticketKanbanGroup) => (
+        <SectionKanban
+          key={ticketKanbanGroup.key}
           onCreatedTicket={() => setIsModalOpen(true)}
-          backgroundColorSection={ticketKanbanGroup.backgroundColorSection} 
-          isDisplayAddTicket={ticketKanbanGroup.key === "new"} 
-          ticketKanbanGroupName={ticketKanbanGroup.label}  
+          onTicketDrop={async () => {
+            if (draggedTicketId === null) {
+              return;
+            }
+
+            await updateTicketStatusAsync({
+              ticketId: draggedTicketId,
+              statusId: ticketKanbanGroup.targetStatusId,
+            });
+
+            setDraggedTicketId(null);
+          }}
+          backgroundColorSection={ticketKanbanGroup.backgroundColorSection}
+          isDisplayAddTicket={ticketKanbanGroup.key === "new"}
+          ticketKanbanGroupName={ticketKanbanGroup.label}
           totalTicketKanban={groupTickets[ticketKanbanGroup.key].length}
         >
-          {groupTickets && groupTickets[ticketKanbanGroup.key].map((groupTicket, index) => <Button key={index} type="button" isWithBackground={false}>{groupTicket.name}</Button>)}
-        </SectionKanban>        
+          {groupTickets[ticketKanbanGroup.key].map((groupTicket) => (
+            <Button
+              key={groupTicket.id}
+              type="button"
+              isWithBackground={false}
+              draggable
+              onDragStart={() => {
+                setDraggedTicketId(groupTicket.id);
+              }}
+              onDragEnd={() => {
+                setDraggedTicketId(null);
+              }}
+            >
+              {groupTicket.name}
+            </Button>
+          ))}
+        </SectionKanban>
       ))}
     </div>
   </>);

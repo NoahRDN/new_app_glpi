@@ -4,6 +4,7 @@ import type { CreateTicketPayload, CreateTicketResponse, Ticket, TicketFilters }
 
 export type UpdateTicketPayload = Partial<CreateTicketPayload> & {
   id: number;
+  status_id?: number;
 };
 
 export async function getTicketsPage(

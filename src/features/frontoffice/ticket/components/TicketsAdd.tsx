@@ -29,7 +29,6 @@ type TicketsAddProps = {
   isModal?: boolean
 };
 
-// export function CreateComputerForm({ onCreated, onClose}: CreateComputerFormProps) {
 export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
     const [assetTypeItemSelected, setAssetTypeItemSelected] = useState("");
     const [assetItemSelected, setAssetItemSelected] = useState("");

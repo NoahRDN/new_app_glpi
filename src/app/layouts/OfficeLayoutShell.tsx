@@ -68,9 +68,8 @@ export function OfficeLayoutShell({
             const Icon = item.Icon;
 
             return (
-              <>
+              <div key={item.id}>
                 <NavLink
-                  key={item.id}
                   to={item.path}
                   end={item.path === "/" || item.path === "/admin"}
                   className={({ isActive }) =>
@@ -86,8 +85,8 @@ export function OfficeLayoutShell({
                   </span>
                   <span className="font-semibold">{item.label}</span>
                 </NavLink>
-                {item.isHorizontalRowDown && <hr className="my-1 border-t border-[var(--panel-border)]" />}
-              </>
+                {item.isHorizontalRowDown && <hr className="mt-7 border-t border-[var(--panel-border)]" />}
+              </div>
             );
           })}
         </nav>

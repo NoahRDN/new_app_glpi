@@ -9,6 +9,7 @@ export type TicketKanbanGroup = {
   key: TicketKanbanGroupKey;
   label: string;
   statusIds: number[];
+  targetStatusId: number;
   canCreateTicket?: boolean;
   backgroundColorSection: string;
 };

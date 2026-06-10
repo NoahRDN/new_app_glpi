@@ -1,0 +1,24 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateTicket } from "../../../../entities/ticket/api/ticket.api";
+import { ticketsQueryKey } from "../../ticket/hooks/useAllTickets";
+
+export function useUpdateTicketStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: {
+      ticketId: number;
+      statusId: number;
+    }) => {
+      return updateTicket({
+        id: params.ticketId,
+        status_id: params.statusId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ticketsQueryKey,
+      });
+    },
+  });
+}

@@ -9,12 +9,22 @@ type SectionKanbanProps = {
     isDisplayAddTicket: boolean,
     backgroundColorSection: string,
     onCreatedTicket: () => void;
+    onTicketDrop: () => void;
+    isUpdating?: boolean;
 }
 
-export function SectionKanban({onCreatedTicket, isDisplayAddTicket, children, totalTicketKanban, ticketKanbanGroupName, backgroundColorSection } : SectionKanbanProps){
+export function SectionKanban({onTicketDrop, onCreatedTicket, isDisplayAddTicket, children, totalTicketKanban, ticketKanbanGroupName, backgroundColorSection } : SectionKanbanProps){
     return <>
-        <div className={`p-5 rounded-2xl flex flex-col gap-3`} 
+        <div
+            className="flex min-h-80 flex-col gap-3 rounded-2xl p-5"
             style={{ backgroundColor: backgroundColorSection }}
+            onDragOver={(event) => {
+                event.preventDefault();
+            }}
+            onDrop={(event) => {
+                event.preventDefault();
+                onTicketDrop();
+            }}
         >
             <div className="flex justify-between">
                 <h3 className="font-bold">{ticketKanbanGroupName}</h3>
