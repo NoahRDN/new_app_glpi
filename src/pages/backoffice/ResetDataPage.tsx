@@ -9,7 +9,14 @@ import {
 } from "../../features/backoffice/glpi-data/model/glpiDataResource.config";
 
 export function ResetDataPage() {
-  const { error, isResetting, resetResources, result } = useResetGlpiData();
+  const {
+    error,
+    forceDelete,
+    isResetting,
+    resetResources,
+    result,
+    setForceDelete,
+  } = useResetGlpiData();
   const selectedResources : GlpiDataResourceId[] = GLPI_DATA_RESOURCES.map((GLPI_DATA_RESOURCE) => GLPI_DATA_RESOURCE.id);
 
   async function handleReset() {
@@ -31,6 +38,31 @@ export function ResetDataPage() {
   return (
     <>
       <section className="col-span-12 rounded-[18px] border p-6 xl:col-span-5" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+        <label
+          className="mb-5 flex items-center justify-between gap-4 rounded-xl p-4"
+          style={{ backgroundColor: "var(--panel-soft)" }}
+        >
+          <span>
+            <span className="block font-semibold" style={{ color: "var(--text-primary)" }}>
+              Suppression définitive
+            </span>
+            <span className="mt-1 block text-sm" style={{ color: "var(--text-secondary)" }}>
+              Active le paramètre <code>?force=true</code> et inclut aussi les éléments déjà supprimés.
+            </span>
+          </span>
+
+          <button
+            aria-pressed={forceDelete}
+            className={`relative h-7 w-14 rounded-full transition ${forceDelete ? "bg-green-600" : "bg-slate-400"}`}
+            type="button"
+            onClick={() => setForceDelete((currentValue) => !currentValue)}
+          >
+            <span
+              className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${forceDelete ? "left-8" : "left-1"}`}
+            />
+          </button>
+        </label>
+
         <Button className="my-5 bg-red-600 w-full justify-center" disabled={selectedResources.length === 0 || isResetting} onClick={handleReset}>
           <Trash2 size={18} />
           {isResetting ? "Reinitialisation..." : "Reinitialiser"}

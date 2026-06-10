@@ -647,6 +647,35 @@ export function ImportDataPage() {
                         {item.message}
                       </p>
 
+                      {item.additionalMessages && item.additionalMessages.length > 0 ? (
+                        <div className="mt-3 rounded-[12px] p-3" style={{ backgroundColor: "color-mix(in srgb, #ef4444 8%, transparent)" }}>
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--text-primary)" }}>
+                            Messages additionnels GLPI
+                          </p>
+                          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm" style={{ color: "var(--text-secondary)" }}>
+                            {item.additionalMessages.map((message, additionalMessageIndex) => (
+                              <li key={`${item.fileName}-additional-${additionalMessageIndex}`}>
+                                {message}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
+                      {item.rawRow ? (
+                        <div className="mt-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--text-primary)" }}>
+                            Contenu de la ligne CSV
+                          </p>
+                          <pre
+                            className="mt-2 overflow-x-auto whitespace-pre-wrap rounded-[12px] p-3 text-xs"
+                            style={{ backgroundColor: "color-mix(in srgb, var(--panel-bg) 75%, black 6%)", color: "var(--text-secondary)" }}
+                          >
+                            {item.rawRow}
+                          </pre>
+                        </div>
+                      ) : null}
+
                       {item.details ? (
                         <pre
                           className="mt-3 overflow-x-auto whitespace-pre-wrap rounded-[12px] p-3 text-xs"

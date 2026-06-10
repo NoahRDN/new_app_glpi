@@ -1,6 +1,8 @@
 import { glpiDelete, glpiGetPaginated, glpiPost } from "../../../../shared/api/glpiClient";
 import type { GlpiDataResourceConfig } from "../model/glpiDataResource.config";
 
+export const DEFAULT_RESET_FORCE_DELETE = true;
+
 type GlpiListItem = {
   id?: number;
   is_deleted?: boolean;
@@ -59,6 +61,13 @@ export async function createGlpiResourceItem(
   return glpiPost<unknown>(resource.endpoint, payload);
 }
 
-export async function deleteGlpiResourceItem(resource: GlpiDataResourceConfig, id: number | string) {
-  return glpiDelete(`${resource.endpoint}/${id}`);
+export async function deleteGlpiResourceItem(
+  resource: GlpiDataResourceConfig,
+  id: number | string,
+  options?: {
+    forceDelete?: boolean;
+  },
+) {
+  const forceQuery = options?.forceDelete ? "?force=true" : "";
+  return glpiDelete(`${resource.endpoint}/${id}${forceQuery}`);
 }

@@ -37,9 +37,14 @@ import {
   deleteUser,
   findUserByName,
 } from "../../../../entities/user/api/user.api";
-import { AppError, extractErrorDetail } from "../../../../shared/errors/AppError";
+import {
+  AppError,
+  extractAdditionalMessages,
+  extractErrorDetail,
+} from "../../../../shared/errors/AppError";
 import { createGlpiResourceItem, deleteGlpiResourceItem } from "../api/glpiDataResource.api";
 import { extractGlpiImageFilesFromZip } from "../lib/parseGlpiImagesZip";
+import { resetGlpiResources } from "../lib/resetGlpiResources";
 import { getGlpiDataResource, type GlpiDataResourceId } from "../model/glpiDataResource.config";
 import type {
   GlpiImageZipEntryUpload,
@@ -55,10 +60,12 @@ type ImportFilesInput = {
 };
 
 type ImportError = {
+  additionalMessages?: string[];
   details?: string;
   fileName: string;
   message: string;
   profileLabel?: string;
+  rawRow?: string;
   resourceId?: GlpiDataResourceId | "documents" | "ticket-links" | "ticket-costs" | "rollback";
   rollback?: boolean;
   rowIndex?: number;
@@ -134,6 +141,18 @@ type ImportExecutionSummary = {
   warnings?: ImportWarning[];
 };
 
+class ImportRowError extends Error {
+  public readonly originalError: unknown;
+  public readonly rowIndex: number;
+
+  constructor(rowIndex: number, originalError: unknown) {
+    super(originalError instanceof Error ? originalError.message : String(originalError));
+    this.name = "ImportRowError";
+    this.originalError = originalError;
+    this.rowIndex = rowIndex;
+  }
+}
+
 const EVAL_ASSETS_PROFILE_ID = "glpi-eval-assets-juin-2026-v1";
 const EVAL_TICKETS_PROFILE_ID = "glpi-eval-tickets-juin-2026-v1";
 const EVAL_TICKET_COSTS_PROFILE_ID = "glpi-eval-ticket-costs-juin-2026-v1";
@@ -155,6 +174,51 @@ function getResourcePayloads(file: RecognizedGlpiParsedFile) {
       }];
     }),
   );
+}
+
+function collectImportResetResourceIds(params: {
+  imageZipFiles: File[];
+  recognizedFiles: RecognizedGlpiParsedFile[];
+}) {
+  const resourceIds = new Set<GlpiDataResourceId>();
+
+  params.recognizedFiles.forEach((file) => {
+    if (file.profile.id === EVAL_ASSETS_PROFILE_ID) {
+      [
+        "users",
+        "states",
+        "locations",
+        "manufacturers",
+        "computerModels",
+        "monitorModels",
+        "computers",
+        "monitors",
+      ].forEach((resourceId) => {
+        resourceIds.add(resourceId as GlpiDataResourceId);
+      });
+      return;
+    }
+
+    if (file.profile.id === EVAL_TICKETS_PROFILE_ID) {
+      resourceIds.add("tickets");
+      return;
+    }
+
+    if (file.profile.id === EVAL_TICKET_COSTS_PROFILE_ID) {
+      resourceIds.add("tickets");
+      return;
+    }
+
+    Object.keys(file.profile.resourceMappings).forEach((resourceId) => {
+      resourceIds.add(resourceId as GlpiDataResourceId);
+    });
+  });
+
+  if (params.imageZipFiles.length > 0) {
+    resourceIds.add("documents");
+  }
+
+  return [...resourceIds];
 }
 
 function normalizeKey(value: string | number | null | undefined) {
@@ -266,37 +330,71 @@ function getTicketPriorityValue(value: string | number | boolean | undefined) {
 }
 
 function getImportErrorMessage(error: unknown) {
-  if (error instanceof AppError) {
-    return extractErrorDetail(error.details ?? "") ?? error.message;
+  const sourceError = error instanceof ImportRowError ? error.originalError : error;
+
+  if (sourceError instanceof AppError) {
+    return extractErrorDetail(sourceError.details ?? "") ?? sourceError.message;
   }
 
-  if (error instanceof Error) {
-    return error.message;
+  if (sourceError instanceof Error) {
+    return sourceError.message;
   }
 
-  return String(error);
+  return String(sourceError);
 }
 
 function getImportErrorDetails(error: unknown) {
-  if (error instanceof AppError) {
-    const extractedDetails = extractErrorDetail(error.details ?? "");
+  const sourceError = error instanceof ImportRowError ? error.originalError : error;
+
+  if (sourceError instanceof AppError) {
+    const extractedDetails = extractErrorDetail(sourceError.details ?? "");
+    const additionalMessages = extractAdditionalMessages(sourceError.details ?? "");
 
     return [
-      `Code: ${error.code}`,
-      error.status !== undefined ? `Status: ${error.status}` : undefined,
-      `Message: ${error.message}`,
+      `Code: ${sourceError.code}`,
+      sourceError.status !== undefined ? `Status: ${sourceError.status}` : undefined,
+      `Message: ${sourceError.message}`,
       extractedDetails ? `Détail GLPI: ${extractedDetails}` : undefined,
-      error.details ? `Réponse brute: ${error.details}` : undefined,
+      additionalMessages.length > 0
+        ? `Messages additionnels:\n${additionalMessages.map((item) => `- ${item}`).join("\n")}`
+        : undefined,
+      sourceError.details ? `Réponse brute: ${sourceError.details}` : undefined,
     ]
       .filter((item): item is string => Boolean(item))
       .join("\n");
   }
 
-  if (error instanceof Error) {
-    return error.stack ?? error.message;
+  if (sourceError instanceof Error) {
+    return sourceError.stack ?? sourceError.message;
   }
 
-  return String(error);
+  return String(sourceError);
+}
+
+function getImportAdditionalMessages(error: unknown) {
+  const sourceError = error instanceof ImportRowError ? error.originalError : error;
+
+  if (sourceError instanceof AppError) {
+    return extractAdditionalMessages(sourceError.details ?? "");
+  }
+
+  return [];
+}
+
+function getImportRowIndex(error: unknown) {
+  if (error instanceof ImportRowError) {
+    return error.rowIndex;
+  }
+
+  return undefined;
+}
+
+function stringifyImportRow(row: Record<string, string | undefined> | undefined) {
+  if (!row) {
+    return undefined;
+  }
+
+  return JSON.stringify(row, null, 2);
 }
 
 function getDetectedTypeLabel(detectedType: string) {
@@ -465,81 +563,85 @@ async function importEvalAssetsFile(
   let computerCount = 0;
   let monitorCount = 0;
 
-  for (const row of file.rows) {
-    const data = getRowBucket(row, "computers");
+  for (const [rowIndex, row] of file.rows.entries()) {
+    try {
+      const data = getRowBucket(row, "computers");
 
-    if (!data) {
-      continue;
-    }
+      if (!data) {
+        continue;
+      }
 
-    const itemType = String(data.itemType ?? "").trim();
-    const name = String(data.name ?? "").trim();
-    const inventoryNumber = String(data.inventoryNumber ?? "").trim();
+      const itemType = String(data.itemType ?? "").trim();
+      const name = String(data.name ?? "").trim();
+      const inventoryNumber = String(data.inventoryNumber ?? "").trim();
 
-    if (name.length === 0) {
-      continue;
-    }
+      if (name.length === 0) {
+        continue;
+      }
 
-    const commonPayload = {
-      location_id: await resolveLocationId(data.locationName),
-      manufacturer_id: await resolveManufacturerId(data.manufacturerName),
-      otherserial: inventoryNumber || undefined,
-      status_id: await resolveStateId(data.statusLabel),
-      user_id: await resolveUserId(data.userName),
-    };
+      const commonPayload = {
+        location_id: await resolveLocationId(data.locationName),
+        manufacturer_id: await resolveManufacturerId(data.manufacturerName),
+        otherserial: inventoryNumber || undefined,
+        status_id: await resolveStateId(data.statusLabel),
+        user_id: await resolveUserId(data.userName),
+      };
 
-    if (normalizeKey(itemType) === "monitor") {
-      const createdMonitor = await createMonitor({
+      if (normalizeKey(itemType) === "monitor") {
+        const createdMonitor = await createMonitor({
+          ...commonPayload,
+          model_id: await resolveMonitorModelId(data.modelName),
+          name,
+        });
+        rollbackActions.push({
+          label: `monitor#${createdMonitor.id}`,
+          run: () => deleteMonitor(createdMonitor.id),
+        });
+
+        context.assetReferencesByKey.set(normalizeKey(name), {
+          itemId: createdMonitor.id,
+          itemtype: "Monitor",
+        });
+
+        if (inventoryNumber.length > 0) {
+          context.assetReferencesByKey.set(normalizeKey(inventoryNumber), {
+            itemId: createdMonitor.id,
+            itemtype: "Monitor",
+          });
+        }
+
+        importedCount += 1;
+        monitorCount += 1;
+        continue;
+      }
+
+      const createdComputer = await createComputer({
         ...commonPayload,
-        model_id: await resolveMonitorModelId(data.modelName),
+        model_id: await resolveComputerModelId(data.modelName),
         name,
       });
       rollbackActions.push({
-        label: `monitor#${createdMonitor.id}`,
-        run: () => deleteMonitor(createdMonitor.id),
+        label: `computer#${createdComputer.id}`,
+        run: () => deleteGlpiResourceItem(getGlpiDataResource("computers"), createdComputer.id),
       });
 
       context.assetReferencesByKey.set(normalizeKey(name), {
-        itemId: createdMonitor.id,
-        itemtype: "Monitor",
+        itemId: createdComputer.id,
+        itemtype: "Computer",
       });
 
       if (inventoryNumber.length > 0) {
         context.assetReferencesByKey.set(normalizeKey(inventoryNumber), {
-          itemId: createdMonitor.id,
-          itemtype: "Monitor",
+          itemId: createdComputer.id,
+          itemtype: "Computer",
         });
       }
 
       importedCount += 1;
-      monitorCount += 1;
-      continue;
+      computerCount += 1;
+    } catch (caughtError) {
+      throw new ImportRowError(rowIndex, caughtError);
     }
-
-    const createdComputer = await createComputer({
-      ...commonPayload,
-      model_id: await resolveComputerModelId(data.modelName),
-      name,
-    });
-    rollbackActions.push({
-      label: `computer#${createdComputer.id}`,
-      run: () => deleteGlpiResourceItem(getGlpiDataResource("computers"), createdComputer.id),
-    });
-
-    context.assetReferencesByKey.set(normalizeKey(name), {
-      itemId: createdComputer.id,
-      itemtype: "Computer",
-    });
-
-    if (inventoryNumber.length > 0) {
-      context.assetReferencesByKey.set(normalizeKey(inventoryNumber), {
-        itemId: createdComputer.id,
-        itemtype: "Computer",
-      });
-    }
-
-    importedCount += 1;
-    computerCount += 1;
   }
 
   return {
@@ -569,70 +671,74 @@ async function importEvalTicketsFile(
   let importedCount = 0;
   let ticketLinkCount = 0;
 
-  for (const row of file.rows) {
-    const data = getRowBucket(row, "tickets");
+  for (const [rowIndex, row] of file.rows.entries()) {
+    try {
+      const data = getRowBucket(row, "tickets");
 
-    if (!data) {
-      continue;
-    }
-
-    const payload = {
-      content: String(data.content ?? "").trim(),
-      external_id: String(data.refTicket ?? "").trim() || undefined,
-      name: String(data.name ?? "").trim(),
-      priority: getTicketPriorityValue(data.priorityLabel),
-      status: getTicketStatusValue(data.statusLabel),
-      type: getTicketTypeValue(data.typeLabel),
-    };
-
-    const createdTicket = await createGlpiResourceItem(
-      getGlpiDataResource("tickets"),
-      payload as Record<string, string | number | boolean>,
-    );
-
-    const ticketId = extractCreatedId(createdTicket);
-    const refTicket = String(data.refTicket ?? "").trim();
-
-    if (ticketId !== null && refTicket.length > 0) {
-      context.ticketIdsByRef.set(normalizeKey(refTicket), ticketId);
-    }
-
-    if (ticketId !== null) {
-      rollbackActions.push({
-        label: `ticket#${ticketId}`,
-        run: () => deleteGlpiResourceItem(getGlpiDataResource("tickets"), ticketId),
-      });
-    }
-
-    if (ticketId !== null) {
-      const items = parseItemsList(data.itemsRaw);
-
-      for (const itemReference of items) {
-        const linkedAsset = context.assetReferencesByKey.get(normalizeKey(itemReference));
-
-        if (!linkedAsset) {
-          continue;
-        }
-
-        const createdLink = await createTicketItemLink({
-          itemId: linkedAsset.itemId,
-          itemtype: linkedAsset.itemtype,
-          ticketId,
-        });
-        const linkId = extractCreatedId(createdLink);
-
-        if (linkId !== null) {
-          rollbackActions.push({
-            label: `ticketItemLink#${linkId}`,
-            run: () => deleteTicketItemLink(linkId),
-          });
-        }
-
-        ticketLinkCount += 1;
+      if (!data) {
+        continue;
       }
-    }
 
-    importedCount += 1;
+      const payload = {
+        content: String(data.content ?? "").trim(),
+        external_id: String(data.refTicket ?? "").trim() || undefined,
+        name: String(data.name ?? "").trim(),
+        priority: getTicketPriorityValue(data.priorityLabel),
+        status: getTicketStatusValue(data.statusLabel),
+        type: getTicketTypeValue(data.typeLabel),
+      };
+
+      const createdTicket = await createGlpiResourceItem(
+        getGlpiDataResource("tickets"),
+        payload as Record<string, string | number | boolean>,
+      );
+
+      const ticketId = extractCreatedId(createdTicket);
+      const refTicket = String(data.refTicket ?? "").trim();
+
+      if (ticketId !== null && refTicket.length > 0) {
+        context.ticketIdsByRef.set(normalizeKey(refTicket), ticketId);
+      }
+
+      if (ticketId !== null) {
+        rollbackActions.push({
+          label: `ticket#${ticketId}`,
+          run: () => deleteGlpiResourceItem(getGlpiDataResource("tickets"), ticketId),
+        });
+      }
+
+      if (ticketId !== null) {
+        const items = parseItemsList(data.itemsRaw);
+
+        for (const itemReference of items) {
+          const linkedAsset = context.assetReferencesByKey.get(normalizeKey(itemReference));
+
+          if (!linkedAsset) {
+            continue;
+          }
+
+          const createdLink = await createTicketItemLink({
+            itemId: linkedAsset.itemId,
+            itemtype: linkedAsset.itemtype,
+            ticketId,
+          });
+          const linkId = extractCreatedId(createdLink);
+
+          if (linkId !== null) {
+            rollbackActions.push({
+              label: `ticketItemLink#${linkId}`,
+              run: () => deleteTicketItemLink(linkId),
+            });
+          }
+
+          ticketLinkCount += 1;
+        }
+      }
+
+      importedCount += 1;
+    } catch (caughtError) {
+      throw new ImportRowError(rowIndex, caughtError);
+    }
   }
 
   return {
@@ -661,39 +767,43 @@ async function importEvalTicketCostsFile(
 ): Promise<ImportExecutionSummary> {
   let importedCount = 0;
 
-  for (const row of file.rows) {
-    const data = getRowBucket(row, "tickets");
+  for (const [rowIndex, row] of file.rows.entries()) {
+    try {
+      const data = getRowBucket(row, "tickets");
 
-    if (!data) {
-      continue;
-    }
+      if (!data) {
+        continue;
+      }
 
-    const ticketId = context.ticketIdsByRef.get(
-      normalizeKey(String(data.ticketRef ?? "")),
-    );
+      const ticketId = context.ticketIdsByRef.get(
+        normalizeKey(String(data.ticketRef ?? "")),
+      );
 
-    if (!ticketId) {
-      continue;
-    }
+      if (!ticketId) {
+        continue;
+      }
 
-    const createdTicketCost = await createTicketCost({
-      input: {
-        actiontime: Number(data.durationSecond ?? 0),
-        cost_fixed: Number(data.fixedCost ?? 0),
-        cost_time: Number(data.timeCost ?? 0),
-        tickets_id: ticketId,
-      },
-    });
-    const ticketCostId = extractCreatedId(createdTicketCost);
-
-    if (ticketCostId !== null) {
-      rollbackActions.push({
-        label: `ticketCost#${ticketCostId}`,
-        run: () => deleteTicketCost(ticketCostId),
+      const createdTicketCost = await createTicketCost({
+        input: {
+          actiontime: Number(data.durationSecond ?? 0),
+          cost_fixed: Number(data.fixedCost ?? 0),
+          cost_time: Number(data.timeCost ?? 0),
+          tickets_id: ticketId,
+        },
       });
-    }
+      const ticketCostId = extractCreatedId(createdTicketCost);
 
-    importedCount += 1;
+      if (ticketCostId !== null) {
+        rollbackActions.push({
+          label: `ticketCost#${ticketCostId}`,
+          run: () => deleteTicketCost(ticketCostId),
+        });
+      }
+
+      importedCount += 1;
+    } catch (caughtError) {
+      throw new ImportRowError(rowIndex, caughtError);
+    }
   }
 
   return {
@@ -783,10 +893,12 @@ async function importImageZipFiles(
       });
     } catch (caughtError) {
       errors.push({
+        additionalMessages: getImportAdditionalMessages(caughtError),
         details: getImportErrorDetails(caughtError),
         fileName: imageZipFile.name,
         message: getImportErrorMessage(caughtError),
         resourceId: "documents",
+        rowIndex: getImportRowIndex(caughtError),
         stage: "image-import",
       });
       throw caughtError;
@@ -934,6 +1046,10 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       ticketIdsByRef: new Map(),
     };
     const rollbackActions: RollbackAction[] = [];
+    const resetResourceIds = collectImportResetResourceIds({
+      imageZipFiles,
+      recognizedFiles,
+    });
 
     try {
       for (const file of recognizedFiles) {
@@ -961,11 +1077,17 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
             resourceSummaryMap.set(item.resourceId, { ...item });
           });
         } catch (caughtError) {
+          const rowIndex = getImportRowIndex(caughtError);
+
           errors.push({
+            additionalMessages: getImportAdditionalMessages(caughtError),
             details: getImportErrorDetails(caughtError),
             fileName: file.fileName,
             message: getImportErrorMessage(caughtError),
             profileLabel: file.profile.label,
+            rawRow: stringifyImportRow(
+              rowIndex !== undefined ? file.rawRows[rowIndex] : undefined,
+            ),
             resourceId: file.profile.id === EVAL_ASSETS_PROFILE_ID
               ? "computers"
               : file.profile.id === EVAL_TICKETS_PROFILE_ID
@@ -973,6 +1095,7 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
                 : file.profile.id === EVAL_TICKET_COSTS_PROFILE_ID
                   ? "ticket-costs"
                   : undefined,
+            rowIndex,
             stage:
               file.profile.id === EVAL_ASSETS_PROFILE_ID
                 ? "resource-create"
@@ -1012,6 +1135,11 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
       });
     } catch (caughtError) {
       const rollbackErrors = await rollbackImport(rollbackActions);
+      const resetResult = resetResourceIds.length > 0
+        ? await resetGlpiResources({
+            resourceIds: resetResourceIds,
+          })
+        : null;
       importedCount = 0;
 
       const baseMessage = getImportErrorMessage(caughtError);
@@ -1019,21 +1147,38 @@ export function useImportGlpiCsv(): UseImportGlpiCsvResult {
         rollbackErrors.length > 0
           ? ` Rollback partiel en erreur: ${rollbackErrors.join(" | ")}`
           : " Rollback exécuté.";
+      const resetMessage = resetResult
+        ? ` Réinitialisation appelée: ${resetResult.totalDeleted} suppression(s), ${resetResult.totalFailed} erreur(s).`
+        : "";
 
       errors.push({
+        additionalMessages: getImportAdditionalMessages(caughtError),
         details: [
           getImportErrorDetails(caughtError),
           rollbackErrors.length > 0
             ? `Erreurs de rollback:\n${rollbackErrors.join("\n")}`
             : "Rollback exécuté sans erreur supplémentaire.",
+          resetResult
+            ? [
+                "Réinitialisation automatique déclenchée.",
+                `Suppressions: ${resetResult.totalDeleted}`,
+                `Erreurs: ${resetResult.totalFailed}`,
+                ...resetResult.resources.flatMap((resource) =>
+                  resource.errors.map((rowError) =>
+                    `${resource.resourceId}#${rowError.id}: ${rowError.message}`,
+                  ),
+                ),
+              ].join("\n")
+            : undefined,
         ].join("\n\n"),
         fileName: "import",
-        message: `${baseMessage}${rollbackMessage}`,
+        message: `${baseMessage}${rollbackMessage}${resetMessage}`,
         resourceId: "rollback",
         rollback: true,
+        rowIndex: getImportRowIndex(caughtError),
         stage: "rollback",
       });
-      setError(`${baseMessage}${rollbackMessage}`);
+      setError(`${baseMessage}${rollbackMessage}${resetMessage}`);
     } finally {
       setResult({
         errors,

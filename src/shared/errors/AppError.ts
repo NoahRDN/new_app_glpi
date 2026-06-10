@@ -78,6 +78,7 @@ export function extractErrorDetail(details: string): string | undefined {
 
   try {
     const parsed = JSON.parse(details) as {
+      additional_messages?: unknown;
       title?: string;
       detail?: string;
       message?: string;
@@ -93,5 +94,42 @@ export function extractErrorDetail(details: string): string | undefined {
     );
   } catch {
     return details;
+  }
+}
+
+export function extractAdditionalMessages(details: string): string[] {
+  if (!details.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(details) as {
+      additional_messages?: unknown;
+    };
+
+    if (!Array.isArray(parsed.additional_messages)) {
+      return [];
+    }
+
+    return parsed.additional_messages
+      .flatMap((item) => {
+        if (typeof item === "string") {
+          return [item];
+        }
+
+        if (Array.isArray(item)) {
+          return item.map((value) => String(value).trim());
+        }
+
+        if (typeof item === "object" && item !== null) {
+          return Object.values(item).map((value) => String(value).trim());
+        }
+
+        return [String(item).trim()];
+      })
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  } catch {
+    return [];
   }
 }
