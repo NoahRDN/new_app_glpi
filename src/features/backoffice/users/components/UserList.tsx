@@ -32,15 +32,18 @@ export function UserList(){
         refetch: refetchUsers
     } = useUsersPage({page: page, limit: limit, filters:debouncedFilters});
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+   
+
     const {
         mutateAsync: deleteUserAsync,
         isError: isDeleteUserError,
         error: deleteUserError,
         isPending: isDeleteUserPending,
         isSuccess: isDeleteUserSuccess,
+        reset: resetUserQueryState
     }= useDeleteUser();
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalDelete, setIsModalDelete] = useState(false);
     const [userToUpdate, setUserToUpdate] = useState<(typeof users)[number] | null>(null);
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
@@ -73,14 +76,23 @@ export function UserList(){
                     <>
                     <Button
                         className="mr-4"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setIsModalOpen(true);
+                            resetUserQueryState();
+                        }}
                     >Action Groupé</Button>
                     <Button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setIsModalOpen(true);
+                            resetUserQueryState();
+                        }}
                     ><Plus size={20} />Ajouter</Button>
                     <Button
                         className="ml-4"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setIsModalOpen(true);
+                            resetUserQueryState();
+                        }}
                     >Actualiser</Button>
                     </> 
                 }      
@@ -144,6 +156,7 @@ export function UserList(){
                                     setUserToUpdate(user);
                                     setIsModalDelete(false);
                                     setIsModalOpen(true);
+                                    resetUserQueryState();
                                 }}
                             >
                                 <PenLine />
@@ -155,6 +168,7 @@ export function UserList(){
                                         setUserToDelete(user);
                                         setUserToUpdate(null);
                                         setIsModalOpen(true);
+                                        resetUserQueryState();
                                     }
                                 }
                             >
@@ -166,13 +180,6 @@ export function UserList(){
             </DataTable>   
         }
 
-        
-        {isDeleteUserError && 
-            <MyError>
-                {getUserErrorMessage(deleteUserError, "Erreur lors de la suppression")}
-            </MyError>
-        }
-
         <Modal
             isModalColorGreen={isDeleteUserSuccess}
             isOpen={isModalOpen}
@@ -181,16 +188,26 @@ export function UserList(){
                 setIsModalOpen(false);
                 setIsModalDelete(false);
                 setUserToUpdate(null);
+                resetUserQueryState();
             }}
         >
+            {isDeleteUserError && 
+                <MyError className="bg-transparent">
+                    {getUserErrorMessage(deleteUserError, "Erreur lors de la suppression")}
+                </MyError>
+            }
+
             { !isModalDelete && userToUpdate === null && <UserAdd 
-                onClose={() => setIsModalOpen(false)}
-                onUserCreated={refetchUsers}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    resetUserQueryState();
+                }}
             /> }
 
             { !isModalDelete && userToUpdate !== null && <UserUpdate
                 onClose={() => {
                     setIsModalOpen(false);
+                    resetUserQueryState();
                     setUserToUpdate(null);
                 }}
                 onUserUpdated={refetchUsers}
@@ -204,22 +221,16 @@ export function UserList(){
                         <Button 
                             className="bg-red-600 w-full justify-center"
                             onClick={() => {
-                                setIsModalDelete(false)
-                                setIsModalOpen(false)
+                                setIsModalDelete(false);
+                                setIsModalOpen(false);
+                                resetUserQueryState();
                             }} 
                         >Annuler</Button>
                         <Button
                             className="w-full justify-center"
                             onClick={
                                 async () => {
-                                    if (!userToDelete) {
-                                        return <MyError>Utilisateur Non trouvé</MyError>
-                                    }
-
-                                    const userIdToDelete = userToDelete.id;
-
-                                    await deleteUserAsync({userId: userIdToDelete});
-                                    await refetchUsers();
+                                    await deleteUserAsync({userId: userToDelete?.id ?? -1});
                                 }
                             }
                         >{isDeleteUserPending ? `Suppression....` : `Valider`}</Button>
@@ -235,7 +246,8 @@ export function UserList(){
                             className="w-full justify-center"
                             onClick={
                                 async () => {
-                                    setIsModalOpen(false)
+                                    setIsModalOpen(false);
+                                    resetUserQueryState();
                                 }
                             }
                         >Valider</Button>

@@ -88,3 +88,6 @@ npm install lucide-react
 
 ### Le meilleur outil est React Query Devtools. TanStack fournit des Devtools dédiés pour voir les queries, leur état, leur cache, les erreurs et les mutations.
 npm i @tanstack/react-query-devtools
+
+## outil utliser pour gérer le conflit de class quand on utilise deux meme class dans tailwind
+npm install tailwind-merge
