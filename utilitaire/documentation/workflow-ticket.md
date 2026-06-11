@@ -469,3 +469,18 @@ GET /glpi-legacy-api/ValidationStep
 ```
 
 ### Niveau B - ITIL_ValidationStep ( a revoir car c'est notfound apres test sur postman)
+
+
+## type de personne lors de la creation de ticket
+
+Attribué à
+→ seulement techniciens / groupes support
+
+Demandeur
+→ utilisateur normal autorisé
+
+Observateur
+→ utilisateur concerné ou responsable
+
+Validateur
+→ responsable / manager / admin, pas forcément technicien
