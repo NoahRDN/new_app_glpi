@@ -56,6 +56,7 @@ import type {
   ParsedGlpiProfileRow,
   RecognizedGlpiParsedFile,
 } from "../model/glpiImportProfile.types";
+import { normalizeKey } from "../../../../shared/lib/normalizeKey";
 
 type ImportFilesInput = {
   imageZipFiles?: File[];
@@ -225,9 +226,7 @@ function collectImportResetResourceIds(params: {
   return [...resourceIds];
 }
 
-function normalizeKey(value: string | number | null | undefined) {
-  return String(value ?? "").trim().toLowerCase();
-}
+
 
 function toReference(id: number | undefined) {
   if (id === undefined) {
