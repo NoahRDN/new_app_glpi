@@ -450,3 +450,22 @@ C’est-à-dire assigné.
 Assignation valide =
 utilisateur avec profil Technician/Admin/Super-Admin
 ou groupe Support/Technicien
+
+## API qui permet d’obtenir itils_validationsteps_id
+
+### Niveau A — ValidationStep
+
+C’est le modèle / nom d’étape de validation.
+
+Exemple :
+
+Validation
+Validation responsable
+Validation direction
+
+À tester en legacy :
+```
+GET /glpi-legacy-api/ValidationStep
+```
+
+### Niveau B - ITIL_ValidationStep ( a revoir car c'est notfound apres test sur postman)

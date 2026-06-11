@@ -15,8 +15,10 @@ import { generalViewAssetItemsFiltersDefaultValues } from "../../general-view-as
 import { useAllGeneralViewAssetItems } from "../../general-view-asset-items/hooks/useAllGeneralViewAssetItems";
 import type { GeneralViewAssetItems } from "../../general-view-asset-items/model/generalViewAssetItems.types";
 import { linkAssetToTicket } from "../../../../entities/ticket/api/ticketItem.api";
+import { createTicketTeamMember } from "../../../../entities/ticket/api/ticketTeam.api";
 import { useUsers } from "../../../backoffice/users/hooks/useUsers";
 import { TICKET_TYPE_LABELS } from "../../../../entities/user/model/user.configs";
+import { useGroups } from "../../../backoffice/groups/hooks/useGroups";
 
 type SelectedTicketElement = {
   itemtype: string;       
@@ -37,6 +39,8 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
     const [selectedElements, setSelectedElements] = useState<SelectedTicketElement[]>([]);
     const [myAssetItemSelected, setMyAssetItemSelected] = useState("");
     const [selectedUserId, setSelectedUserId] = useState<number | undefined>(undefined);
+    const [selectedTechnicianUserId, setSelectedTechnicianUserId] = useState<number | undefined>(undefined);
+    const [selectedTechnicianGroupId, setSelectedTechnicianGroupId] = useState<number | undefined>(undefined);
 
     const {
         mutateAsync: createTicketAsync,
@@ -57,6 +61,12 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
         isError: isUsersError,
         error: usersError,
     } = useUsers();
+
+    const {
+        data: groups = [],
+        isError: isGroupsError,
+        error: groupsError,
+    } = useGroups();
 
     const {
         data: allGeneralViewAssetItemsPage,
@@ -92,6 +102,28 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                 content,
             });
 
+            if (selectedTechnicianUserId !== undefined) {
+                await createTicketTeamMember({
+                    ticketId: createdTicket.id,
+                    payload: {
+                        id: selectedTechnicianUserId,
+                        role: "assigned",
+                        type: "User",
+                    },
+                });
+            }
+
+            if (selectedTechnicianGroupId !== undefined) {
+                await createTicketTeamMember({
+                    ticketId: createdTicket.id,
+                    payload: {
+                        id: selectedTechnicianGroupId,
+                        role: "assigned",
+                        type: "Group",
+                    },
+                });
+            }
+
             for (const element of selectedElements) {
             await linkAssetToTicket({
                 ticketId: createdTicket.id,
@@ -111,6 +143,8 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
             });
 
             setSelectedElements([]);
+            setSelectedTechnicianUserId(undefined);
+            setSelectedTechnicianGroupId(undefined);
         } catch (error) {
             console.error(error);
         }
@@ -244,6 +278,14 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
             </MyError>
         </div>
     }
+
+    if (isGroupsError) {
+        return <div>
+            <MyError>
+                {getUserErrorMessage(groupsError, "Erreur lors du chargement des groupes")}
+            </MyError>
+        </div>
+    }
     
     if (isCreatePrinterError) {
         return <MyError>
@@ -270,7 +312,7 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
 
     return<>
         <form className="flex gap-3 flex-col" onSubmit={handleSubmit}>
-            <Label htmlFor="ticketUser">Utilisateur</Label>
+            <Label htmlFor="ticketUser">Utilisateur demandeur</Label>
             <Select
                 id="ticketUser"
                 value={selectedUserId ? String(selectedUserId) : ""}
@@ -294,6 +336,49 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                             </option>
                         );
                     })}
+            </Select>
+
+            <Label htmlFor="ticketTechnicianUser">Utilisateur technicien</Label>
+            <Select
+                id="ticketTechnicianUser"
+                value={selectedTechnicianUserId ? String(selectedTechnicianUserId) : ""}
+                onChange={(event) => {
+                    const value = event.target.value;
+
+                    setSelectedTechnicianUserId(value ? Number(value) : undefined);
+                }}
+            >
+                <option value="">Choisir un technicien</option>
+                {users
+                    .filter((user) => !user.is_deleted)
+                    .map((user) => {
+                        const fullName = `${user.firstname} ${user.realname}`.trim();
+                        const label = fullName.length > 0 ? fullName : user.username;
+
+                        return (
+                            <option key={`technician-${user.id}`} value={String(user.id)}>
+                                {label} ({user.username})
+                            </option>
+                        );
+                    })}
+            </Select>
+
+            <Label htmlFor="ticketTechnicianGroup">Groupe de technicien</Label>
+            <Select
+                id="ticketTechnicianGroup"
+                value={selectedTechnicianGroupId ? String(selectedTechnicianGroupId) : ""}
+                onChange={(event) => {
+                    const value = event.target.value;
+
+                    setSelectedTechnicianGroupId(value ? Number(value) : undefined);
+                }}
+            >
+                <option value="">Choisir un groupe technicien</option>
+                {groups.map((group) => (
+                    <option key={group.id} value={String(group.id)}>
+                        {group.name}
+                    </option>
+                ))}
             </Select>
 
             <Label htmlFor="ticketName" id="titre">Titre ticket</Label>
