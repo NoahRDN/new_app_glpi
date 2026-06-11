@@ -1,38 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
-import type { User } from "../../../../entities/user/model/user.types";
-import { getUsers } from "../../../../entities/user/api/user.api";
-// import { getLocalNotes } from "../../../../entities/local-note/api/localNote.api";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getUsersPage } from "../../../../entities/user/api/user.api";
+import type { UserFilters } from "../../../../entities/user/model/user.types";
 
-export function useUsers() {
-    const [users, setUsers] = useState<User[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [errors, setErrors] = useState<string>("");
+export const usersQueryKey = ["administration", "users"] as const; 
 
-    const refreshUsers = useCallback(async () => {
-        try {
-            const users = await getUsers();
-            // const notes = await getLocalNotes();
-            // console.log("notes: ",notes);
-            setUsers(users);
-            setErrors("");
-        } catch (error) {
-            console.error(error);
-            setErrors("Erreur pendant le chargement des utilisateurs.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+export function useUsersPage(
+    {page, limit,filters}:
+    {page: number, limit: number,filters: UserFilters}){
 
-    useEffect(() => {
-        queueMicrotask(() => {
-            void refreshUsers();
-        });
-    }, [refreshUsers]);
-
-    return {
-        users,
-        isLoading,
-        errors,
-        refreshUsers,
-    };
+    return useQuery({
+        queryKey: [...usersQueryKey, page, limit, filters ],
+        queryFn: () => getUsersPage({page, limit,filters}),
+        placeholderData: keepPreviousData,
+        staleTime: 60_000,
+        retry: 1,
+    })    
 }

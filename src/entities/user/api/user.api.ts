@@ -5,8 +5,9 @@ import {
   glpiPatch,
   glpiPost,
 } from "../../../shared/api/glpiClient";
+import { buildUserFilter } from "../lib/user.filter";
 import { mapGlpiUsersToUsers, mapGlpiUserToUser } from "../lib/user.mapper";
-import type { CreateUser, GlpiUser, UpdateUser, User } from "../model/user.types";
+import type { CreateUser, GlpiUser, UpdateUser, User, UserFilters } from "../model/user.types";
 
 function normalizeUserKey(value: string) {
   return value.trim().toLowerCase();
@@ -70,6 +71,28 @@ export async function getUsers(): Promise<User[]> {
 
   return mapGlpiUsersToUsers(glpiUsers);
 }
+
+export async function getUsersPage(
+  {page, limit, filters,} :
+  {page: number, limit: number, filters: UserFilters
+}){
+  const start = page * limit;
+
+  const params = new URLSearchParams({
+    start: String(start),
+    limit: String(limit),
+  });
+
+  const filter = buildUserFilter({ filters });
+
+  if (filter) {
+    params.set("filter", filter);
+  }
+
+  return glpiGetPaginated<GlpiUser>(`/Administration/User?${params.toString()}`)
+}
+
+
 
 export async function getUser(userId: number | string): Promise<User> {
   const glpiUser = await glpiGet<GlpiUser>(`/Administration/User/${userId}`);

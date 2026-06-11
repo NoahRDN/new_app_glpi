@@ -2,25 +2,63 @@ import { useState } from "react";
 import { Button } from "../../../../shared/ui/Button";
 import { DataTable } from "../../../../shared/ui/DataTable";
 import { Loader } from "../../../../shared/ui/Loader";
-import { useUsers } from "../hooks/useUsers";
+import { useUsersPage } from "../hooks/useUsers";
 import { Plus, PenLine, Trash2 } from "lucide-react";
 import { Modal } from "../../../../shared/ui/Modal";
 import { UserAdd } from "./UserAdd";
 import { useDeleteUser } from "../hooks/useDeleteUser";
 import { UserUpdate } from "./UserUpdate";
 import { Input } from "../../../../shared/ui/Input";
+import { MyError } from "../../../../shared/ui/MyError";
+import { getUserErrorMessage } from "../../../../shared/errors/AppError";
+import { useDebounce } from "../../../../shared/hooks/useDebounce";
+import { type User, type UserFilters } from "../../../../entities/user/model/user.types";
+import { defaultUserFilter } from "../../../../entities/user/model/user.configs";
 
 
 export function UserList(){
-    const {users, isLoading, errors, refreshUsers} = useUsers();
+    const [filters] = useState<UserFilters>({...defaultUserFilter});
+    
+    const [page, setPage] = useState(0);
+    const [limit, setLimit] = useState<number>(5);
+    const debouncedFilters = useDebounce(filters, 400);
+
+    const {
+        data: usersPage,
+        isPending: isUsersPending,
+        isError: isUsersError,
+        error: usersError,
+        isFetching: isUsersFetching,
+        refetch: refetchUsers
+    } = useUsersPage({page: page, limit: limit, filters:debouncedFilters});
+
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const {errorsDeleteUser, deleteUserHooks, userDelete, setUserDelete, isSuccessDeleteUser, setIsSuccessDeleteUser}= useDeleteUser();
+    const {
+        mutateAsync: deleteUserAsync,
+        isError: isDeleteUserError,
+        error: deleteUserError,
+        isPending: isDeleteUserPending,
+        isSuccess: isDeleteUserSuccess,
+    }= useDeleteUser();
+
     const [isModalDelete, setIsModalDelete] = useState(false);
     const [userToUpdate, setUserToUpdate] = useState<(typeof users)[number] | null>(null);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null)
+
+    const users = usersPage?.data ?? [];
+    const total = usersPage?.total ?? 0;
+    const hasNextPage = (page + 1) * limit < total;
 
     return <>
-        {isLoading && <Loader label="chargement donnnée user ..." />}
-        {!isLoading && errors === "" && 
+        {isUsersPending && <Loader label="chargement donnnée user ..." />}
+
+        {isUsersError && 
+            <MyError>
+                {getUserErrorMessage(usersError, "Erreur lors du chargements des utilisateur")}
+            </MyError>
+        }
+
+        {users && 
             <DataTable
                 tableClassName="min-w-full"
                 tableHeads={[
@@ -44,13 +82,53 @@ export function UserList(){
                         className="ml-4"
                         onClick={() => setIsModalOpen(true)}
                     >Actualiser</Button>
-                    </>
-                    
-                }       
+                    </> 
+                }      
+                toolbarFooter={(
+                    <div className="col-span-12 mt-4 flex items-center justify-between">
+                        <div className="flex gap-3">
+                        <p className="text-sm text-(--text-secondary)">
+                            Page {page + 1} — {total} user(s) au total
+                            {isUsersFetching ? " — Actualisation..." : ""}
+                        </p>
+
+                        <select
+                            id="limitPrinterPagination"
+                            name="limitPrinterPagination"
+                            value={limit}
+                            onChange={(event) => {
+                            setLimit(Number(event.target.value));
+                            setPage(0);
+                            }}
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        </div>
+
+                        <div className="flex gap-3">
+                        <Button
+                            disabled={page === 0}
+                            onClick={() => setPage((currentPage) => currentPage - 1)}
+                        >
+                            Précédent
+                        </Button>
+
+                        <Button
+                            disabled={!hasNextPage}
+                            onClick={() => setPage((currentPage) => currentPage + 1)}
+                        >
+                            Suivant
+                        </Button>
+                        </div>
+                    </div>
+                )} 
             >
-                {/*  */}
                 {users.length > 0 && users
-                .filter((user) => !user.is_deleted)
                 .map((user) =>
                     <tr key={user.id} >
                         <td className="px-4">
@@ -74,7 +152,7 @@ export function UserList(){
                                 onClick={
                                      () => {
                                         setIsModalDelete(true);
-                                        setUserDelete(user);
+                                        setUserToDelete(user);
                                         setUserToUpdate(null);
                                         setIsModalOpen(true);
                                     }
@@ -88,10 +166,15 @@ export function UserList(){
             </DataTable>   
         }
 
-        {errors !== "" && <span>{errors}</span>}
-        {errorsDeleteUser !== "" && <span>{errorsDeleteUser}</span>}
+        
+        {isDeleteUserError && 
+            <MyError>
+                {getUserErrorMessage(deleteUserError, "Erreur lors de la suppression")}
+            </MyError>
+        }
 
         <Modal
+            isModalColorGreen={isDeleteUserSuccess}
             isOpen={isModalOpen}
             title={`${isModalDelete ? "Supprimer" : userToUpdate !== null ? "Modifier" : "Ajouter"} un utilisateur`}
             onClose={() => {
@@ -102,7 +185,7 @@ export function UserList(){
         >
             { !isModalDelete && userToUpdate === null && <UserAdd 
                 onClose={() => setIsModalOpen(false)}
-                onUserCreated={refreshUsers}
+                onUserCreated={refetchUsers}
             /> }
 
             { !isModalDelete && userToUpdate !== null && <UserUpdate
@@ -110,11 +193,11 @@ export function UserList(){
                     setIsModalOpen(false);
                     setUserToUpdate(null);
                 }}
-                onUserUpdated={refreshUsers}
+                onUserUpdated={refetchUsers}
                 userToUpdate={userToUpdate}
             /> }
 
-            {isModalDelete && !isSuccessDeleteUser && 
+            {isModalDelete && !isDeleteUserSuccess &&
                 <section>
                     <p className="text-center mb-7">Voulez vous vraiment supprimez?</p>
                     <div className="grid grid-cols-2 gap-4">
@@ -129,24 +212,29 @@ export function UserList(){
                             className="w-full justify-center"
                             onClick={
                                 async () => {
-                                    await deleteUserHooks(userDelete.id);
-                                    await refreshUsers();
+                                    if (!userToDelete) {
+                                        return <MyError>Utilisateur Non trouvé</MyError>
+                                    }
+
+                                    const userIdToDelete = userToDelete.id;
+
+                                    await deleteUserAsync({userId: userIdToDelete});
+                                    await refetchUsers();
                                 }
                             }
-                        >Valider</Button>
+                        >{isDeleteUserPending ? `Suppression....` : `Valider`}</Button>
                     </div>
                 </section>
             }
 
-            {isSuccessDeleteUser && 
+            {isDeleteUserSuccess && 
                 <section>
-                    <p className="text-center mb-7 text-green-600 bg-green-100 rounded-2xl">"{userDelete.username}" a été bien supprimer</p>
+                    <p className="text-center mb-7 rounded-2xl">"{userToDelete?.username}" a été bien supprimer</p>
                     <div className="grid grid-cols-1 gap-4">
                         <Button
                             className="w-full justify-center"
                             onClick={
                                 async () => {
-                                    setIsSuccessDeleteUser(false)
                                     setIsModalOpen(false)
                                 }
                             }

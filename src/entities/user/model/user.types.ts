@@ -8,13 +8,7 @@ export type User = {
   is_deleted: boolean
 };
 
-export type GlpiUser = {
-  id: number;
-  username?: string;
-  realname?: string;
-  firstname?: string;
-  is_deleted?: boolean;
-};
+export type GlpiUser = User;
 
 export type CreateUser = {
   username?: string;
@@ -32,3 +26,8 @@ export type UserReference = {
 };
 
 export type UserTech = UserReference;
+
+
+export type UserFilters = {
+  name: string
+}

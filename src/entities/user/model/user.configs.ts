@@ -1,4 +1,4 @@
-import type {User} from "./user.types";
+import type {User, UserFilters} from "./user.types";
 
 export const defaultUser: User = {
   id: 0,
@@ -6,4 +6,8 @@ export const defaultUser: User = {
   realname: "",
   firstname: "",
   is_deleted: false
+};
+
+export const defaultUserFilter: UserFilters = {
+  name: ""
 };

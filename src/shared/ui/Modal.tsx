@@ -5,10 +5,12 @@ type ModalProps = {
   isOpen: boolean;
   title: string;
   children: ReactNode;
+  isModalColorGreen?: boolean;
+  isModalColorRed?: boolean;
   onClose: () => void;
 };
 
-export function Modal({ isOpen, title, children, onClose }: ModalProps) {
+export function Modal({ isOpen, title, children, onClose , isModalColorGreen, isModalColorRed}: ModalProps) {
   if (!isOpen) {
     return null;
   }
@@ -24,11 +26,7 @@ export function Modal({ isOpen, title, children, onClose }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative z-10 flex max-h-[90vh] w-full max-w-xl flex-col rounded-[28px] border p-6 shadow-[var(--shadow-soft)]"
-        style={{
-          backgroundColor: "var(--panel-bg)",
-          borderColor: "var(--panel-border)",
-        }}
+        className={`relative z-10 flex max-h-[90vh] w-full max-w-xl flex-col rounded-[28px] border p-6 shadow-[var(--shadow-soft)] bg-(--panel-bg) border-(--panel-border) ${isModalColorGreen && `bg-green-300 border-green-300`} ${isModalColorRed && `bg-red-300 border-red-300`} `}
       >
         <header className="mb-4 flex shrink-0 items-center justify-between gap-4">
           <h2
