@@ -24,10 +24,10 @@ export function UserAdd({onClose} : UserAddProps){
         isSuccess: isCreateUserSuccess,
     } = useAddUser();
     
-    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        await createUserAsync(form);
+        createUserAsync(form);
     }
 
     return(<>

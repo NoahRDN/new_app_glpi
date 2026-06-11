@@ -82,17 +82,11 @@ export function UserList(){
                         }}
                     >Action Groupé</Button>
                     <Button
-                        onClick={() => {
-                            setIsModalOpen(true);
-                            resetUserQueryState();
-                        }}
+                        onClick={() => {setIsModalOpen(true);}}
                     ><Plus size={20} />Ajouter</Button>
                     <Button
                         className="ml-4"
-                        onClick={() => {
-                            setIsModalOpen(true);
-                            resetUserQueryState();
-                        }}
+                        onClick={() => {setIsModalOpen(true);}}
                     >Actualiser</Button>
                     </> 
                 }      
@@ -246,6 +240,7 @@ export function UserList(){
                             className="w-full justify-center"
                             onClick={
                                 async () => {
+                                    setIsModalDelete(false);
                                     setIsModalOpen(false);
                                     resetUserQueryState();
                                 }
