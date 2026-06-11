@@ -1654,3 +1654,40 @@ Donc même si ton onDragLeave est écrit sur la section, l’événement peut ê
 ## Math.ceil() 
 
 Math.ceil() veut dire arrondir vers le haut.
+
+## Object.entries()
+Object.entries() sert à transformer un objet en tableau, pour pouvoir utiliser .map() dessus.
+
+Tu as ceci :
+
+export const TICKET_TYPE_LABELS: Record<number, string> = {
+  1: "Incident",
+  2: "Demande",
+};
+
+C’est un objet, pas un tableau. Donc tu ne peux pas faire :
+
+TICKET_TYPE_LABELS.map(...)
+
+car .map() existe seulement sur les tableaux.
+
+### Que fait Object.entries() ?
+Object.entries(TICKET_TYPE_LABELS)
+
+transforme ton objet :
+
+{
+  1: "Incident",
+  2: "Demande",
+}
+
+en tableau :
+
+[
+  ["1", "Incident"],
+  ["2", "Demande"],
+]
+
+Donc maintenant, tu peux faire .map() :
+
+Object.entries(TICKET_TYPE_LABELS).map(...)

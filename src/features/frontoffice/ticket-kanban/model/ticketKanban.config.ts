@@ -20,7 +20,7 @@ export const ticketKanbanGroups: TicketKanbanGroup[] = [
     key: "done",
     label: "Terminé",
     statusIds: [5, 6],
-    targetStatusId: 5,
+    targetStatusId: 6,
     backgroundColorSection:"#cdf8d6",
   },
 ];

@@ -16,6 +16,7 @@ import { useAllGeneralViewAssetItems } from "../../general-view-asset-items/hook
 import type { GeneralViewAssetItems } from "../../general-view-asset-items/model/generalViewAssetItems.types";
 import { linkAssetToTicket } from "../../../../entities/ticket/api/ticketItem.api";
 import { useUsers } from "../../../backoffice/users/hooks/useUsers";
+import { TICKET_TYPE_LABELS } from "../../../../entities/user/model/user.configs";
 
 type SelectedTicketElement = {
   itemtype: string;       
@@ -316,6 +317,23 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                     });
                 }}
                 id="contentTicket" />
+            
+            <Label>Type Ticket</Label>
+            <Select
+                value={form.type}
+                onChange={(event) => {
+                    setForm({
+                        ...form,
+                        type: Number(event.target.value)
+                    })
+                }}
+            >
+                {Object.entries(TICKET_TYPE_LABELS).map( ([type, label]) => {
+                    return <option key={type} value={type}>{label}</option>
+                })}
+                
+            </Select>
+
             <Label htmlFor="elementsTicket">Element</Label>
 
             <div className="flex">

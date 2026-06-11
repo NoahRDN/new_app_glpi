@@ -17,3 +17,13 @@ export const defaultCreateUser: CreateUser = {
   realname: "",
   firstname: "",
 };
+
+export const TICKET_TYPE = {
+  INCIDENT: 1,
+  REQUEST: 2,
+} as const;
+
+export const TICKET_TYPE_LABELS: Record<number, string> = {
+  1: "Incident",
+  2: "Demande",
+};
