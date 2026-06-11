@@ -219,7 +219,13 @@ async function request<T>(
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const responseText = await response.text();
+
+  if (responseText.trim().length === 0) {
+    return undefined as T;
+  }
+
+  return JSON.parse(responseText) as T;
 }
 
 async function requestPaginated<T>(

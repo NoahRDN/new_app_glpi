@@ -6,16 +6,11 @@ export type CreateTicketTeamMemberPayload = {
   type: "Group" | "Supplier" | "User";
 };
 
-export type CreateTicketTeamMemberResponse = {
-  href: string;
-  id: number;
-};
-
 export async function createTicketTeamMember(params: {
   payload: CreateTicketTeamMemberPayload;
   ticketId: number | string;
-}): Promise<CreateTicketTeamMemberResponse> {
-  return glpiPost<CreateTicketTeamMemberResponse>(
+}): Promise<void> {
+  await glpiPost<void>(
     `/Assistance/Ticket/${params.ticketId}/TeamMember`,
     params.payload,
   );

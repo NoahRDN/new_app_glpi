@@ -17,6 +17,18 @@ import { useUpdateTicketStatus } from "../hooks/useUpdateTicketStatus";
 import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
 import { useCreateTicketTeamMember } from "../../ticket/hooks/useCreateTicketTeamMember";
 
+function hasAssignedTechnicianOrGroup(ticket: Ticket) {
+  return ticket.team.some((teamMember) => {
+    const normalizedRole = teamMember.role.trim().toLowerCase();
+    const normalizedType = teamMember.type.trim().toLowerCase();
+
+    return (
+      normalizedRole === "assigned" &&
+      (normalizedType === "user" || normalizedType === "group")
+    );
+  });
+}
+
 export function ListTicketKanban() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusRequirementModalOpen, setIsStatusRequirementModalOpen] = useState(false);
@@ -63,9 +75,11 @@ export function ListTicketKanban() {
     }
 
     const currentStatusId = droppedTicket.status?.id;
+    const alreadyHasAssignment = hasAssignedTechnicianOrGroup(droppedTicket);
     const requiresAssignmentStep =
       currentStatusId === TICKET_STATUS_IDS.NEW &&
-      TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId);
+      TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId) &&
+      !alreadyHasAssignment;
 
     if (requiresAssignmentStep) {
       setPendingStatusChange({
