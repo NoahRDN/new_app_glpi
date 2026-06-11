@@ -1650,3 +1650,7 @@ Si ta souris est sur le texte dans le bouton :
 event.target = le texte ou un élément interne du bouton
 
 Donc même si ton onDragLeave est écrit sur la section, l’événement peut être lié à un enfant.
+
+## Math.ceil() 
+
+Math.ceil() veut dire arrondir vers le haut.

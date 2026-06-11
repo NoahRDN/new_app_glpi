@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getUsersPage } from "../../../../entities/user/api/user.api";
+import { getUsers, getUsersPage } from "../../../../entities/user/api/user.api";
 import type { UserFilters } from "../../../../entities/user/model/user.types";
 
 export const usersQueryKey = ["administration", "users"] as const; 
@@ -16,3 +16,11 @@ export function useUsersPage(
         retry: 1,
     })    
 }
+
+export function useUsers(){
+    return useQuery({
+        queryKey: usersQueryKey,
+        queryFn: () => getUsers({})
+    })
+}
+

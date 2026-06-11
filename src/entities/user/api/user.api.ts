@@ -66,16 +66,10 @@ function parseImportedUserName(name: string) {
   };
 }
 
-export async function getUsers(): Promise<User[]> {
-  const glpiUsers = await glpiGet<GlpiUser[]>("/Administration/User");
-
-  return mapGlpiUsersToUsers(glpiUsers);
-}
-
 export async function getUsersPage(
   {page, limit, filters,} :
-  {page: number, limit: number, filters: UserFilters
-}){
+  {page: number, limit: number, filters?: UserFilters}
+){
   const start = page * limit;
 
   const params = new URLSearchParams({
@@ -83,16 +77,45 @@ export async function getUsersPage(
     limit: String(limit),
   });
 
-  const filter = buildUserFilter({ filters });
+  if (filters) {
+    const filter = buildUserFilter({ filters });
 
-  if (filter) {
-    params.set("filter", filter);
+    if (filter) {
+      params.set("filter", filter);
+    }
   }
+  
 
   return glpiGetPaginated<GlpiUser>(`/Administration/User?${params.toString()}`)
 }
 
+export async function getUsers(
+  {filters,} :
+  {filters?: UserFilters}
+) {
+  const firstPage = await getUsersPage({
+    page: 0,
+    limit: 100,
+    filters,
+  });
 
+  const total = firstPage.total;
+  const totalPages = Math.ceil(total / 100);
+
+  const allItems = [...firstPage.data];
+
+  for (let page = 1; page < totalPages; page++) {
+    const nextPage = await getUsersPage({
+      page: page,
+      limit: 100,
+      filters: filters,
+    });
+
+    allItems.push(...nextPage.data);
+  }
+
+  return allItems;
+}
 
 export async function getUser(userId: number | string): Promise<User> {
   const glpiUser = await glpiGet<GlpiUser>(`/Administration/User/${userId}`);

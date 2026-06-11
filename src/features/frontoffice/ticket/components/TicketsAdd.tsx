@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import type { CreateTicketPayload } from "../../../../entities/ticket/model/ticket.types";
 import { getDeveloperErrorDetails, getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Input } from "../../../../shared/ui/Input";
@@ -16,7 +15,7 @@ import { generalViewAssetItemsFiltersDefaultValues } from "../../general-view-as
 import { useAllGeneralViewAssetItems } from "../../general-view-asset-items/hooks/useAllGeneralViewAssetItems";
 import type { GeneralViewAssetItems } from "../../general-view-asset-items/model/generalViewAssetItems.types";
 import { linkAssetToTicket } from "../../../../entities/ticket/api/ticketItem.api";
-import { getUsers } from "../../../../entities/user/api/user.api";
+import { useUsers } from "../../../backoffice/users/hooks/useUsers";
 
 type SelectedTicketElement = {
   itemtype: string;       
@@ -56,10 +55,7 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
         data: users = [],
         isError: isUsersError,
         error: usersError,
-    } = useQuery({
-        queryKey: ["frontoffice-ticket-users"],
-        queryFn: getUsers,
-    });
+    } = useUsers();
 
     const {
         data: allGeneralViewAssetItemsPage,
