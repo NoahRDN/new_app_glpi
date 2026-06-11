@@ -9,12 +9,20 @@ export function buildTicketFilter(
   const name = filters.name.trim();
 
   if (name.length > 0) {
-    parts.push(`name=ilike=*${name}*`);
-    const statusId = getTicketStatusValue(name);
-    console.log("name: ", name, "status: ", statusId)
+    const searchParts: string[] = [];
+
+    searchParts.push(`name=ilike=*${name}*`);
+
+    const statusId = getTicketStatusValueInclude(name);
+
     if (statusId !== undefined) {
-      parts.push(`status.id==${statusId}`);
-      console.log("hola: ", parts.at(parts.length-1));
+      searchParts.push(`status.id==${statusId}`);
+    }
+
+    if (searchParts.length === 1) {
+      parts.push(searchParts[0]);
+    } else {
+      parts.push(`(${searchParts.join(",")})`);
     }
   }
 
@@ -33,6 +41,24 @@ export function getTicketStatusValue(
   const status = ticketStatusKeywords.find((statusKeyword) =>
     statusKeyword.keywords.some(
       (keyword) => normalizeKey(keyword) === normalizedValue,
+    ),
+  );
+
+  return status?.statusId;
+}
+
+export function getTicketStatusValueInclude(
+  value: string | number | boolean | undefined,
+): number | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalizedValue = normalizeKey(value);
+
+  const status = ticketStatusKeywords.find((statusKeyword) =>
+    statusKeyword.keywords.some((keyword) =>
+      normalizeKey(keyword).includes(normalizedValue),
     ),
   );
 
