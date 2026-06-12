@@ -1,10 +1,9 @@
 import type { RouteObject } from "react-router";
+import { Navigate } from "react-router";
 import { FrontOfficeLayout } from "../layouts/FrontOfficeLayout";
-import { ProtectedFrontofficeRoute } from "../../features/frontoffice-auth/components/ProtectedFrontofficeRoute";
 import { HomePage } from "../../pages/other/frontoffice/HomePage";
 import { PortalPage } from "../../pages/other/frontoffice/PortalPage";
 import { HelpCenterPage } from "../../pages/other/frontoffice/HelpCenterPage";
-import { LoginPage } from "../../pages/other/frontoffice/LoginPage";
 import { AccountPage } from "../../pages/other/frontoffice/AccountPage";
 import { GeneralViewElementPage } from "../../pages/frontoffice/GeneralViewElementPage";
 import { TicketsPage } from "../../pages/frontoffice/TicketsPage";
@@ -14,15 +13,11 @@ export const frontOfficeRoutes: RouteObject = {
   children: [
     {
       path: "/connexion",
-      element: <LoginPage />,
+      element: <Navigate replace to="/" />,
     },
     {
       path: "/",
-      element: (
-        <ProtectedFrontofficeRoute>
-          <FrontOfficeLayout />
-        </ProtectedFrontofficeRoute>
-      ),
+      element: <FrontOfficeLayout />,
       children: [
         {
           index: true,

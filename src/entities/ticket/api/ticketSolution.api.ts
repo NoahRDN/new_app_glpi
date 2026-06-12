@@ -6,8 +6,31 @@ import type {
   UpdateTicketSolutionPayload,
 } from "../model/ticket.types";
 
+type TimelineEntry<T> = {
+  type: string;
+  item: T;
+};
+
+function extractTimelineItem<T>(entry: T | TimelineEntry<T>): T {
+  if (
+    typeof entry === "object" &&
+    entry !== null &&
+    "item" in entry
+  ) {
+    return (entry as TimelineEntry<T>).item;
+  }
+
+  return entry as T;
+}
+
 export async function getTicketSolutions(ticketId: number | string): Promise<TicketSolution[]> {
-  return glpiGet<TicketSolution[]>(`/Assistance/Ticket/${ticketId}/Timeline/Solution`);
+  const response = await glpiGet<Array<TicketSolution | TimelineEntry<TicketSolution>>>(
+    `/Assistance/Ticket/${ticketId}/Timeline/Solution`,
+  );
+
+  return response
+    .map(extractTimelineItem)
+    .filter((solution) => typeof solution.id === "number");
 }
 
 export async function createTicketSolution(params: {

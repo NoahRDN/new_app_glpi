@@ -49,6 +49,7 @@ export function ListTicketKanban() {
   } | null>(null);
   const [pendingResolvedReview, setPendingResolvedReview] = useState<{
     refuseStatusId: number;
+    solutionId?: number;
     ticket: Ticket;
   } | null>(null);
   const [draggingTicketId, setDraggingTicketId] = useState<number | null>(null);
@@ -112,6 +113,7 @@ export function ListTicketKanban() {
 
   function openResolvedReviewModal(params: {
     refuseStatusId: number;
+    solutionId?: number;
     ticket: Ticket;
   }) {
     setPendingStatusChange(null);
@@ -140,11 +142,8 @@ export function ListTicketKanban() {
 
   async function getLatestTicketSolution(ticketId: number) {
     const solutions = await getTicketSolutions(ticketId);
-    const validSolutions = solutions.filter(
-      (solution) => typeof solution.id === "number",
-    );
 
-    const sortedSolutions = [...validSolutions].sort((left, right) => {
+    const sortedSolutions = [...solutions].sort((left, right) => {
       const leftTimestamp = new Date(
         left.date_mod ?? left.date_creation ?? "1970-01-01T00:00:00Z",
       ).getTime();
@@ -412,7 +411,10 @@ export function ListTicketKanban() {
             try {
               setStatusTransitionError(null);
 
-              const latestSolution = await getLatestTicketSolution(pendingResolvedReview.ticket.id);
+              const latestSolution =
+                pendingResolvedReview.solutionId !== undefined
+                  ? { id: pendingResolvedReview.solutionId }
+                  : await getLatestTicketSolution(pendingResolvedReview.ticket.id);
 
               if (!latestSolution || typeof latestSolution.id !== "number") {
                 await redirectToMissingSolutionStep(pendingResolvedReview.ticket);
@@ -449,7 +451,10 @@ export function ListTicketKanban() {
             try {
               setStatusTransitionError(null);
 
-              const latestSolution = await getLatestTicketSolution(pendingResolvedReview.ticket.id);
+              const latestSolution =
+                pendingResolvedReview.solutionId !== undefined
+                  ? { id: pendingResolvedReview.solutionId }
+                  : await getLatestTicketSolution(pendingResolvedReview.ticket.id);
 
               if (!latestSolution || typeof latestSolution.id !== "number") {
                 await redirectToMissingSolutionStep(pendingResolvedReview.ticket);
@@ -501,7 +506,7 @@ export function ListTicketKanban() {
               setStatusTransitionError(null);
 
               if (pendingTransition.mode === "resolve") {
-                await createTicketSolutionAsync({
+                const createdSolution = await createTicketSolutionAsync({
                   ticketId: pendingTransition.ticket.id,
                   payload: {
                     content: comment,
@@ -519,6 +524,7 @@ export function ListTicketKanban() {
                   setPendingTransition(null);
                   setPendingResolvedReview({
                     refuseStatusId: TICKET_STATUS_IDS.ASSIGNED,
+                    solutionId: createdSolution.id,
                     ticket: pendingTransition.ticket,
                   });
                   return;

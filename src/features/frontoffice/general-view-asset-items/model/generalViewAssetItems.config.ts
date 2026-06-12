@@ -33,5 +33,7 @@ export const generalViewAssetItemDefault: GeneralViewAssetItems = {
 
 export const generalViewAssetItemsFiltersDefaultValues: GeneralViewAssetItemsFilters = {
   name: "",
+  dateCreationFrom: "",
+  dateCreationTo: "",
   itemtypes: [],
 };

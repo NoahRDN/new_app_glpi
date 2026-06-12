@@ -91,7 +91,7 @@ export function ListGeneralViewItem(){
             toolbar={
                 <div className="flex gap-3">
                     <Input 
-                        placeholder="Rercherche nom...."
+                        placeholder="Recherche nom, type, entite, fabricant, utilisateur, statut..."
                         type="text" 
                         value={filters.name}
                         onChange={(event) => {
@@ -99,6 +99,30 @@ export function ListGeneralViewItem(){
                                 ...filters,
                                 name: event.target.value
                             })
+                            setPage(0);
+                        }}
+                    />
+
+                    <Input
+                        type="date"
+                        value={filters.dateCreationFrom ?? ""}
+                        onChange={(event) => {
+                            setFilters({
+                                ...filters,
+                                dateCreationFrom: event.target.value,
+                            });
+                            setPage(0);
+                        }}
+                    />
+
+                    <Input
+                        type="date"
+                        value={filters.dateCreationTo ?? ""}
+                        onChange={(event) => {
+                            setFilters({
+                                ...filters,
+                                dateCreationTo: event.target.value,
+                            });
                             setPage(0);
                         }}
                     />
@@ -111,6 +135,7 @@ export function ListGeneralViewItem(){
                                     ...filters,
                                     itemtypes: []
                                 })
+                                setPage(0);
                                 setItemTypeFilter(event.target.value);
                                 return;
                             }
@@ -119,6 +144,7 @@ export function ListGeneralViewItem(){
                                 ...filters,
                                 itemtypes: [event.target.value]
                             })
+                            setPage(0);
                             setItemTypeFilter(event.target.value);
                         }}
                         name="filterTypeItem" id="filterTypeItem"
