@@ -17,6 +17,8 @@ import type { GeneralViewAssetItems } from "../../general-view-asset-items/model
 import { linkAssetToTicket } from "../../../../entities/ticket/api/ticketItem.api";
 import { useUsers } from "../../../backoffice/users/hooks/useUsers";
 import { TICKET_TYPE_LABELS } from "../../../../entities/user/model/user.configs";
+import { useGroups } from "../../../backoffice/groups/hooks/useGroups";
+import { useCreateTicketTeamMember } from "../hooks/useCreateTicketTeamMember";
 
 type SelectedTicketElement = {
   itemtype: string;       
@@ -27,16 +29,29 @@ type SelectedTicketElement = {
 
 
 type TicketsAddProps = {
+  isAssignmentStepOnly?: boolean;
   onClose?: () => void;
-  isModal?: boolean
+  isModal?: boolean;
+  onSubmitAssignmentStep?: (params: {
+    technicianGroupId?: number;
+    technicianUserId?: number;
+  }) => Promise<void> | void;
 };
 
-export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
+export function TicketsAdd({
+    onClose,
+    isModal = false,
+    isAssignmentStepOnly = false,
+    onSubmitAssignmentStep,
+}: TicketsAddProps){
     const [assetTypeItemSelected, setAssetTypeItemSelected] = useState("");
     const [assetItemSelected, setAssetItemSelected] = useState("");
     const [selectedElements, setSelectedElements] = useState<SelectedTicketElement[]>([]);
     const [myAssetItemSelected, setMyAssetItemSelected] = useState("");
     const [selectedUserId, setSelectedUserId] = useState<number | undefined>(undefined);
+    const [selectedTechnicianUserId, setSelectedTechnicianUserId] = useState<number | undefined>(undefined);
+    const [selectedTechnicianGroupId, setSelectedTechnicianGroupId] = useState<number | undefined>(undefined);
+    const [isAssignmentRequirementSatisfied, setIsAssignmentRequirementSatisfied] = useState(true);
 
     const {
         mutateAsync: createTicketAsync,
@@ -45,6 +60,10 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
         error: createPrinterError,
         isSuccess: isTicketSuccess,
     } = useCreateTicket();
+
+    const {
+        mutateAsync: createTicketTeamMemberAsync,
+    } = useCreateTicketTeamMember();
 
     const {
         data: assetsData,
@@ -57,6 +76,12 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
         isError: isUsersError,
         error: usersError,
     } = useUsers();
+
+    const {
+        data: groups = [],
+        isError: isGroupsError,
+        error: groupsError,
+    } = useGroups();
 
     const {
         data: allGeneralViewAssetItemsPage,
@@ -78,6 +103,25 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
+        if (isAssignmentStepOnly) {
+            const isSatisfied =
+                selectedTechnicianUserId !== undefined ||
+                selectedTechnicianGroupId !== undefined;
+
+            setIsAssignmentRequirementSatisfied(isSatisfied);
+
+            if (!isSatisfied) {
+                return;
+            }
+
+            await onSubmitAssignmentStep?.({
+                technicianGroupId: selectedTechnicianGroupId,
+                technicianUserId: selectedTechnicianUserId,
+            });
+
+            return;
+        }
+
         const name = form.name.trim();
         const content = form.content.trim();
 
@@ -91,6 +135,28 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                 name,
                 content,
             });
+
+            if (selectedTechnicianUserId !== undefined) {
+                await createTicketTeamMemberAsync({
+                    ticketId: createdTicket.id,
+                    payload: {
+                        id: selectedTechnicianUserId,
+                        role: "assigned",
+                        type: "User",
+                    },
+                });
+            }
+
+            if (selectedTechnicianGroupId !== undefined) {
+                await createTicketTeamMemberAsync({
+                    ticketId: createdTicket.id,
+                    payload: {
+                        id: selectedTechnicianGroupId,
+                        role: "assigned",
+                        type: "Group",
+                    },
+                });
+            }
 
             for (const element of selectedElements) {
             await linkAssetToTicket({
@@ -111,6 +177,8 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
             });
 
             setSelectedElements([]);
+            setSelectedTechnicianUserId(undefined);
+            setSelectedTechnicianGroupId(undefined);
         } catch (error) {
             console.error(error);
         }
@@ -244,6 +312,14 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
             </MyError>
         </div>
     }
+
+    if (isGroupsError) {
+        return <div>
+            <MyError>
+                {getUserErrorMessage(groupsError, "Erreur lors du chargement des groupes")}
+            </MyError>
+        </div>
+    }
     
     if (isCreatePrinterError) {
         return <MyError>
@@ -270,18 +346,20 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
 
     return<>
         <form className="flex gap-3 flex-col" onSubmit={handleSubmit}>
-            <Label htmlFor="ticketUser">Utilisateur</Label>
+            <Label htmlFor="ticketTechnicianUser">Utilisateur technicien</Label>
             <Select
-                id="ticketUser"
-                value={selectedUserId ? String(selectedUserId) : ""}
+                id="ticketTechnicianUser"
+                value={selectedTechnicianUserId ? String(selectedTechnicianUserId) : ""}
                 onChange={(event) => {
                     const value = event.target.value;
 
-                    setSelectedUserId(value ? Number(value) : undefined);
-                    setMyAssetItemSelected("");
+                    setSelectedTechnicianUserId(value ? Number(value) : undefined);
+                    setIsAssignmentRequirementSatisfied(
+                        Boolean(value) || selectedTechnicianGroupId !== undefined,
+                    );
                 }}
             >
-                <option value="">Choisir un utilisateur</option>
+                <option value="">Choisir un technicien</option>
                 {users
                     .filter((user) => !user.is_deleted)
                     .map((user) => {
@@ -289,155 +367,212 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                         const label = fullName.length > 0 ? fullName : user.username;
 
                         return (
-                            <option key={user.id} value={String(user.id)}>
+                            <option key={`technician-${user.id}`} value={String(user.id)}>
                                 {label} ({user.username})
                             </option>
                         );
                     })}
             </Select>
 
-            <Label htmlFor="ticketName" id="titre">Titre ticket</Label>
-            <Input 
-                value={form.name}
-                id="ticketName" type="text" 
-                onChange={(event) => {
-                    setForm({
-                        ...form,
-                        name: event.target.value
-                    });
-                }}
-            />
-            <Label htmlFor="contentTicket">Description</Label>
-            <Textarea 
-                value={form.content}
-                onChange={(event) => {
-                    setForm({
-                        ...form,
-                        content: event.target.value
-                    });
-                }}
-                id="contentTicket" />
-            
-            <Label>Type Ticket</Label>
+            <Label htmlFor="ticketTechnicianGroup">Groupe de technicien</Label>
             <Select
-                value={form.type}
+                id="ticketTechnicianGroup"
+                value={selectedTechnicianGroupId ? String(selectedTechnicianGroupId) : ""}
                 onChange={(event) => {
-                    setForm({
-                        ...form,
-                        type: Number(event.target.value)
-                    })
+                    const value = event.target.value;
+
+                    setSelectedTechnicianGroupId(value ? Number(value) : undefined);
+                    setIsAssignmentRequirementSatisfied(
+                        Boolean(value) || selectedTechnicianUserId !== undefined,
+                    );
                 }}
             >
-                {Object.entries(TICKET_TYPE_LABELS).map( ([type, label]) => {
-                    return <option key={type} value={type}>{label}</option>
-                })}
-                
+                <option value="">Choisir un groupe technicien</option>
+                {groups.map((group) => (
+                    <option key={group.id} value={String(group.id)}>
+                        {group.name}
+                    </option>
+                ))}
             </Select>
 
-            <Label htmlFor="elementsTicket">Element</Label>
+            {!isAssignmentRequirementSatisfied && (
+                <MyError>
+                    Le passage vers "En cours" exige un technicien ou un groupe de techniciens.
+                </MyError>
+            )}
 
-            <div className="flex">
-                <span>Mes éléments</span>
-
-                <Select
-                    id="mesElements"
-                    value={myAssetItemSelected}
-                    onChange={(event) => {
-                        setMyAssetItemSelected(event.target.value);
-                        setAssetTypeItemSelected("");
-                        setAssetItemSelected("");
-                    }}
-                    >
-                    <option value="">--------</option>
-
-                    {selectedUserId === undefined && (
-                        <option value="" disabled>
-                            Sélectionnez d&apos;abord un utilisateur
-                        </option>
-                    )}
-
-                    {Object.entries(groupedAssetsByItemType).map(([itemType, items]) => (
-                        <optgroup key={itemType} label={itemType}>
-                        {items.map((item) => (
-                            <option
-                            key={`${item.itemType}-${item.id}`}
-                            value={`${item.itemType}:${item.id}`}
-                            >
-                            {item.name}
-                            </option>
-                        ))}
-                        </optgroup>
-                    ))}
-                    </Select>
-                </div>
-            
-            <div className="flex">
-                <span className="mr-5">Ou recherche complète</span>
-                <div className="flex flex-1 flex-col gap-3">
+            {!isAssignmentStepOnly && (
+                <>
+                    <Label htmlFor="ticketUser">Utilisateur demandeur</Label>
                     <Select
-                        id="elementGlobal"
-                        value={assetTypeItemSelected}
-                        onChange={(event) => setAssetTypeItemSelected(event.target.value)}
+                        id="ticketUser"
+                        value={selectedUserId ? String(selectedUserId) : ""}
+                        onChange={(event) => {
+                            const value = event.target.value;
+
+                            setSelectedUserId(value ? Number(value) : undefined);
+                            setMyAssetItemSelected("");
+                        }}
                     >
-                        <option value="">Général</option>
-                        {assetsData && assetsData.length > 0 && assetsData.map((asset) => (
-                            <option key={asset.itemtype} value={asset.itemtype}>{asset.name}</option>
-                        ))}
+                        <option value="">Choisir un utilisateur</option>
+                        {users
+                            .filter((user) => !user.is_deleted)
+                            .map((user) => {
+                                const fullName = `${user.firstname} ${user.realname}`.trim();
+                                const label = fullName.length > 0 ? fullName : user.username;
+
+                                return (
+                                    <option key={user.id} value={String(user.id)}>
+                                        {label} ({user.username})
+                                    </option>
+                                );
+                            })}
                     </Select>
 
-                    {assetTypeItemSelected !== "" &&
+                    <Label htmlFor="ticketName" id="titre">Titre ticket</Label>
+                    <Input 
+                        value={form.name}
+                        id="ticketName" type="text" 
+                        onChange={(event) => {
+                            setForm({
+                                ...form,
+                                name: event.target.value
+                            });
+                        }}
+                    />
+                    <Label htmlFor="contentTicket">Description</Label>
+                    <Textarea 
+                        value={form.content}
+                        onChange={(event) => {
+                            setForm({
+                                ...form,
+                                content: event.target.value
+                            });
+                        }}
+                        id="contentTicket" />
+                    
+                    <Label>Type Ticket</Label>
+                    <Select
+                        value={form.type}
+                        onChange={(event) => {
+                            setForm({
+                                ...form,
+                                type: Number(event.target.value)
+                            })
+                        }}
+                    >
+                        {Object.entries(TICKET_TYPE_LABELS).map( ([type, label]) => {
+                            return <option key={type} value={type}>{label}</option>
+                        })}
+                        
+                    </Select>
+
+                    <Label htmlFor="elementsTicket">Element</Label>
+
+                    <div className="flex">
+                        <span>Mes éléments</span>
+
                         <Select
-                            value={assetItemSelected}
-                            onChange={(event) => setAssetItemSelected(event.target.value)}
-                        >
-                            <option value="">-----</option>
-                            {assetItemsSelected && assetItemsSelected.length > 0 && assetItemsSelected.map((assetItem) => (
-                                <option key={assetItem.id} value={assetItem.id}>{assetItem.name}</option>
-                            ))}
-                        </Select>
-                    }
-                </div>
-            </div>
-            
-            <div>
-                <Button type="button" className="justify-center" onClick={handleAddElement}><Plus />Add</Button>
-            </div>
-            {selectedElements.length > 0 && (
-                <div className="rounded-2xl border border-(--panel-border) p-4">
-                    <p className="mb-3 font-semibold">Éléments ajoutés au ticket</p>
-
-                    <div className="flex flex-col gap-2">
-                    {selectedElements.map((element) => (
-                        <div
-                        key={`${element.itemtype}-${element.items_id}`}
-                        className="flex items-center justify-between rounded-xl bg-(--panel-soft) px-4 py-3"
-                        >
-                        <span>
-                            {element.itemtypeLabel} — {element.name}
-                        </span>
-
-                        <Button
-                            type="button"
-                            isWithBackground={false}
-                            onClick={() => {
-                            setSelectedElements(
-                                selectedElements.filter(
-                                (currentElement) =>
-                                    !(
-                                    currentElement.itemtype === element.itemtype &&
-                                    currentElement.items_id === element.items_id
-                                    )
-                                )
-                            );
+                            id="mesElements"
+                            value={myAssetItemSelected}
+                            onChange={(event) => {
+                                setMyAssetItemSelected(event.target.value);
+                                setAssetTypeItemSelected("");
+                                setAssetItemSelected("");
                             }}
-                        >
-                            Retirer
-                        </Button>
+                            >
+                            <option value="">--------</option>
+
+                            {selectedUserId === undefined && (
+                                <option value="" disabled>
+                                    Sélectionnez d&apos;abord un utilisateur
+                                </option>
+                            )}
+
+                            {Object.entries(groupedAssetsByItemType).map(([itemType, items]) => (
+                                <optgroup key={itemType} label={itemType}>
+                                {items.map((item) => (
+                                    <option
+                                    key={`${item.itemType}-${item.id}`}
+                                    value={`${item.itemType}:${item.id}`}
+                                    >
+                                    {item.name}
+                                    </option>
+                                ))}
+                                </optgroup>
+                            ))}
+                            </Select>
                         </div>
-                    ))}
+                    
+                    <div className="flex">
+                        <span className="mr-5">Ou recherche complète</span>
+                        <div className="flex flex-1 flex-col gap-3">
+                            <Select
+                                id="elementGlobal"
+                                value={assetTypeItemSelected}
+                                onChange={(event) => setAssetTypeItemSelected(event.target.value)}
+                            >
+                                <option value="">Général</option>
+                                {assetsData && assetsData.length > 0 && assetsData.map((asset) => (
+                                    <option key={asset.itemtype} value={asset.itemtype}>{asset.name}</option>
+                                ))}
+                            </Select>
+
+                            {assetTypeItemSelected !== "" &&
+                                <Select
+                                    value={assetItemSelected}
+                                    onChange={(event) => setAssetItemSelected(event.target.value)}
+                                >
+                                    <option value="">-----</option>
+                                    {assetItemsSelected && assetItemsSelected.length > 0 && assetItemsSelected.map((assetItem) => (
+                                        <option key={assetItem.id} value={assetItem.id}>{assetItem.name}</option>
+                                    ))}
+                                </Select>
+                            }
+                        </div>
                     </div>
-                </div>
-                )}
+                    
+                    <div>
+                        <Button type="button" className="justify-center" onClick={handleAddElement}><Plus />Add</Button>
+                    </div>
+                    {selectedElements.length > 0 && (
+                        <div className="rounded-2xl border border-(--panel-border) p-4">
+                            <p className="mb-3 font-semibold">Éléments ajoutés au ticket</p>
+
+                            <div className="flex flex-col gap-2">
+                            {selectedElements.map((element) => (
+                                <div
+                                key={`${element.itemtype}-${element.items_id}`}
+                                className="flex items-center justify-between rounded-xl bg-(--panel-soft) px-4 py-3"
+                                >
+                                <span>
+                                    {element.itemtypeLabel} — {element.name}
+                                </span>
+
+                                <Button
+                                    type="button"
+                                    isWithBackground={false}
+                                    onClick={() => {
+                                    setSelectedElements(
+                                        selectedElements.filter(
+                                        (currentElement) =>
+                                            !(
+                                            currentElement.itemtype === element.itemtype &&
+                                            currentElement.items_id === element.items_id
+                                            )
+                                        )
+                                    );
+                                    }}
+                                >
+                                    Retirer
+                                </Button>
+                                </div>
+                            ))}
+                            </div>
+                        </div>
+                        )}
+                </>
+            )}
             {isModal ?
             <div className="flex gap-3">
                     <Button
@@ -449,11 +584,19 @@ export function TicketsAdd({ onClose, isModal = false}: TicketsAddProps){
                         Annuler
                     </Button>
                     <Button type="submit" className="w-full flex items-center flex-col">
-                        {isCreatingTicket ? "Création Ticket..." : "Valider"}
+                        {isAssignmentStepOnly
+                            ? "Valider le passage"
+                            : isCreatingTicket
+                              ? "Création Ticket..."
+                              : "Valider"}
                     </Button>
                 </div>
             : <Button type="submit" className="justify-center">
-                {isCreatingTicket ? "Création Ticket..." : "Valider"}
+                {isAssignmentStepOnly
+                    ? "Valider le passage"
+                    : isCreatingTicket
+                      ? "Création Ticket..."
+                      : "Valider"}
             </Button>}
         </form>
 

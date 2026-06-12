@@ -1,7 +1,42 @@
 import { getAssets } from "../../../../entities/asset/api/asset.api";
 import { glpiGetPaginated } from "../../../../shared/api/glpiClient";
-import { buildGeneralViewAssetItemsFilter, insertViewAssetItem } from "../lib/generalViewAssetItems";
+import {
+  buildGeneralViewAssetItemsFilter,
+  insertViewAssetItem,
+  matchesGeneralViewAssetItemsSearch,
+} from "../lib/generalViewAssetItems";
 import { type GeneralViewAssetItems, type GeneralViewAssetItemsFilters, type GeneralViewAssetItemsPage, type GlpiAssetCommon } from "../model/generalViewAssetItems.types";
+
+async function getAllAssetItemsByType(params: {
+  filter: string;
+  href: string;
+}): Promise<GlpiAssetCommon[]> {
+  const items: GlpiAssetCommon[] = [];
+  const pageSize = 100;
+  let start = 0;
+  let total = 0;
+
+  do {
+    const queryParams = new URLSearchParams({
+      start: String(start),
+      limit: String(pageSize),
+    });
+
+    if (params.filter.length > 0) {
+      queryParams.set("filter", params.filter);
+    }
+
+    const page = await glpiGetPaginated<GlpiAssetCommon>(
+      `${params.href}?${queryParams.toString()}`,
+    );
+
+    items.push(...page.data);
+    total = page.total;
+    start += page.data.length;
+  } while (start < total);
+
+  return items;
+}
 
 export async function getGeneralViewAssetItemsPage({
   page,
@@ -21,57 +56,15 @@ export async function getGeneralViewAssetItemsPage({
       : assets;
 
   const filter = buildGeneralViewAssetItemsFilter(filters);
-
-  const globalOffset = page * limit;
-
-  let remainingOffset = globalOffset;
-  let remainingLimit = limit;
-  let total = 0;
-
   const items: GeneralViewAssetItems[] = [];
 
   for (const asset of selectedAssets) {
-    const countParams = new URLSearchParams({
-      start: "0",
-      limit: "1",
+    const assetItems = await getAllAssetItemsByType({
+      filter,
+      href: asset.href,
     });
 
-    if (filter.length > 0) {
-      countParams.set("filter", filter);
-    }
-    const url = `${asset.href}?${countParams.toString()}`;
-    const countPage = await glpiGetPaginated<GlpiAssetCommon>(url);
-
-    const assetTotal = countPage.total;
-    total += assetTotal;
-
-    if (assetTotal === 0) {
-      continue;
-    }
-
-    if (remainingOffset >= assetTotal) {
-      remainingOffset -= assetTotal;
-      continue;
-    }
-
-    if (remainingLimit <= 0) {
-      continue;
-    }
-
-    const dataParams = new URLSearchParams({
-      start: String(remainingOffset),
-      limit: String(remainingLimit),
-    });
-
-    if (filter.length > 0) {
-      dataParams.set("filter", filter);
-    }
-
-    const dataPage = await glpiGetPaginated<GlpiAssetCommon>(
-      `${asset.href}?${dataParams.toString()}`,
-    );
-
-    const mappedItems = dataPage.data.map((glpiAssetCommon) =>
+    const mappedItems = assetItems.map((glpiAssetCommon) =>
       insertViewAssetItem({
         itemType: asset.itemtype,
         itemTypeLabel: asset.name,
@@ -80,13 +73,18 @@ export async function getGeneralViewAssetItemsPage({
     );
 
     items.push(...mappedItems);
-
-    remainingLimit -= mappedItems.length;
-    remainingOffset = 0;
   }
 
+  const filteredItems = items.filter((item) =>
+    matchesGeneralViewAssetItemsSearch(item, filters.name),
+  );
+
+  const total = filteredItems.length;
+  const start = page * limit;
+  const paginatedItems = filteredItems.slice(start, start + limit);
+
   return {
-    data: items,
+    data: paginatedItems,
     total,
   };
 }

@@ -42,6 +42,8 @@ export type GlpiAssetCommon = {
 
 export type GeneralViewAssetItemsFilters = {
   name: string;
+  dateCreationFrom?: string;
+  dateCreationTo?: string;
   itemtypes: string[];
   userId?: number;
 };

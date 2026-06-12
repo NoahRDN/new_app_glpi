@@ -18,12 +18,6 @@ export function useAssetImages(params: UseAssetImagesParams) {
         itemtype: params.itemtype,
       });
 
-      console.log("Recherche images asset:", {
-        documentItems,
-        itemId: params.itemId,
-        itemtype: params.itemtype,
-      });
-
       const documentIds = [...new Set(
         documentItems
           .map((documentItem) => documentItem.documents_id)

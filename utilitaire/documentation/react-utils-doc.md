@@ -1517,7 +1517,7 @@ onDragEnd={() => setIsDragging(false)}
 
 Dans ton code actuel, comme tu utilises dataTransfer, tu n’as pas forcément besoin de onDragEnd, sauf si tu veux ajouter un effet visuel.
 
-## REMARQUE dans HTML Drag and Drop.
+#### REMARQUE dans HTML Drag and Drop.
 
 Pour le drag-and-drop HTML natif, oui, il faut généralement rendre l’élément draggable :
 
@@ -1537,7 +1537,7 @@ Mais pour un bouton, une div, une carte React, tu dois mettre :
 
 draggable
 
-## onDragEnter
+### onDragEnter
 
 Il se déclenche quand l’élément glissé entre dans la zone.
 
@@ -1554,7 +1554,7 @@ Exemple visuel :
 Le ticket arrive sur la colonne
 → la colonne devient entourée en bleu
 
-## onDragLeave
+### onDragLeave
 
 Il se déclenche quand l’élément glissé quitte la zone.
 
@@ -1571,7 +1571,7 @@ Exemple :
 Le ticket quitte la colonne
 → on enlève le contour bleu
 
-## onDragEnd
+### onDragEnd
 
 Il se déclenche quand le drag est terminé, peu importe où tu as relâché.
 
@@ -1594,6 +1594,123 @@ Donc :
 
 onDragStart → début
 onDragEnd   → fin
+
+### onDragLeave
+```
+onDragLeave={() => {
+  dragDepth.current -= 1;
+
+  if (dragDepth.current <= 0) {
+    dragDepth.current = 0;
+    setIsDragOver(false);
+  }
+}}
+```
+
+Son rôle : détecter quand l’élément glissé quitte la colonne.
+
+Mais comme une colonne contient des enfants :
+
+SectionKanban
+├─ header
+├─ ticket 1
+├─ ticket 2
+└─ bouton ajouter
+
+le navigateur peut déclencher onDragLeave même quand tu passes seulement du fond de la section vers un bouton enfant.
+
+Donc on utilise :
+
+dragDepth.current
+
+comme compteur de profondeur.
+
+Logique :
+
+onDragEnter → dragDepth + 1
+onDragLeave → dragDepth - 1
+
+Et on considère que tu as vraiment quitté la colonne seulement quand :
+
+dragDepth.current <= 0
+
+À ce moment-là :
+
+setIsDragOver(false);
+
+retire l’effet visuel, par exemple le contour bleu.
+
+### onDragOver
+onDragOver={(event) => {
+  event.preventDefault();
+}}
+
+Son rôle : dire au navigateur que cette colonne accepte le dépôt.
+
+Par défaut, un élément HTML ne permet pas toujours de déposer quelque chose dessus. Si tu ne mets pas :
+
+event.preventDefault();
+
+alors onDrop peut ne jamais se déclencher.
+
+Donc cette partie veut dire :
+
+Quand un ticket glissé passe au-dessus de cette colonne,
+j’autorise le drop ici.
+
+#### REMARQUE
+Important : ne mets pas d’appel API dans onDragOver, car il se déclenche plusieurs fois pendant que la souris reste au-dessus de la colonne.
+
+### onDrop
+onDrop={async (event) => {
+  event.preventDefault();
+
+  dragDepth.current = 0;
+  setIsDragOver(false);
+
+  const ticketId = Number(event.dataTransfer.getData("ticketId"));
+
+  if (Number.isNaN(ticketId)) {
+    return;
+  }
+
+  await onTicketDrop(ticketId);
+}}
+
+Son rôle : gérer l’action finale quand tu relâches le ticket dans la colonne.
+
+Étape par étape :
+
+event.preventDefault();
+
+empêche le comportement par défaut du navigateur.
+
+dragDepth.current = 0;
+setIsDragOver(false);
+
+réinitialise l’effet visuel de la colonne.
+
+const ticketId = Number(event.dataTransfer.getData("ticketId"));
+
+récupère l’id du ticket qui avait été stocké dans onDragStart.
+
+Tu avais fait côté ticket :
+
+onDragStart={(event) => {
+  event.dataTransfer.setData("ticketId", String(groupTicket.id));
+}}
+
+Donc dans onDrop, tu récupères ce même id.
+
+if (Number.isNaN(ticketId)) {
+  return;
+}
+
+sécurité : si aucun id valide n’a été récupéré, on arrête.
+
+await onTicketDrop(ticketId);
+
+appelle la fonction donnée par le parent. Dans ton cas, cette fonction fait le changement de statut via API.
 
 ## event.target et event.currentTarget
 

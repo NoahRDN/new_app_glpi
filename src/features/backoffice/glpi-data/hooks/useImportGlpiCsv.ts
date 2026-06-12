@@ -31,7 +31,14 @@ import {
   findStateByName,
 } from "../../../../entities/state/api/state.api";
 import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
+import { createTicketFollowup } from "../../../../entities/ticket/api/ticketFollowup.api";
 import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
+import { createTicketSolution, updateTicketSolution } from "../../../../entities/ticket/api/ticketSolution.api";
+import { createTicketTeamMember } from "../../../../entities/ticket/api/ticketTeam.api";
+import {
+  TICKET_SOLUTION_STATUS_IDS,
+  TICKET_STATUS_IDS,
+} from "../../../../entities/ticket/model/ticket.config";
 import {
   createUserFromName,
   deleteUser,
@@ -161,6 +168,11 @@ class ImportRowError extends Error {
 const EVAL_ASSETS_PROFILE_ID = "glpi-eval-assets-juin-2026-v1";
 const EVAL_TICKETS_PROFILE_ID = "glpi-eval-tickets-juin-2026-v1";
 const EVAL_TICKET_COSTS_PROFILE_ID = "glpi-eval-ticket-costs-juin-2026-v1";
+const DEFAULT_IMPORTED_TECHNICIAN_USER_ID = 2;
+const DEFAULT_IMPORTED_SOLUTION_CONTENT =
+  "Solution importee automatiquement lors de l'import CSV.";
+const DEFAULT_IMPORTED_APPROVAL_FOLLOWUP_CONTENT =
+  "Solution validee automatiquement lors de l'import CSV.";
 
 function getResourcePayloads(file: RecognizedGlpiParsedFile) {
   return file.rows.flatMap((row) =>
@@ -198,6 +210,7 @@ function collectImportResetResourceIds(params: {
         "monitorModels",
         "computers",
         "monitors",
+        "phones",
       ].forEach((resourceId) => {
         resourceIds.add(resourceId as GlpiDataResourceId);
       });
@@ -287,7 +300,11 @@ function getTicketStatusValue(value: string | number | boolean | undefined) {
     return 1;
   }
 
-  if (normalizedValue === "processing (assigned)" || normalizedValue === "assigné") {
+  if (
+    normalizedValue === "processing (assigned)" ||
+    normalizedValue === "in progress (assigned)" ||
+    normalizedValue === "assigné"
+  ) {
     return 2;
   }
 
@@ -573,6 +590,7 @@ async function importEvalAssetsFile(
   let importedCount = 0;
   let computerCount = 0;
   let monitorCount = 0;
+  let phoneCount = 0;
 
   for (const [rowIndex, row] of file.rows.entries()) {
     try {
@@ -626,6 +644,42 @@ async function importEvalAssetsFile(
         continue;
       }
 
+      if (normalizeKey(itemType) === "phone") {
+        const createdPhone = await createGlpiResourceItem(
+          getGlpiDataResource("phones"),
+          {
+            ...commonPayload,
+            name,
+          },
+        );
+        const phoneId = extractCreatedId(createdPhone);
+
+        if (phoneId === null) {
+          throw new Error("Impossible de retrouver l'identifiant du telephone cree.");
+        }
+
+        rollbackActions.push({
+          label: `phone#${phoneId}`,
+          run: () => deleteGlpiResourceItem(getGlpiDataResource("phones"), phoneId),
+        });
+
+        context.assetReferencesByKey.set(normalizeKey(name), {
+          itemId: phoneId,
+          itemtype: "Phone",
+        });
+
+        if (inventoryNumber.length > 0) {
+          context.assetReferencesByKey.set(normalizeKey(inventoryNumber), {
+            itemId: phoneId,
+            itemtype: "Phone",
+          });
+        }
+
+        importedCount += 1;
+        phoneCount += 1;
+        continue;
+      }
+
       const createdComputer = await createComputer({
         ...commonPayload,
         model: toReference(await resolveComputerModelId(data.modelName)),
@@ -670,6 +724,12 @@ async function importEvalAssetsFile(
         resourceId: "monitors",
         skippedCount: 0,
       },
+      {
+        importedCount: phoneCount,
+        label: "Telephones",
+        resourceId: "phones",
+        skippedCount: 0,
+      },
     ].filter((item) => item.importedCount > 0),
   };
 }
@@ -696,7 +756,7 @@ async function importEvalTicketsFile(
         external_id: String(data.refTicket ?? "").trim() || undefined,
         name: String(data.name ?? "").trim(),
         priority: getTicketPriorityValue(data.priorityLabel),
-        status: 1,
+        status: TICKET_STATUS_IDS.NEW,
         type: getTicketTypeValue(data.typeLabel),
       };
 
@@ -747,12 +807,85 @@ async function importEvalTicketsFile(
         }
       }
 
-      if (ticketId !== null && finalStatus !== 1) {
-        await updateGlpiResourceItem(
-          getGlpiDataResource("tickets"),
-          ticketId,
-          { status: finalStatus },
-        );
+      if (ticketId !== null) {
+        if (finalStatus === TICKET_STATUS_IDS.ASSIGNED) {
+          await createTicketTeamMember({
+            ticketId,
+            payload: {
+              id: DEFAULT_IMPORTED_TECHNICIAN_USER_ID,
+              role: "assigned",
+              type: "User",
+            },
+          });
+
+          await updateGlpiResourceItem(
+            getGlpiDataResource("tickets"),
+            ticketId,
+            { status: TICKET_STATUS_IDS.ASSIGNED },
+          );
+        } else if (finalStatus === TICKET_STATUS_IDS.CLOSED) {
+          await createTicketTeamMember({
+            ticketId,
+            payload: {
+              id: DEFAULT_IMPORTED_TECHNICIAN_USER_ID,
+              role: "assigned",
+              type: "User",
+            },
+          });
+
+          await updateGlpiResourceItem(
+            getGlpiDataResource("tickets"),
+            ticketId,
+            { status: TICKET_STATUS_IDS.ASSIGNED },
+          );
+
+          const createdSolution = await createTicketSolution({
+            ticketId,
+            payload: {
+              content: DEFAULT_IMPORTED_SOLUTION_CONTENT,
+              items_id: ticketId,
+              itemtype: "Ticket",
+            },
+          });
+          const solutionId = extractCreatedId(createdSolution);
+
+          if (solutionId === null) {
+            throw new Error("Impossible de retrouver la solution creee pendant l'import.");
+          }
+
+          await updateGlpiResourceItem(
+            getGlpiDataResource("tickets"),
+            ticketId,
+            { status: TICKET_STATUS_IDS.SOLVED },
+          );
+
+          await updateTicketSolution({
+            id: solutionId,
+            ticketId,
+            status: TICKET_SOLUTION_STATUS_IDS.ACCEPTED,
+          });
+
+          await createTicketFollowup({
+            ticketId,
+            payload: {
+              content: DEFAULT_IMPORTED_APPROVAL_FOLLOWUP_CONTENT,
+              items_id: ticketId,
+              itemtype: "Ticket",
+            },
+          });
+
+          await updateGlpiResourceItem(
+            getGlpiDataResource("tickets"),
+            ticketId,
+            { status: TICKET_STATUS_IDS.CLOSED },
+          );
+        } else if (finalStatus !== TICKET_STATUS_IDS.NEW) {
+          await updateGlpiResourceItem(
+            getGlpiDataResource("tickets"),
+            ticketId,
+            { status: finalStatus },
+          );
+        }
       }
 
       importedCount += 1;

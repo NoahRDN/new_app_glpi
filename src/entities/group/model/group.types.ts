@@ -4,3 +4,7 @@ export type Group = {
 };
 
 export type GroupTech = Group;
+
+export type GroupFilters = {
+  name?: string;
+};
