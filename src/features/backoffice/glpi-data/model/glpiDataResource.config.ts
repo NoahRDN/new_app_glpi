@@ -3,6 +3,7 @@ export type GlpiDataResourceId =
   | "tickets"
   | "computers"
   | "monitors"
+  | "phones"
   | "printers"
   | "states"
   | "locations"
@@ -59,6 +60,15 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     endpoint: "/Assets/Monitor",
     id: "monitors",
     label: "Moniteurs",
+    optionalColumns: ["serial", "otherserial", "comment"],
+    requiredColumns: ["name"],
+    resetEnabled: true,
+  },
+  {
+    description: "Telephones du parc informatique.",
+    endpoint: "/Assets/Phone",
+    id: "phones",
+    label: "Telephones",
     optionalColumns: ["serial", "otherserial", "comment"],
     requiredColumns: ["name"],
     resetEnabled: true,

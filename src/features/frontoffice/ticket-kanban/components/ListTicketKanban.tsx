@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Button } from "../../../../shared/ui/Button";
 import {
+  TICKET_DONE_STATUS_IDS,
   ticketFilterDefault,
   TICKET_IN_PROGRESS_STATUS_IDS,
   TICKET_STATUS_IDS,
@@ -20,6 +21,7 @@ import { useCreateTicketFollowup } from "../../ticket/hooks/useCreateTicketFollo
 import { useCreateTicketSolution } from "../../ticket/hooks/useCreateTicketSolution";
 import { useUpdateTicketSolution } from "../../ticket/hooks/useUpdateTicketSolution";
 import { TicketStatusTransitionForm, type TicketStatusTransitionMode } from "./TicketStatusTransitionForm";
+import { TicketResolvedReviewForm } from "./TicketResolvedReviewForm";
 import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
 import { TICKET_SOLUTION_STATUS_IDS } from "../../../../entities/ticket/model/ticket.config";
 
@@ -41,10 +43,17 @@ export function ListTicketKanban() {
   const [statusTransitionError, setStatusTransitionError] = useState<unknown>(null);
   const [pendingTransition, setPendingTransition] = useState<{
     mode: TicketStatusTransitionMode;
+    nextModeAfterSuccess?: "review";
+    targetStatusId?: number;
+    ticket: Ticket;
+  } | null>(null);
+  const [pendingResolvedReview, setPendingResolvedReview] = useState<{
+    refuseStatusId: number;
     ticket: Ticket;
   } | null>(null);
   const [draggingTicketId, setDraggingTicketId] = useState<number | null>(null);
   const [pendingStatusChange, setPendingStatusChange] = useState<{
+    nextModeAfterSuccess?: TicketStatusTransitionMode;
     statusId: number;
     ticket: Ticket;
   } | null>(null);
@@ -97,23 +106,28 @@ export function ListTicketKanban() {
     setIsStatusRequirementModalOpen(false);
     setPendingStatusChange(null);
     setPendingTransition(null);
+    setPendingResolvedReview(null);
     setStatusTransitionError(null);
   }
 
   function openResolvedReviewModal(params: {
-    mode: "approve" | "refuse";
+    refuseStatusId: number;
     ticket: Ticket;
   }) {
     setPendingStatusChange(null);
-    setPendingTransition(params);
+    setPendingTransition(null);
+    setPendingResolvedReview(params);
     setStatusTransitionError(null);
     setIsStatusRequirementModalOpen(true);
   }
 
   async function getLatestTicketSolution(ticketId: number) {
     const solutions = await getTicketSolutions(ticketId);
+    const validSolutions = solutions.filter(
+      (solution) => typeof solution.id === "number",
+    );
 
-    const sortedSolutions = [...solutions].sort((left, right) => {
+    const sortedSolutions = [...validSolutions].sort((left, right) => {
       const leftTimestamp = new Date(
         left.date_mod ?? left.date_creation ?? "1970-01-01T00:00:00Z",
       ).getTime();
@@ -140,10 +154,13 @@ export function ListTicketKanban() {
 
     const currentStatusId = droppedTicket.status?.id;
     const alreadyHasAssignment = hasAssignedTechnicianOrGroup(droppedTicket);
+    const shouldFinishNewTicket =
+      currentStatusId === TICKET_STATUS_IDS.NEW &&
+      statusId === TICKET_STATUS_IDS.CLOSED;
     const shouldResolveTicket =
       currentStatusId !== undefined &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(currentStatusId) &&
-      statusId === TICKET_STATUS_IDS.CLOSED;
+      statusId === TICKET_STATUS_IDS.SOLVED;
     const shouldApproveResolvedTicket =
       currentStatusId === TICKET_STATUS_IDS.SOLVED &&
       statusId === TICKET_STATUS_IDS.CLOSED;
@@ -153,10 +170,34 @@ export function ListTicketKanban() {
     const shouldReopenClosedTicket =
       currentStatusId === TICKET_STATUS_IDS.CLOSED &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId);
+    const shouldReturnDoneTicketToNew =
+      currentStatusId !== undefined &&
+      TICKET_DONE_STATUS_IDS.includes(currentStatusId) &&
+      statusId === TICKET_STATUS_IDS.NEW;
     const requiresAssignmentStep =
       currentStatusId === TICKET_STATUS_IDS.NEW &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId) &&
       !alreadyHasAssignment;
+
+    if (shouldFinishNewTicket) {
+      if (!alreadyHasAssignment) {
+        setPendingStatusChange({
+          nextModeAfterSuccess: "resolve",
+          statusId: TICKET_STATUS_IDS.ASSIGNED,
+          ticket: droppedTicket,
+        });
+        setIsStatusRequirementModalOpen(true);
+        return;
+      }
+
+      setPendingTransition({
+        mode: "resolve",
+        nextModeAfterSuccess: "review",
+        ticket: droppedTicket,
+      });
+      setIsStatusRequirementModalOpen(true);
+      return;
+    }
 
     if (requiresAssignmentStep) {
       setPendingStatusChange({
@@ -177,11 +218,10 @@ export function ListTicketKanban() {
     }
 
     if (shouldApproveResolvedTicket) {
-      setPendingTransition({
-        mode: "approve",
+      openResolvedReviewModal({
+        refuseStatusId: TICKET_STATUS_IDS.ASSIGNED,
         ticket: droppedTicket,
       });
-      setIsStatusRequirementModalOpen(true);
       return;
     }
 
@@ -197,6 +237,17 @@ export function ListTicketKanban() {
     if (shouldReopenClosedTicket) {
       setPendingTransition({
         mode: "reopen",
+        targetStatusId: TICKET_STATUS_IDS.ASSIGNED,
+        ticket: droppedTicket,
+      });
+      setIsStatusRequirementModalOpen(true);
+      return;
+    }
+
+    if (shouldReturnDoneTicketToNew) {
+      setPendingTransition({
+        mode: "reopen",
+        targetStatusId: TICKET_STATUS_IDS.NEW,
         ticket: droppedTicket,
       });
       setIsStatusRequirementModalOpen(true);
@@ -226,13 +277,15 @@ export function ListTicketKanban() {
       title={
         pendingTransition?.mode === "approve"
           ? "Approuver la solution"
-          : pendingTransition?.mode === "refuse"
-            ? "Refuser la solution"
-            : pendingTransition?.mode === "resolve"
-              ? "Saisir une solution"
-              : pendingTransition?.mode === "reopen"
-                ? "Raison de réouverture"
-                : "Informations complémentaires requises"
+        : pendingTransition?.mode === "refuse"
+          ? "Refuser la solution"
+        : pendingTransition?.mode === "resolve"
+          ? "Saisir une solution"
+        : pendingTransition?.mode === "reopen"
+          ? "Raison de réouverture"
+        : pendingResolvedReview
+          ? "Valider ou refuser la solution"
+        : "Informations complémentaires requises"
       }
       onClose={closeStatusTransitionModal}
     >
@@ -273,7 +326,100 @@ export function ListTicketKanban() {
               statusId: pendingStatusChange.statusId,
             });
 
+            if (pendingStatusChange.nextModeAfterSuccess === "resolve") {
+              setPendingStatusChange(null);
+              setPendingTransition({
+                mode: "resolve",
+                nextModeAfterSuccess: "review",
+                ticket: pendingStatusChange.ticket,
+              });
+              return;
+            }
+
             closeStatusTransitionModal();
+          }}
+        />
+      ) : pendingResolvedReview ? (
+        <TicketResolvedReviewForm
+          isPending={
+            isUpdatingTicketSolution ||
+            isCreatingTicketFollowup
+          }
+          submitError={
+            statusTransitionError ??
+            updateTicketSolutionError ??
+            createTicketFollowupError
+          }
+          onClose={closeStatusTransitionModal}
+          onApprove={async ({ comment }) => {
+            try {
+              setStatusTransitionError(null);
+
+              const latestSolution = await getLatestTicketSolution(pendingResolvedReview.ticket.id);
+
+              if (!latestSolution || typeof latestSolution.id !== "number") {
+                throw new Error("Aucune solution valide n'a été trouvée pour ce ticket.");
+              }
+
+              await updateTicketSolutionAsync({
+                id: latestSolution.id,
+                ticketId: pendingResolvedReview.ticket.id,
+                status: TICKET_SOLUTION_STATUS_IDS.ACCEPTED,
+              });
+
+              if (comment.length > 0) {
+                await createTicketFollowupAsync({
+                  ticketId: pendingResolvedReview.ticket.id,
+                  payload: {
+                    content: comment,
+                    items_id: pendingResolvedReview.ticket.id,
+                    itemtype: "Ticket",
+                  },
+                });
+              }
+
+              await updateTicketStatusAsync({
+                ticketId: pendingResolvedReview.ticket.id,
+                statusId: TICKET_STATUS_IDS.CLOSED,
+              });
+              closeStatusTransitionModal();
+            } catch (error) {
+              setStatusTransitionError(error);
+            }
+          }}
+          onRefuse={async ({ comment }) => {
+            try {
+              setStatusTransitionError(null);
+
+              const latestSolution = await getLatestTicketSolution(pendingResolvedReview.ticket.id);
+
+              if (!latestSolution || typeof latestSolution.id !== "number") {
+                throw new Error("Aucune solution valide n'a été trouvée pour ce ticket.");
+              }
+
+              await updateTicketSolutionAsync({
+                id: latestSolution.id,
+                ticketId: pendingResolvedReview.ticket.id,
+                status: TICKET_SOLUTION_STATUS_IDS.REFUSED,
+              });
+
+              await createTicketFollowupAsync({
+                ticketId: pendingResolvedReview.ticket.id,
+                payload: {
+                  content: comment,
+                  items_id: pendingResolvedReview.ticket.id,
+                  itemtype: "Ticket",
+                },
+              });
+
+              await updateTicketStatusAsync({
+                ticketId: pendingResolvedReview.ticket.id,
+                statusId: pendingResolvedReview.refuseStatusId,
+              });
+              closeStatusTransitionModal();
+            } catch (error) {
+              setStatusTransitionError(error);
+            }
           }}
         />
       ) : pendingTransition ? (
@@ -309,47 +455,33 @@ export function ListTicketKanban() {
                   ticketId: pendingTransition.ticket.id,
                   statusId: TICKET_STATUS_IDS.SOLVED,
                 });
+
+                if (pendingTransition.nextModeAfterSuccess === "review") {
+                  setPendingTransition(null);
+                  setPendingResolvedReview({
+                    refuseStatusId: TICKET_STATUS_IDS.ASSIGNED,
+                    ticket: pendingTransition.ticket,
+                  });
+                  return;
+                }
+
                 closeStatusTransitionModal();
                 return;
               }
 
               if (pendingTransition.mode === "approve") {
-                const latestSolution = await getLatestTicketSolution(pendingTransition.ticket.id);
-
-                if (!latestSolution) {
-                  throw new Error("Aucune solution n'a été trouvée pour ce ticket.");
-                }
-
-                await updateTicketSolutionAsync({
-                  id: latestSolution.id,
-                  ticketId: pendingTransition.ticket.id,
-                  status: TICKET_SOLUTION_STATUS_IDS.ACCEPTED,
+                openResolvedReviewModal({
+                  refuseStatusId: TICKET_STATUS_IDS.ASSIGNED,
+                  ticket: pendingTransition.ticket,
                 });
-
-                if (comment.length > 0) {
-                  await createTicketFollowupAsync({
-                    ticketId: pendingTransition.ticket.id,
-                    payload: {
-                      content: comment,
-                      items_id: pendingTransition.ticket.id,
-                      itemtype: "Ticket",
-                    },
-                  });
-                }
-
-                await updateTicketStatusAsync({
-                  ticketId: pendingTransition.ticket.id,
-                  statusId: TICKET_STATUS_IDS.CLOSED,
-                });
-                closeStatusTransitionModal();
                 return;
               }
 
               if (pendingTransition.mode === "refuse") {
                 const latestSolution = await getLatestTicketSolution(pendingTransition.ticket.id);
 
-                if (!latestSolution) {
-                  throw new Error("Aucune solution n'a été trouvée pour ce ticket.");
+                if (!latestSolution || typeof latestSolution.id !== "number") {
+                  throw new Error("Aucune solution valide n'a été trouvée pour ce ticket.");
                 }
 
                 await updateTicketSolutionAsync({
@@ -388,6 +520,16 @@ export function ListTicketKanban() {
                 ticketId: pendingTransition.ticket.id,
                 statusId: TICKET_STATUS_IDS.ASSIGNED,
               });
+
+              if (
+                pendingTransition.targetStatusId !== undefined &&
+                pendingTransition.targetStatusId !== TICKET_STATUS_IDS.ASSIGNED
+              ) {
+                await updateTicketStatusAsync({
+                  ticketId: pendingTransition.ticket.id,
+                  statusId: pendingTransition.targetStatusId,
+                });
+              }
               closeStatusTransitionModal();
             } catch (error) {
               setStatusTransitionError(error);
@@ -433,25 +575,12 @@ export function ListTicketKanban() {
                     className="px-3 py-2 text-xs"
                     onClick={() => {
                       openResolvedReviewModal({
-                        mode: "approve",
+                        refuseStatusId: TICKET_STATUS_IDS.ASSIGNED,
                         ticket: groupTicket,
                       });
                     }}
                   >
-                    Valider
-                  </Button>
-                  <Button
-                    type="button"
-                    isWithBackground={false}
-                    className="px-3 py-2 text-xs"
-                    onClick={() => {
-                      openResolvedReviewModal({
-                        mode: "refuse",
-                        ticket: groupTicket,
-                      });
-                    }}
-                  >
-                    Refuser
+                    Valider / Refuser
                   </Button>
                 </div>
               )}

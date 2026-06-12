@@ -56,7 +56,7 @@ export async function getGlpiResourceItems(resource: GlpiDataResourceConfig) {
 
 export async function createGlpiResourceItem(
   resource: GlpiDataResourceConfig,
-  payload: Record<string, string | number | boolean>,
+  payload: Record<string, unknown>,
 ) {
   return glpiPost<unknown>(resource.endpoint, payload);
 }
@@ -64,7 +64,7 @@ export async function createGlpiResourceItem(
 export async function updateGlpiResourceItem(
   resource: GlpiDataResourceConfig,
   id: number | string,
-  payload: Record<string, string | number | boolean>,
+  payload: Record<string, unknown>,
 ) {
   return glpiPatch<unknown>(`${resource.endpoint}/${id}`, payload);
 }
