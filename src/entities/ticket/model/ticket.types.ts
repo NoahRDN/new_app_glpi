@@ -15,6 +15,53 @@ export type TicketCostReference = {
   id: number;
 };
 
+export type TicketSolution = {
+  approver?: TicketNamedReference | null;
+  content: string;
+  date_approval?: string | null;
+  date_creation?: string | null;
+  date_mod?: string | null;
+  id: number;
+  items_id: number;
+  itemtype: string;
+  status: number;
+  user?: TicketNamedReference | null;
+  user_editor?: TicketNamedReference | null;
+};
+
+export type CreateTicketSolutionPayload = {
+  content: string;
+  items_id: number;
+  itemtype: "Ticket";
+};
+
+export type UpdateTicketSolutionPayload = {
+  content?: string;
+  id: number;
+  status?: number;
+  ticketId: number;
+};
+
+export type TicketFollowup = {
+  content: string;
+  date?: string | null;
+  date_creation?: string | null;
+  date_mod?: string | null;
+  id: number;
+  is_private?: boolean;
+  items_id: number;
+  itemtype: string;
+  user?: TicketNamedReference | null;
+  user_editor?: TicketNamedReference | null;
+};
+
+export type CreateTicketFollowupPayload = {
+  content: string;
+  is_private?: boolean;
+  items_id: number;
+  itemtype: "Ticket";
+};
+
 export type Ticket = {
   actiontime: number;
   begin_waiting_date?: string | null;

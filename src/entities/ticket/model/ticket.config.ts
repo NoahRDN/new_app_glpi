@@ -20,6 +20,13 @@ export const TICKET_DONE_STATUS_IDS: readonly number[] = [
   TICKET_STATUS_IDS.CLOSED,
 ] as const;
 
+export const TICKET_SOLUTION_STATUS_IDS = {
+  NONE: 1,
+  WAITING: 2,
+  ACCEPTED: 3,
+  REFUSED: 4,
+} as const;
+
 export const createTicketDefault : CreateTicketPayload = {
   name: "Ticket New App",
   content: "First Création ticket new app",

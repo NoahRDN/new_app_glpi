@@ -108,11 +108,176 @@ Même si l’API accepte parfois de mettre status: 5 directement, ce n’est pas
 Si status = Résolu,
 il faut saisir une solution.
 
+#### Solution officielle du ticket & Commentaire / suivi de résolution
+
+##### 1. Où se trouve “Solution” dans GLPI ?
+
+Dans l’interface GLPI, ouvre un ticket, puis regarde dans les onglets à gauche :
+
+Ticket
+Statistiques
+Validations
+Base de connaissances
+Éléments
+Coûts
+Historique
+Tous
+
+La solution peut apparaître dans la timeline ou dans la partie “Tous”. Selon l’affichage GLPI, tu peux ajouter une solution depuis le bas du ticket, dans la zone où tu peux choisir le type d’élément à ajouter : suivi, tâche, solution, etc.
+
+Dans l’API, l’objet s’appelle :
+
+ITILSolution
+
+Dans le code de l’API v2, GLPI expose un schéma Solution lié à ITILSolution, avec notamment itemtype, items_id, type, content, user, approver, status, date_creation, date_mod, date_approval.
+
+Donc pour un ticket :
+
+itemtype = "Ticket"
+items_id = id du ticket
+content = texte de la solution
+
+##### Où se trouve “commentaire de résolution” ?
+
+Un commentaire normal dans un ticket est un :
+
+ITILFollowup
+
+Dans l’API v2, GLPI expose un schéma Followup, avec itemtype, items_id, content, is_private, user, request_type, date, etc.
+
+Donc :
+
+Solution = réponse finale officielle
+Followup = commentaire / discussion / note de suivi
+
+Exemple :
+
+Followup :
+"J’ai commencé à vérifier le poste."
+
+Solution :
+"Pilote imprimante réinstallé, test d’impression réussi."
+
+Pour ton NewApp, si on passe à Résolu, utilise plutôt Solution.
+
+##### API à utiliser pour créer une solution
+###### Option legacy simple
+
+Tu peux utiliser la legacy API :
+
+POST /glpi-legacy-api/ITILSolution
+
+Body :
+
+{
+  "input": {
+    "itemtype": "Ticket",
+    "items_id": 287,
+    "content": "<p>Pilote imprimante réinstallé, test d’impression réussi.</p>"
+  }
+}
+
+S’il y a un type de solution :
+
+{
+  "input": {
+    "itemtype": "Ticket",
+    "items_id": 287,
+    "solutiontypes_id": 1,
+    "content": "<p>Pilote imprimante réinstallé, test d’impression réussi.</p>"
+  }
+}
+
+Tu peux aussi tester l’endpoint lié directement au ticket :
+
+POST /glpi-legacy-api/Ticket/287/ITILSolution/
+
+Mais pour éviter les ambiguïtés, le plus clair est souvent :
+
+POST /glpi-legacy-api/ITILSolution
+
+avec itemtype et items_id.
+
+###### Option v2
+
+Dans ton Swagger v2, cherche dans la partie Assistance les routes autour de :
+
+Solution
+Followup
+TicketValidation
+TicketTask
+
+Si tu vois une route du style :
+
+POST /Assistance/Ticket/{ticket_id}/Solution
+
+ou proche de ça, tu peux l’utiliser. Mais si tu ne la trouves pas rapidement, utilise legacy pour ITILSolution, comme tu l’as déjà fait pour Item_Ticket et TicketValidation.
+
+##### API pour créer un commentaire de résolution
+
+Si tu veux juste ajouter un commentaire/suivi :
+
+POST /glpi-legacy-api/ITILFollowup
+
+Body :
+
+{
+  "input": {
+    "itemtype": "Ticket",
+    "items_id": 287,
+    "content": "<p>Le problème semble corrigé après réinstallation du pilote.</p>",
+    "is_private": 0
+  }
+}
+
+Mais attention : ça ne veut pas forcément dire que le ticket est résolu. C’est seulement un commentaire.
+
+Donc pour ton workflow :
+
+Résolution officielle
+→ ITILSolution
+
+Commentaire explicatif
+→ ITILFollowup
+
+#### workflow
+ITILSolution
+→ solution officielle du ticket
+→ à créer avant de passer en Résolu
+
+ITILFollowup
+→ commentaire / suivi
+→ utile pour expliquer, mais pas suffisant comme vraie résolution
+
+Ticket.status = 5
+→ ticket résolu
+→ remplit la date de résolution et impacte les statistiques
+
+#### Remarque
+Obligatoire pour passer à Résolu :
+→ une Solution officielle
+
+Optionnel :
+→ un Followup / suivi de résolution si tu veux ajouter une note de discussion
+
 ### 6. Clos
 
 C’est le statut final.
 
 Un ticket clos est considéré terminé. Après ça, certaines modifications peuvent être refusées ou devenir anormales. C’est exactement pour ça qu’il ne faut pas créer directement un ticket Closed puis ajouter des assets après.
+
+#### Workflow
+
+Le ticket est resolu donc une autre popup d'assiche pour dire que ce ticket resolut est valide ou pas: 
+Si l’utilisateur approuve :
+
+Solution.status = 3
+puis éventuellement ticket status = 6 Clos
+
+Si l’utilisateur refuse :
+
+Solution.status = 4
+puis ticket peut revenir en En cours attribué
 
 Règle très importante :
 
@@ -484,3 +649,99 @@ Observateur
 
 Validateur
 → responsable / manager / admin, pas forcément technicien
+
+## approuver la solution puis clore le ticket
+
+Legacy :
+
+GET /glpi-legacy-api/Ticket/{ticketId}/ITILSolution/
+
+Exemple :
+
+GET /glpi-legacy-api/Ticket/287/ITILSolution/
+
+Tu récupères une solution avec un id, par exemple :
+
+{
+  "id": 12,
+  "itemtype": "Ticket",
+  "items_id": 287,
+  "content": "<p>Solution proposée...</p>",
+  "status": 2
+}
+
+Le champ status de la solution signifie :
+
+Valeur	Sens
+1	None
+2	Waiting / en attente d’approbation
+3	Accepted / acceptée
+4	Refused / refusée
+
+Dans l’API v2, le schéma Solution expose bien status, approver, approval_followup et date_approval.
+
+## Approuver la solution
+
+Legacy :
+
+PUT /glpi-legacy-api/ITILSolution/{solutionId}
+
+Exemple :
+
+PUT /glpi-legacy-api/ITILSolution/12
+
+Body :
+
+{
+  "input": {
+    "id": 12,
+    "status": 3
+  }
+}
+
+Ici :
+
+status = 3
+→ solution acceptée
+
+Si tu veux ajouter un commentaire d’approbation, le plus simple côté NewApp est soit :
+
+- utiliser le champ approval_followup si tu passes par la v2
+- ou créer un ITILFollowup séparé en legacy
+
+Exemple followup legacy optionnel :
+
+POST /glpi-legacy-api/ITILFollowup
+{
+  "input": {
+    "itemtype": "Ticket",
+    "items_id": 287,
+    "content": "<p>Solution approuvée après vérification.</p>",
+    "is_private": 0
+  }
+}
+
+## Clore le ticket
+PI v2 :
+
+PATCH /glpi-api/Assistance/Ticket/{ticketId}
+
+Exemple :
+
+PATCH /glpi-api/Assistance/Ticket/287
+
+Body :
+
+{
+  "status": 6
+}
+
+Ici :
+
+status = 6
+→ ticket clos
+
+## Donc l’ordre recommandé est
+1. GET ITILSolution du ticket
+2. PUT ITILSolution/{id} avec status = 3
+3. PATCH Ticket/{id} avec status = 6
