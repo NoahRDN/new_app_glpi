@@ -1,5 +1,9 @@
 export type GlpiDataResourceId =
   | "users"
+  | "ticketLinks"
+  | "ticketFollowups"
+  | "ticketSolutions"
+  | "ticketCosts"
   | "tickets"
   | "computers"
   | "monitors"
@@ -36,6 +40,42 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     resetEnabled: true,
     protectedIds: [2,3,4,5,6],
     reason: "ce sont des données essentiels au bon fonctionnement de GLPI"
+  },
+  {
+    description: "Liaisons entre tickets et elements.",
+    endpoint: "/Item_Ticket",
+    id: "ticketLinks",
+    label: "Liaisons ticket / element",
+    optionalColumns: [],
+    requiredColumns: [],
+    resetEnabled: true,
+  },
+  {
+    description: "Suivis de tickets.",
+    endpoint: "/Assistance/Ticket/{id}/Timeline/Followup",
+    id: "ticketFollowups",
+    label: "Suivis de tickets",
+    optionalColumns: [],
+    requiredColumns: [],
+    resetEnabled: true,
+  },
+  {
+    description: "Solutions de tickets.",
+    endpoint: "/Assistance/Ticket/{id}/Timeline/Solution",
+    id: "ticketSolutions",
+    label: "Solutions de tickets",
+    optionalColumns: [],
+    requiredColumns: [],
+    resetEnabled: true,
+  },
+  {
+    description: "Couts de tickets.",
+    endpoint: "/TicketCost",
+    id: "ticketCosts",
+    label: "Couts de tickets",
+    optionalColumns: [],
+    requiredColumns: [],
+    resetEnabled: true,
   },
   {
     description: "Tickets de support et demandes.",

@@ -2,10 +2,10 @@ import { useMemo, useState } from "react";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Button } from "../../../../shared/ui/Button";
 import {
-  TICKET_DONE_STATUS_IDS,
   ticketFilterDefault,
   TICKET_IN_PROGRESS_STATUS_IDS,
   TICKET_STATUS_IDS,
+  TICKET_SOLUTION_STATUS_IDS,
 } from "../../../../entities/ticket/model/ticket.config";
 import { groupTicketsByKanban } from "../lib/ticketKanban";
 import { ticketKanbanGroups } from "../model/ticketKanban.config";
@@ -23,7 +23,7 @@ import { useUpdateTicketSolution } from "../../ticket/hooks/useUpdateTicketSolut
 import { TicketStatusTransitionForm, type TicketStatusTransitionMode } from "./TicketStatusTransitionForm";
 import { TicketResolvedReviewForm } from "./TicketResolvedReviewForm";
 import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
-import { TICKET_SOLUTION_STATUS_IDS } from "../../../../entities/ticket/model/ticket.config";
+import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 
 function hasAssignedTechnicianOrGroup(ticket: Ticket) {
   return ticket.team.some((teamMember) => {
@@ -121,6 +121,23 @@ export function ListTicketKanban() {
     setIsStatusRequirementModalOpen(true);
   }
 
+  async function redirectToMissingSolutionStep(ticket: Ticket) {
+    await updateTicketStatusAsync({
+      ticketId: ticket.id,
+      statusId: TICKET_STATUS_IDS.ASSIGNED,
+    });
+
+    setPendingResolvedReview(null);
+    setPendingStatusChange(null);
+    setPendingTransition({
+      mode: "resolve",
+      nextModeAfterSuccess: "review",
+      ticket,
+    });
+    setStatusTransitionError(null);
+    setIsStatusRequirementModalOpen(true);
+  }
+
   async function getLatestTicketSolution(ticketId: number) {
     const solutions = await getTicketSolutions(ticketId);
     const validSolutions = solutions.filter(
@@ -145,7 +162,11 @@ export function ListTicketKanban() {
     return sortedSolutions[0];
   }
 
-  async function handleTicketDrop(ticketId: number, statusId: number) {
+  async function handleTicketDrop(
+    ticketId: number,
+    statusId: number,
+    destinationGroupKey: TicketKanbanGroupKey,
+  ) {
     const droppedTicket = (ticketsAll ?? []).find((ticket) => ticket.id === ticketId);
 
     if (!droppedTicket) {
@@ -154,32 +175,39 @@ export function ListTicketKanban() {
 
     const currentStatusId = droppedTicket.status?.id;
     const alreadyHasAssignment = hasAssignedTechnicianOrGroup(droppedTicket);
-    const shouldFinishNewTicket =
+    const isDoneDestination = destinationGroupKey === "done";
+    const shouldCloseNewTicket =
       currentStatusId === TICKET_STATUS_IDS.NEW &&
-      statusId === TICKET_STATUS_IDS.CLOSED;
+      isDoneDestination;
+    const shouldResolveNewTicket =
+      currentStatusId === TICKET_STATUS_IDS.NEW &&
+      statusId === TICKET_STATUS_IDS.SOLVED;
     const shouldResolveTicket =
       currentStatusId !== undefined &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(currentStatusId) &&
       statusId === TICKET_STATUS_IDS.SOLVED;
+    const shouldCloseInProgressTicket =
+      currentStatusId !== undefined &&
+      TICKET_IN_PROGRESS_STATUS_IDS.includes(currentStatusId) &&
+      isDoneDestination;
     const shouldApproveResolvedTicket =
       currentStatusId === TICKET_STATUS_IDS.SOLVED &&
-      statusId === TICKET_STATUS_IDS.CLOSED;
+      isDoneDestination;
     const shouldRefuseResolvedTicket =
       currentStatusId === TICKET_STATUS_IDS.SOLVED &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId);
     const shouldReopenClosedTicket =
       currentStatusId === TICKET_STATUS_IDS.CLOSED &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId);
-    const shouldReturnDoneTicketToNew =
-      currentStatusId !== undefined &&
-      TICKET_DONE_STATUS_IDS.includes(currentStatusId) &&
+    const shouldReturnClosedTicketToNew =
+      currentStatusId === TICKET_STATUS_IDS.CLOSED &&
       statusId === TICKET_STATUS_IDS.NEW;
     const requiresAssignmentStep =
       currentStatusId === TICKET_STATUS_IDS.NEW &&
       TICKET_IN_PROGRESS_STATUS_IDS.includes(statusId) &&
       !alreadyHasAssignment;
 
-    if (shouldFinishNewTicket) {
+    if (shouldCloseNewTicket) {
       if (!alreadyHasAssignment) {
         setPendingStatusChange({
           nextModeAfterSuccess: "resolve",
@@ -199,6 +227,25 @@ export function ListTicketKanban() {
       return;
     }
 
+    if (shouldResolveNewTicket) {
+      if (!alreadyHasAssignment) {
+        setPendingStatusChange({
+          nextModeAfterSuccess: "resolve",
+          statusId: TICKET_STATUS_IDS.ASSIGNED,
+          ticket: droppedTicket,
+        });
+        setIsStatusRequirementModalOpen(true);
+        return;
+      }
+
+      setPendingTransition({
+        mode: "resolve",
+        ticket: droppedTicket,
+      });
+      setIsStatusRequirementModalOpen(true);
+      return;
+    }
+
     if (requiresAssignmentStep) {
       setPendingStatusChange({
         statusId,
@@ -211,6 +258,16 @@ export function ListTicketKanban() {
     if (shouldResolveTicket) {
       setPendingTransition({
         mode: "resolve",
+        ticket: droppedTicket,
+      });
+      setIsStatusRequirementModalOpen(true);
+      return;
+    }
+
+    if (shouldCloseInProgressTicket) {
+      setPendingTransition({
+        mode: "resolve",
+        nextModeAfterSuccess: "review",
         ticket: droppedTicket,
       });
       setIsStatusRequirementModalOpen(true);
@@ -244,7 +301,7 @@ export function ListTicketKanban() {
       return;
     }
 
-    if (shouldReturnDoneTicketToNew) {
+    if (shouldReturnClosedTicketToNew) {
       setPendingTransition({
         mode: "reopen",
         targetStatusId: TICKET_STATUS_IDS.NEW,
@@ -358,7 +415,8 @@ export function ListTicketKanban() {
               const latestSolution = await getLatestTicketSolution(pendingResolvedReview.ticket.id);
 
               if (!latestSolution || typeof latestSolution.id !== "number") {
-                throw new Error("Aucune solution valide n'a été trouvée pour ce ticket.");
+                await redirectToMissingSolutionStep(pendingResolvedReview.ticket);
+                return;
               }
 
               await updateTicketSolutionAsync({
@@ -394,7 +452,8 @@ export function ListTicketKanban() {
               const latestSolution = await getLatestTicketSolution(pendingResolvedReview.ticket.id);
 
               if (!latestSolution || typeof latestSolution.id !== "number") {
-                throw new Error("Aucune solution valide n'a été trouvée pour ce ticket.");
+                await redirectToMissingSolutionStep(pendingResolvedReview.ticket);
+                return;
               }
 
               await updateTicketSolutionAsync({
@@ -481,7 +540,8 @@ export function ListTicketKanban() {
                 const latestSolution = await getLatestTicketSolution(pendingTransition.ticket.id);
 
                 if (!latestSolution || typeof latestSolution.id !== "number") {
-                  throw new Error("Aucune solution valide n'a été trouvée pour ce ticket.");
+                  await redirectToMissingSolutionStep(pendingTransition.ticket);
+                  return;
                 }
 
                 await updateTicketSolutionAsync({
@@ -544,7 +604,13 @@ export function ListTicketKanban() {
         <SectionKanban
           key={ticketKanbanGroup.key}
           onCreatedTicket={() => setIsModalOpen(true)}
-          onTicketDrop={(ticketId) => handleTicketDrop(ticketId, ticketKanbanGroup.targetStatusId)}
+          onTicketDrop={(ticketId) =>
+            handleTicketDrop(
+              ticketId,
+              ticketKanbanGroup.targetStatusId,
+              ticketKanbanGroup.key,
+            )
+          }
           backgroundColorSection={ticketKanbanGroup.backgroundColorSection}
           isDisplayAddTicket={ticketKanbanGroup.key === "new"}
           ticketKanbanGroupName={ticketKanbanGroup.label}

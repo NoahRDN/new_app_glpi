@@ -1,4 +1,4 @@
-import { glpiGet, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
+import { glpiDelete, glpiGet, glpiPatch, glpiPost } from "../../../shared/api/glpiClient";
 import type {
   CreateTicketResponse,
   CreateTicketSolutionPayload,
@@ -29,4 +29,11 @@ export async function updateTicketSolution(
     `/Assistance/Ticket/${ticketId}/Timeline/Solution/${id}`,
     body,
   );
+}
+
+export async function deleteTicketSolution(
+  ticketId: number | string,
+  solutionId: number | string,
+) {
+  await glpiDelete(`/Assistance/Ticket/${ticketId}/Timeline/Solution/${solutionId}`);
 }
