@@ -7,6 +7,23 @@ import type {
   GlpiImportProfile,
 } from "../model/glpiImportProfile.types";
 
+function getRawValueByHeader(
+  rawRow: CsvRawRow,
+  expectedHeader: string,
+) {
+  const expected = expectedHeader.trim().toLowerCase();
+
+  const actualHeader = Object.keys(rawRow).find(
+    (header) => header.trim().toLowerCase() === expected,
+  );
+
+  if (!actualHeader) {
+    return undefined;
+  }
+
+  return rawRow[actualHeader];
+}
+
 function getValueToTransform(rawValue: string | undefined, mapping: GlpiFieldMapping) {
   const normalizedRawValue = rawValue?.trim() ?? "";
 
@@ -99,7 +116,7 @@ export function applyGlpiImportProfile(
       const parsedResource: Record<string, string | number | boolean | undefined> = {};
 
       Object.entries(fieldMappings).forEach(([field, mapping]) => {
-        const rawValue = rawRow[mapping.header];
+        const rawValue = getRawValueByHeader(rawRow, mapping.header);
         const valueToTransform = getValueToTransform(rawValue, mapping);
         const transformedValue = applyTransform(valueToTransform, mapping.transform);
 

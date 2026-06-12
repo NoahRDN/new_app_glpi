@@ -249,3 +249,4 @@ ou parfois une liste : (celui ci fonctionne dont ça a été déja tester)
 id=in=(1,10,21)
 
 si GLPI accepte cette syntaxe.
+

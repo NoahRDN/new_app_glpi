@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router";
 import { Navigate } from "react-router";
 import { FrontOfficeLayout } from "../layouts/FrontOfficeLayout";
-import { HomePage } from "../../pages/other/frontoffice/HomePage";
 import { PortalPage } from "../../pages/other/frontoffice/PortalPage";
 import { HelpCenterPage } from "../../pages/other/frontoffice/HelpCenterPage";
 import { AccountPage } from "../../pages/other/frontoffice/AccountPage";

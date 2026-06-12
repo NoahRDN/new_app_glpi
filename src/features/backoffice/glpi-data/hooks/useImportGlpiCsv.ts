@@ -249,6 +249,21 @@ function toReference(id: number | undefined) {
   return { id };
 }
 
+function uniqueNormalizedItems(items: string[]) {
+  const seen = new Set<string>();
+
+  return items.filter((item) => {
+    const key = normalizeKey(item);
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 function parseItemsList(value: string | number | boolean | undefined) {
   if (typeof value !== "string" || value.trim().length === 0) {
     return [];
@@ -258,15 +273,19 @@ function parseItemsList(value: string | number | boolean | undefined) {
     const parsed = JSON.parse(value);
 
     if (Array.isArray(parsed)) {
-      return parsed
-        .map((item) => String(item).trim())
-        .filter((item) => item.length > 0);
+      return uniqueNormalizedItems(
+        parsed
+          .map((item) => String(item).trim())
+          .filter((item) => item.length > 0),
+      );
     }
   } catch {
-    return value
-      .split(",")
-      .map((item) => item.replace(/[[\]"]/g, "").trim())
-      .filter((item) => item.length > 0);
+    return uniqueNormalizedItems(
+      value
+        .split(",")
+        .map((item) => item.replace(/[[\]"]/g, "").trim())
+        .filter((item) => item.length > 0),
+    );
   }
 
   return [];
@@ -303,6 +322,9 @@ function getTicketStatusValue(value: string | number | boolean | undefined) {
   if (
     normalizedValue === "processing (assigned)" ||
     normalizedValue === "in progress (assigned)" ||
+    normalizedValue === "in progress" ||
+    normalizedValue === "assigned" ||
+    normalizedValue === "en cours" ||
     normalizedValue === "assigné"
   ) {
     return 2;
