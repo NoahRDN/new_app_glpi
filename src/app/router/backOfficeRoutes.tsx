@@ -15,6 +15,7 @@ import { MemoTest } from "../../pages/other/backoffice/MemoTest";
 import { DashboardPage } from "../../pages/backoffice/DashboardPage";
 import { TicketsPage as BackOfficeTicketsPage } from "../../pages/backoffice/TicketsPage";
 import { TicketDetailPage } from "../../pages/backoffice/TicketDetailPage";
+import { KanbanSettingsPage } from "../../pages/backoffice/KanbanSettingsPage";
 
 export const backOfficeRoutes: RouteObject = {
   children: [
@@ -77,6 +78,10 @@ export const backOfficeRoutes: RouteObject = {
         {
           path: "reset-data",
           element: <ResetDataPage />,
+        },
+        {
+          path: "kanban-settings",
+          element: <KanbanSettingsPage />,
         },
         {
           path: "memo-test",

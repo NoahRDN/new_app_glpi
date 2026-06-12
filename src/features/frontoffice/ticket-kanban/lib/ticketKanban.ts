@@ -1,5 +1,5 @@
 import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
-import { ticketKanbanGroups } from "../model/ticketKanban.config";
+import { ticketKanbanGroupsDefault } from "../model/ticketKanban.config";
 import type {
   TicketKanban,
   TicketKanbanGroup,
@@ -19,6 +19,7 @@ function getTicketStatusId(ticket: Ticket): number | undefined {
 
 export function findTicketKanbanGroup(
   ticket: Ticket,
+  groups: TicketKanbanGroup[] = ticketKanbanGroupsDefault,
 ): TicketKanbanGroup | undefined {
   const statusId = getTicketStatusId(ticket);
 
@@ -26,16 +27,19 @@ export function findTicketKanbanGroup(
     return undefined;
   }
 
-  return ticketKanbanGroups.find((group) =>
+  return groups.find((group) =>
     group.statusIds.includes(statusId),
   );
 }
 
-export function groupTicketsByKanban(tickets: Ticket[]): TicketKanban {
+export function groupTicketsByKanban(
+  tickets: Ticket[],
+  groups: TicketKanbanGroup[] = ticketKanbanGroupsDefault,
+): TicketKanban {
   const kanban = createEmptyTicketKanban();
 
   tickets.forEach((ticket) => {
-    const group = findTicketKanbanGroup(ticket);
+    const group = findTicketKanbanGroup(ticket, groups);
 
     if (!group) {
       return;

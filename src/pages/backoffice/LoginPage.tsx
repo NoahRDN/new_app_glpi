@@ -10,7 +10,7 @@ export function LoginPage() {
         Connexion distincte pour l’administration, les imports CSV et la réinitialisation des données.
       </p>
 
-      <div className="mt-8 grid gap-6 rounded-[28px] bg-(--panel-soft) p-5 md:grid-cols-[1.1fr_0.9fr]">
+      <div className="mt-8 grid gap-6 rounded-[28px] bg-(--panel-soft) p-5 ">
         <div className="rounded-[24px] bg-(--panel-bg) p-5 shadow-[var(--shadow-soft)]">
           <div className="mb-4 rounded-[18px] bg-(--panel-soft) px-4 py-3 text-sm text-(--text-secondary)">
             Identifiants de test préremplis : <span className="font-semibold text-(--text-primary)">admin</span> / <span className="font-semibold text-(--text-primary)">admin123</span>.
@@ -18,7 +18,7 @@ export function LoginPage() {
           <BackofficeLoginForm />
         </div>
 
-        <div className="rounded-[24px] bg-(--panel-bg) p-5 shadow-[var(--shadow-soft)]">
+        {/* <div className="rounded-[24px] bg-(--panel-bg) p-5 shadow-[var(--shadow-soft)]">
           <h2 className="text-lg font-semibold text-(--text-primary)">Frontoffice</h2>
           <p className="mt-2 text-sm leading-7 text-(--text-secondary)">
             Les utilisateurs disposent maintenant d’une session séparée et d’un shell visuel proche du backoffice.
@@ -29,7 +29,7 @@ export function LoginPage() {
           >
             Aller au login frontoffice
           </Link>
-        </div>
+        </div> */}
       </div>
     </section>
   );

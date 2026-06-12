@@ -8,7 +8,9 @@ import {
   TICKET_SOLUTION_STATUS_IDS,
 } from "../../../../entities/ticket/model/ticket.config";
 import { groupTicketsByKanban } from "../lib/ticketKanban";
-import { ticketKanbanGroups } from "../model/ticketKanban.config";
+import {
+  buildTicketKanbanGroups,
+} from "../model/ticketKanban.config";
 import { SectionKanban } from "../../../../shared/ui/SectionKanban";
 import { Modal } from "../../../../shared/ui/Modal";
 import { TicketsAdd } from "../../ticket/components/TicketsAdd";
@@ -24,6 +26,7 @@ import { TicketStatusTransitionForm, type TicketStatusTransitionMode } from "./T
 import { TicketResolvedReviewForm } from "./TicketResolvedReviewForm";
 import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
 import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
+import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
 
 function hasAssignedTechnicianOrGroup(ticket: Ticket) {
   return ticket.team.some((teamMember) => {
@@ -86,10 +89,18 @@ export function ListTicketKanban() {
       isError: isTicketsAllError,
       error: ticketsAllError,
   } = useAllTickets({...ticketFilterDefault});
+  const {
+    data: kanbanSettings,
+  } = useKanbanSettings();
+
+  const ticketKanbanGroups = useMemo(
+    () => buildTicketKanbanGroups(kanbanSettings),
+    [kanbanSettings],
+  );
   
   const groupTickets = useMemo(() => {
-    return groupTicketsByKanban(ticketsAll ?? []);
-  }, [ticketsAll]);
+    return groupTicketsByKanban(ticketsAll ?? [], ticketKanbanGroups);
+  }, [ticketKanbanGroups, ticketsAll]);
 
   if (isTicketsAllPending) {
         return <Loader label="Chargement des Tickets..." />
@@ -637,7 +648,7 @@ export function ListTicketKanban() {
             >
               <p className="font-semibold text-(--text-primary)">{groupTicket.name}</p>
               <p className="mt-1 text-xs text-(--text-secondary)">
-                {groupTicket.status?.name ?? "Sans statut"}
+                {ticketKanbanGroup.label}
               </p>
 
               {groupTicket.status?.id === TICKET_STATUS_IDS.SOLVED && (

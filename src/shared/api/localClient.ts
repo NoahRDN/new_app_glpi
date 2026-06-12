@@ -1,4 +1,4 @@
-type RequestMethod = "GET" | "POST" | "PATCH" | "DELETE";
+type RequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 async function request<T>(
   path: string,
@@ -38,6 +38,10 @@ export function localPost<T>(path: string, body: unknown) {
 
 export function localPatch<T>(path: string, body: unknown) {
   return request<T>(path, "PATCH", body);
+}
+
+export function localPut<T>(path: string, body: unknown) {
+  return request<T>(path, "PUT", body);
 }
 
 export function localDelete(path: string) {

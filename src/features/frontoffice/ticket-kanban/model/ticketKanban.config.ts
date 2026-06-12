@@ -3,9 +3,10 @@ import {
   TICKET_IN_PROGRESS_STATUS_IDS,
   TICKET_STATUS_IDS,
 } from "../../../../entities/ticket/model/ticket.config";
+import type { KanbanSetting } from "../../../../entities/kanban-setting/model/kanbanSetting.types";
 import type { TicketKanbanGroup } from "./ticketKanban.types";
 
-export const ticketKanbanGroups: TicketKanbanGroup[] = [
+export const ticketKanbanGroupsDefault: TicketKanbanGroup[] = [
   {
     key: "new",
     label: "Nouveau",
@@ -29,3 +30,36 @@ export const ticketKanbanGroups: TicketKanbanGroup[] = [
     backgroundColorSection:"#cdf8d6",
   },
 ];
+
+export function buildTicketKanbanGroups(
+  settings: KanbanSetting[] | undefined,
+): TicketKanbanGroup[] {
+  if (!settings || settings.length === 0) {
+    return ticketKanbanGroupsDefault;
+  }
+
+  const settingsByKey = new Map(
+    settings.map((setting) => [setting.columnKey, setting]),
+  );
+
+  return [...ticketKanbanGroupsDefault]
+    .map((group) => {
+      const setting = settingsByKey.get(group.key);
+
+      if (!setting) {
+        return group;
+      }
+
+      return {
+        ...group,
+        backgroundColorSection: setting.backgroundColor,
+        label: setting.labelMg,
+      };
+    })
+    .sort((leftGroup, rightGroup) => {
+      const leftOrder = settingsByKey.get(leftGroup.key)?.displayOrder ?? Number.MAX_SAFE_INTEGER;
+      const rightOrder = settingsByKey.get(rightGroup.key)?.displayOrder ?? Number.MAX_SAFE_INTEGER;
+
+      return leftOrder - rightOrder;
+    });
+}

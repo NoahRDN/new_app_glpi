@@ -1,4 +1,4 @@
-import { Globe, House, Kanban, LifeBuoy, MonitorSmartphone, TicketPlus, UserRound } from "lucide-react";
+import { Globe, Kanban, TicketPlus } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const frontOfficeNavigation: OfficeNavigationItem[] = [
@@ -17,41 +17,41 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     path: "/create-ticket",
   },
   {
-    description: "Ticket en présentation Kanban",
+    description: "Ticket Kanban",
     Icon: Kanban,
     id: "ticket-kanban",
-    label: "Ticket en présentation Kanban",
+    label: "Ticket Kanban",
     path: "/ticket-kanban",
-    isHorizontalRowDown: true,
+    // isHorizontalRowDown: true,
   },
-  {
-    description: "Page d'accueil du portail",
-    Icon: House,
-    id: "front-home",
-    label: "Accueil",
-    path: "/",
-  },
-  {
-    description: "Catalogue des services IT",
-    Icon: MonitorSmartphone,
-    id: "front-portal",
-    label: "Portail",
-    path: "/portal",
-  },
-  {
-    description: "Base documentaire publique",
-    Icon: LifeBuoy,
-    id: "front-help",
-    label: "Aide",
-    path: "/help-center",
-  },
-  {
-    description: "Accès utilisateur",
-    Icon: UserRound,
-    id: "front-account",
-    label: "Mon espace",
-    path: "/account",
-  },
+  // {
+  //   description: "Page d'accueil du portail",
+  //   Icon: House,
+  //   id: "front-home",
+  //   label: "Accueil",
+  //   path: "/",
+  // },
+  // {
+  //   description: "Catalogue des services IT",
+  //   Icon: MonitorSmartphone,
+  //   id: "front-portal",
+  //   label: "Portail",
+  //   path: "/portal",
+  // },
+  // {
+  //   description: "Base documentaire publique",
+  //   Icon: LifeBuoy,
+  //   id: "front-help",
+  //   label: "Aide",
+  //   path: "/help-center",
+  // },
+  // {
+  //   description: "Accès utilisateur",
+  //   Icon: UserRound,
+  //   id: "front-account",
+  //   label: "Mon espace",
+  //   path: "/account",
+  // },
  
   
 ];

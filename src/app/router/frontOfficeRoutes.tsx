@@ -21,7 +21,7 @@ export const frontOfficeRoutes: RouteObject = {
       children: [
         {
           index: true,
-          element: <HomePage />,
+          element: <GeneralViewElementPage />,
         },
         {
           path: "portal",
