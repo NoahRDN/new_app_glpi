@@ -29,6 +29,7 @@ dist-ssr
 utilitaire/**
 !utilitaire/documentation/
 !utilitaire/documentation/**
+!utilitaire/modelAPIV2.json
 
 prestashop-new-app
 data/*.sqlite
