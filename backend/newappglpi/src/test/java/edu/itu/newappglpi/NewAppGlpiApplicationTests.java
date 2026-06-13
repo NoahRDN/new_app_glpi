@@ -1,4 +1,4 @@
-package edu.itu.newAppGlpi;
+package edu.itu.newappglpi;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
