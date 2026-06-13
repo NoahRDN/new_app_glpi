@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation } from "react-router";
-import { Bell, Moon, Settings, Sun } from "lucide-react";
+import {  Moon, Sun } from "lucide-react";
 import type { OfficeNavigationItem } from "../config/officeNavigation.types";
 import { useThemeMode } from "../hooks/useThemeMode";
 
@@ -109,7 +109,7 @@ export function OfficeLayoutShell({
                 {theme === "light" ? <Moon /> : <Sun />}
               </button>
 
-              <button type="button" className="relative flex h-12 w-12 items-center justify-center rounded-full text-(--text-secondary)">
+              {/* <button type="button" className="relative flex h-12 w-12 items-center justify-center rounded-full text-(--text-secondary)">
                 <Bell />
                 <span className="absolute right-1 top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-(--accent-blue) text-[10px] font-semibold text-white">
                   1
@@ -118,11 +118,11 @@ export function OfficeLayoutShell({
 
               <button type="button" className="flex h-12 w-12 items-center justify-center rounded-full text-(--text-secondary)">
                 <Settings />
-              </button>
+              </button> */}
 
               {actions}
 
-              <div className="flex h-13 w-13 items-center justify-center rounded-full bg-(--avatar-bg) text-lg">🧔</div>
+              {/* <div className="flex h-13 w-13 items-center justify-center rounded-full bg-(--avatar-bg) text-lg">🧔</div> */}
             </div>
           </div>
         </header>
