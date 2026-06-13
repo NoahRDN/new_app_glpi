@@ -29,7 +29,7 @@ import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
 import { AddSuperCost } from "./AddSuperCost";
 import { deleteSuperCost } from "../api/superCost.api";
-import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
+// import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
 function hasAssignedTechnicianOrGroup(ticket: Ticket) {
   return ticket.team.some((teamMember) => {
@@ -569,21 +569,21 @@ export function ListTicketKanban() {
                 if (!isReopen) {
                   await deleteSuperCost(pendingTransition.ticket.id);
                 } else{
-                  const ticketCostsAllData = await getTicketCosts();
-                  const ticketCosts: Record<string, TicketCost[]> | undefined= ticketCostsAllData?.reduce(
-                      (acc, item) => {
-                          const key = String(item.id);
+                  // const ticketCostsAllData = await getTicketCosts();
+                  // const ticketCosts: Record<string, TicketCost[]> | undefined= ticketCostsAllData?.reduce(
+                  //     (acc, item) => {
+                  //         const key = String(item.id);
               
-                          (acc[key] ??= []).push(item);
-                          return acc;
-                      },
-                      {} as Record<string, TicketCost[]>
-                  );
-                  console.log(ticketCostsAllData);
-                  const totalCost = ticketCostsAllData.reduce(
-                      (costSum, cost) => costSum + (Number(cost.cost_time) * Number(cost.actiontime) + Number(cost.cost_fixed)),
-                      0
-                  );
+                  //         (acc[key] ??= []).push(item);
+                  //         return acc;
+                  //     },
+                  //     {} as Record<string, TicketCost[]>
+                  // );
+                  // console.log(ticketCostsAllData);
+                  // const totalCost = ticketCostsAllData.reduce(
+                  //     (costSum, cost) => costSum + (Number(cost.cost_time) * Number(cost.actiontime) + Number(cost.cost_fixed)),
+                  //     0
+                  // );
 
                 }
               }
