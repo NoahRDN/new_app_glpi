@@ -44,6 +44,7 @@ export function TicketsAdd({
     isAssignmentStepOnly = false,
     onSubmitAssignmentStep,
 }: TicketsAddProps){
+
     const [assetTypeItemSelected, setAssetTypeItemSelected] = useState("");
     const [assetItemSelected, setAssetItemSelected] = useState("");
     const [selectedElements, setSelectedElements] = useState<SelectedTicketElement[]>([]);

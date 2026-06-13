@@ -12,6 +12,12 @@ CREATE TABLE IF NOT EXISTS kanban_settings (
   display_order INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS user_cost (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  montant TEXT NOT NULL,
+  id_ticket TEXT NOT NULL
+);
+
 INSERT OR IGNORE INTO kanban_settings (column_key, label_mg, background_color, display_order)
 VALUES
   ('new', 'Vaovao', '#cdd4f8', 1),

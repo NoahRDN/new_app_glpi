@@ -91,3 +91,17 @@ npm i @tanstack/react-query-devtools
 
 ## outil utliser pour gérer le conflit de class quand on utilise deux meme class dans tailwind
 npm install tailwind-merge
+
+## installation sqlite client
+sudo apt update
+sudo apt install sqlite3
+
+## verification version sqlite
+sqlite3 --version
+
+## connection base sqlite
+sqlite3 backend/data/new_app_glpi.sqlite
+
+## installation sqlite client avec niterface graphique
+sudo apt install sqlitebrowser
+sqlitebrowser backend/data/new_app_glpi.sqlite

@@ -8,6 +8,9 @@ import {
 export type TicketCost = {
   [key: string]: unknown;
   id: number;
+  cost_time: string;
+  cost_fixed: string;
+  actiontime: number;
 };
 
 export type CreateTicketCost = Record<string, unknown>;

@@ -27,6 +27,9 @@ import { TicketResolvedReviewForm } from "./TicketResolvedReviewForm";
 import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
 import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
+import { AddSuperCost } from "./AddSuperCost";
+import { deleteSuperCost } from "../api/superCost.api";
+import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
 function hasAssignedTechnicianOrGroup(ticket: Ticket) {
   return ticket.team.some((teamMember) => {
@@ -41,15 +44,19 @@ function hasAssignedTechnicianOrGroup(ticket: Ticket) {
 }
 
 export function ListTicketKanban() {
+  const [isReopen, setIsReopen] = useState<boolean>()
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusRequirementModalOpen, setIsStatusRequirementModalOpen] = useState(false);
   const [statusTransitionError, setStatusTransitionError] = useState<unknown>(null);
+  const [idTicket, setIdTicket] = useState<string>("");
   const [pendingTransition, setPendingTransition] = useState<{
     mode: TicketStatusTransitionMode;
     nextModeAfterSuccess?: "review";
     targetStatusId?: number;
     ticket: Ticket;
   } | null>(null);
+  const [isModalOpenSuperCost, setIsModalOpenSuperCost] = useState<boolean>(false)
   const [pendingResolvedReview, setPendingResolvedReview] = useState<{
     refuseStatusId: number;
     solutionId?: number;
@@ -182,7 +189,6 @@ export function ListTicketKanban() {
     if (!droppedTicket) {
       return;
     }
-
     const currentStatusId = droppedTicket.status?.id;
     const alreadyHasAssignment = hasAssignedTechnicianOrGroup(droppedTicket);
     const isDoneDestination = destinationGroupKey === "done";
@@ -340,6 +346,16 @@ export function ListTicketKanban() {
     </Modal>
 
     <Modal
+      isOpen={isModalOpenSuperCost}
+      title="Création Super Cost"
+      onClose={() => {
+          setIsModalOpenSuperCost(false)
+      }}
+    >
+      <AddSuperCost id_ticket={idTicket} onClose={() => setIsModalOpenSuperCost(false)}  />
+    </Modal>
+
+    <Modal
       isOpen={isStatusRequirementModalOpen}
       title={
         pendingTransition?.mode === "approve"
@@ -449,11 +465,14 @@ export function ListTicketKanban() {
                 });
               }
 
-              await updateTicketStatusAsync({
+              const resultat = await updateTicketStatusAsync({
                 ticketId: pendingResolvedReview.ticket.id,
                 statusId: TICKET_STATUS_IDS.CLOSED,
               });
+
+              setIdTicket(`${resultat.id}`)
               closeStatusTransitionModal();
+              setIsModalOpenSuperCost(true);
             } catch (error) {
               setStatusTransitionError(error);
             }
@@ -512,10 +531,11 @@ export function ListTicketKanban() {
             createTicketFollowupError
           }
           onClose={closeStatusTransitionModal}
+          isVitaToAtao={pendingTransition?.mode === "reopen"}
+          onIsReopen={setIsReopen}
           onSubmit={async ({ comment }) => {
             try {
               setStatusTransitionError(null);
-
               if (pendingTransition.mode === "resolve") {
                 const createdSolution = await createTicketSolutionAsync({
                   ticketId: pendingTransition.ticket.id,
@@ -543,6 +563,29 @@ export function ListTicketKanban() {
 
                 closeStatusTransitionModal();
                 return;
+              }
+
+              if (pendingTransition.mode === "reopen") {
+                if (!isReopen) {
+                  await deleteSuperCost(pendingTransition.ticket.id);
+                } else{
+                  const ticketCostsAllData = await getTicketCosts();
+                  const ticketCosts: Record<string, TicketCost[]> | undefined= ticketCostsAllData?.reduce(
+                      (acc, item) => {
+                          const key = String(item.id);
+              
+                          (acc[key] ??= []).push(item);
+                          return acc;
+                      },
+                      {} as Record<string, TicketCost[]>
+                  );
+                  console.log(ticketCostsAllData);
+                  const totalCost = ticketCostsAllData.reduce(
+                      (costSum, cost) => costSum + (Number(cost.cost_time) * Number(cost.actiontime) + Number(cost.cost_fixed)),
+                      0
+                  );
+
+                }
               }
 
               if (pendingTransition.mode === "approve") {

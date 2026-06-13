@@ -108,6 +108,60 @@ Même si l’API accepte parfois de mettre status: 5 directement, ce n’est pas
 Si status = Résolu,
 il faut saisir une solution.
 
+
+### 6. Clos
+
+C’est le statut final.
+
+Un ticket clos est considéré terminé. Après ça, certaines modifications peuvent être refusées ou devenir anormales. C’est exactement pour ça qu’il ne faut pas créer directement un ticket Closed puis ajouter des assets après.
+
+### workflow En cours attribué -> resolu
+
+pour qu'une statut attibué puisse être clos, il faut qu'il passe par resolu d'abord et c'est apres que resolu -> clos
+
+pour passe attribué a resolu, on a besoin de creer une solution et une solution a besoin de ces element pour etre creer:
+- message de solution qui explique la solution propose et effectue.
+
+#### Workflow resolu -> clos
+
+Le ticket est resolu donc une autre popup d'assiche pour dire que ce ticket resolut est valide ou pas: 
+Si l’utilisateur approuve :
+
+Solution.status = 3
+puis éventuellement ticket status = 6 Clos
+
+Si l’utilisateur refuse :
+
+Solution.status = 4
+puis ticket peut revenir en En cours attribué
+
+Règle très importante :
+
+Ne pas mettre un ticket en Clos tant que toutes les informations ne sont pas ajoutées.
+
+### revenir de status a un autre
+#### clos -> en cours attribué
+
+une action de reouverture sera demande
+
+##### reouverture
+
+une champ de text  pour entree le message de cause de reouverture sera demandé
+
+une validation de reouverture sera effectué
+  - si c'est validé, le ticket passe vers en cours attribué
+  - si ce n'est pas validé, il reste dans clos
+
+##### clos -> nouveau 
+
+le ticket passera le processus normale clos -> attribué -> nouveau 
+  - donc chaque verification entre ces processus seront toujours aussi demandé
+
+##### nouveau -> clos
+
+le ticket passera le processus normale ticket -> attribué -> resolu -> clos 
+  - donc chaque verification entre ces processus seront toujours aussi demandé
+
 #### Solution officielle du ticket & Commentaire / suivi de résolution
 
 ##### 1. Où se trouve “Solution” dans GLPI ?
@@ -260,29 +314,7 @@ Obligatoire pour passer à Résolu :
 Optionnel :
 → un Followup / suivi de résolution si tu veux ajouter une note de discussion
 
-### 6. Clos
-
-C’est le statut final.
-
-Un ticket clos est considéré terminé. Après ça, certaines modifications peuvent être refusées ou devenir anormales. C’est exactement pour ça qu’il ne faut pas créer directement un ticket Closed puis ajouter des assets après.
-
-#### Workflow
-
-Le ticket est resolu donc une autre popup d'assiche pour dire que ce ticket resolut est valide ou pas: 
-Si l’utilisateur approuve :
-
-Solution.status = 3
-puis éventuellement ticket status = 6 Clos
-
-Si l’utilisateur refuse :
-
-Solution.status = 4
-puis ticket peut revenir en En cours attribué
-
-Règle très importante :
-
-Ne pas mettre un ticket en Clos tant que toutes les informations ne sont pas ajoutées.
-
+### Workflow ticket vue général
 Ordre correct :
 
 1. Créer le ticket en Nouveau.

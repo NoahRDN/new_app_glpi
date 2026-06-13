@@ -17,6 +17,8 @@ type TicketStatusTransitionFormProps = {
   onClose: () => void;
   onSubmit: (values: { comment: string }) => Promise<void> | void;
   submitError?: unknown;
+  isVitaToAtao?: boolean;
+  onIsReopen?: (value: boolean) => void;
 };
 
 function getModeConfig(mode: TicketStatusTransitionMode) {
@@ -69,7 +71,10 @@ export function TicketStatusTransitionForm({
   onClose,
   onSubmit,
   submitError,
+  isVitaToAtao,
+  onIsReopen
 }: TicketStatusTransitionFormProps) {
+
   const [comment, setComment] = useState("");
   const [isRequirementSatisfied, setIsRequirementSatisfied] = useState(true);
   const config = getModeConfig(mode);
@@ -77,7 +82,7 @@ export function TicketStatusTransitionForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+    
     const trimmedComment = comment.trim();
     const isSatisfied = !config.isRequired || trimmedComment.length > 0;
 
@@ -140,13 +145,41 @@ export function TicketStatusTransitionForm({
         >
           Annuler
         </Button>
-        <Button
+        {isVitaToAtao ? 
+          <> 
+            <Button
+              type="submit"
+              className="w-full flex items-center flex-col"
+              disabled={isPending}
+              onClick={() => {
+                if (onIsReopen !== undefined) {
+                  onIsReopen(false);
+                }
+                return
+              }}
+            >
+              {isPending ? "Traitement..." : "Annuler la réouverture"}
+            </Button>
+            <Button
+              type="submit"
+              className="w-full flex items-center flex-col"
+              disabled={isPending}
+              onClick={() => {
+                if (onIsReopen) {
+                  onIsReopen(true)
+                }
+              }}
+            >
+              {isPending ? "Traitement..." : "Reouverture"}
+            </Button>
+          </>
+        : <Button
           type="submit"
           className="w-full flex items-center flex-col"
           disabled={isPending}
         >
           {isPending ? "Traitement..." : config.buttonLabel}
-        </Button>
+        </Button>}
       </div>
     </form>
   );
