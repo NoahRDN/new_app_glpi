@@ -12,10 +12,13 @@ CREATE TABLE IF NOT EXISTS kanban_settings (
   display_order INTEGER NOT NULL
 ) STRICT;
 
-CREATE TABLE IF NOT EXISTS user_cost (
+CREATE TABLE IF NOT EXISTS super_cost (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  montant TEXT NOT NULL,
-  id_ticket TEXT NOT NULL,
+  id_ticket INTEGER NOT NULL,
+  cout_saisi REAL NOT NULL,
+  cout_glpi REAL NOT NULL,
+  id_item INTEGER,
+  category TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
 

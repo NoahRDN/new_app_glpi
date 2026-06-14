@@ -39,7 +39,7 @@ export function ListTicketKanban() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusRequirementModalOpen, setIsStatusRequirementModalOpen] = useState(false);
   const [statusTransitionError, setStatusTransitionError] = useState<unknown>(null);
-  const [idTicket, setIdTicket] = useState<string>("");
+  const [ticket, setTicket] = useState<Ticket | null>(null);
   const [pendingTransition, setPendingTransition] = useState<{
     mode: TicketStatusTransitionMode;
     nextModeAfterSuccess?: "review";
@@ -342,7 +342,7 @@ export function ListTicketKanban() {
           setIsModalOpenSuperCost(false)
       }}
     >
-      <AddSuperCost id_ticket={idTicket} onClose={() => setIsModalOpenSuperCost(false)}  />
+      <AddSuperCost ticket={ticket} onClose={() => setIsModalOpenSuperCost(false)}  />
     </Modal>
 
     <Modal
@@ -465,12 +465,12 @@ export function ListTicketKanban() {
                 });
               }
 
-              const resultat = await updateTicketStatusAsync({
+              await updateTicketStatusAsync({
                 ticketId: pendingResolvedReview.ticket.id,
                 statusId: TICKET_STATUS_IDS.CLOSED,
               });
 
-              setIdTicket(`${resultat.id}`)
+              setTicket(pendingResolvedReview.ticket)
               closeStatusTransitionModal();
               setIsModalOpenSuperCost(true);
             } catch (error) {
@@ -689,7 +689,8 @@ export function ListTicketKanban() {
                 setDraggingTicketId(null);
               }}
             >
-              <p className="font-semibold text-(--text-primary)">{groupTicket.name}</p>
+              <p className="font-semibold text-(--text-primary)"><span className="font-semibold text-(--text-primary)">#{groupTicket.external_id}</span> {groupTicket.name}</p>
+              
               <p className="mt-1 text-xs text-(--text-secondary)">
                 {ticketKanbanGroup.label}
               </p>

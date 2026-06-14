@@ -1,4 +1,4 @@
-import { Globe, Kanban, TicketPlus } from "lucide-react";
+import { CircleDollarSign, Globe, Kanban, TicketPlus } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const frontOfficeNavigation: OfficeNavigationItem[] = [
@@ -22,6 +22,13 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     id: "ticket-kanban",
     label: "Ticket Kanban",
     path: "/ticket-kanban",
+  },
+  {
+    description: "Montant Cost Local Saisie et GLPI",
+    Icon: CircleDollarSign,
+    id: "montant-local-glpi",
+    label: "Cost Local & GLPI",
+    path: "/montant-local-glpi",
     // isHorizontalRowDown: true,
   },
   // {

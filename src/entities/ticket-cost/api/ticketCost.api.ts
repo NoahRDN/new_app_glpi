@@ -27,6 +27,15 @@ export async function getTicketCost(ticketCostId: number | string): Promise<Tick
   return glpiLegacyGet<TicketCost>(`/TicketCost/${ticketCostId}`);
 }
 
+export async function getTicketCostByIds(ticketCostIds: number[] | string[]): Promise<TicketCost[]> {
+  
+  const ticketsCost: Promise<TicketCost[]> = Promise.all(ticketCostIds.map( async (ticketCostId) => {
+      return await getTicketCost(ticketCostId)
+  }))
+  
+  return ticketsCost;
+}
+
 export async function createTicketCost(payload: CreateTicketCost): Promise<TicketCost> {
   return glpiLegacyPost<TicketCost>("/TicketCost", payload);
 }

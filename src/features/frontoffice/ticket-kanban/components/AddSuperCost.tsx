@@ -5,17 +5,39 @@ import { Input } from "../../../../shared/ui/Input";
 import { useCreateSuperCost } from "../hooks/useCreateSuperCost";
 import type { CreateSuperCost } from "../model/superCost.types";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
+import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
+import { useTicketAssetLinks } from "../../ticket/hooks/useTicketAssetLinks";
+import { useTicketsCostByIds } from "../../ticket-costs/hooks/useTicketsCostByIds";
+import { totalCost } from "../../../../entities/ticket-cost/lib/ticketCost";
 
 type AddSuperCostProps = {
   onClose: () => void;
-  id_ticket: string;
+  ticket: Ticket | null;
 };
 
-export function AddSuperCost({id_ticket, onClose}: AddSuperCostProps){
+export function AddSuperCost({ticket, onClose}: AddSuperCostProps){
     const [formSupercost, setFormSupercost] = useState<CreateSuperCost>({
-        montant: "-1",
-        id_ticket: `${id_ticket}`
+        cout_saisi: -1,
+        id_ticket: -1,
+        id_item: -1,
+        category: "",
+        cout_glpi: -1
     });
+
+    const idsCost = ticket ? ticket.costs.map((cost) => cost.id) : []
+    const {
+        data: ticketsCostData,
+    } = useTicketsCostByIds(idsCost)
+
+    const {
+        data: ticketAssetLinksData
+    } = useTicketAssetLinks()
+
+    const ticketAssetLinks = ticketAssetLinksData?.filter((link) => link.tickets_id === ticket?.id);
+    const totalCostTicket = ticketsCostData ? ticketsCostData.reduce((sum, ticketCost) => {
+        return sum + totalCost(ticketCost);
+    }, 0) : -1;
+        
     const [montant, setMontant] = useState<number>(0);
 
     const {
@@ -27,8 +49,21 @@ export function AddSuperCost({id_ticket, onClose}: AddSuperCostProps){
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        console.log(formSupercost);
-        await createSuperCostAsync(formSupercost)
+        if (formSupercost !== null && ticket !== null) {
+            const itemsType : string[] = [];
+            const nombreCategoryTicketAssetLinks = ticketAssetLinks ? ticketAssetLinks.reduce((sum, ticketAssetLink) => {
+                if (!itemsType.includes(ticketAssetLink.itemtype)) {
+                    itemsType.push(ticketAssetLink.itemtype);
+                    return sum + 1;
+                }
+                return sum;
+            } ,0) : 0;
+            const cout_saisi_final = formSupercost.cout_saisi / nombreCategoryTicketAssetLinks;
+            ticketAssetLinks?.map(async (ticketAssetLink) => await createSuperCostAsync({id_ticket: ticket.id,cout_saisi:cout_saisi_final, category: ticketAssetLink.itemtype, id_item: ticketAssetLink.items_id, cout_glpi:totalCostTicket}))
+        } else{
+            throw new Error("Aucun donné à créer reçu")
+        }
+        
         onClose()
     }
 
@@ -49,8 +84,8 @@ export function AddSuperCost({id_ticket, onClose}: AddSuperCostProps){
                 id="superCost" type="number" 
                 onChange={(event) => {
                     setFormSupercost({
-                        ...formSupercost,
-                        montant: `${event.target.value}`
+                        ...formSupercost
+                        ,cout_saisi: Number(event.target.value)
                     })
                     setMontant(Number(event.target.value));
                 }}

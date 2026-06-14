@@ -1,7 +1,7 @@
 // // getTicketCosts
 
 import { useQuery } from "@tanstack/react-query";
-import { getTicketCosts } from "../../../entities/ticket-cost/api/ticketCost.api";
+import { getTicketCosts } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
 export const ticketsQueryKey = ["ticketsCost"] as const;
 

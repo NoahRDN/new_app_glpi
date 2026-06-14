@@ -8,8 +8,8 @@ import jakarta.persistence.Table;
 
 
 @Entity
-@Table(name = "user_cost")
-public class UserCost {
+@Table(name = "super_cost")
+public class SuperCost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -7,6 +7,7 @@ import { AccountPage } from "../../pages/other/frontoffice/AccountPage";
 import { GeneralViewElementPage } from "../../pages/frontoffice/GeneralViewElementPage";
 import { TicketsPage } from "../../pages/frontoffice/TicketsPage";
 import { TicketsKanbanPage } from "../../pages/frontoffice/TicketsKanbanPage";
+import { MontantLocalGlpi } from "../../pages/frontoffice/MontantLocalGlpi";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -45,6 +46,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "ticket-kanban",
           element: <TicketsKanbanPage />,
+        },
+        {
+          path: "montant-local-glpi",
+          element: <MontantLocalGlpi />,
         },
       ],
     },

@@ -4,6 +4,5 @@ import { ListTicketKanban } from "../../features/frontoffice/ticket-kanban/compo
 export function TicketsKanbanPage(){
     return <>
         <ListTicketKanban />
-        {/* <Montant /> */}
     </>
 }
