@@ -29,23 +29,13 @@ import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
 import { AddSuperCost } from "./AddSuperCost";
 import { deleteSuperCost } from "../api/superCost.api";
+import { MyError } from "../../../../shared/ui/MyError";
+import { hasAssignedTechnicianOrGroup } from "../../../../entities/ticket/lib/ticketTeamMember.lib";
 // import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
-function hasAssignedTechnicianOrGroup(ticket: Ticket) {
-  return ticket.team.some((teamMember) => {
-    const normalizedRole = teamMember.role.trim().toLowerCase();
-    const normalizedType = teamMember.type.trim().toLowerCase();
-
-    return (
-      normalizedRole === "assigned" &&
-      (normalizedType === "user" || normalizedType === "group")
-    );
-  });
-}
-
 export function ListTicketKanban() {
+  const DEFAULT_MESSAGE_ERROR_STATUS_SWITCH = "Impossible de valider le changement de statut.";
   const [isReopen, setIsReopen] = useState<boolean>()
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusRequirementModalOpen, setIsStatusRequirementModalOpen] = useState(false);
   const [statusTransitionError, setStatusTransitionError] = useState<unknown>(null);
@@ -372,6 +362,13 @@ export function ListTicketKanban() {
       }
       onClose={closeStatusTransitionModal}
     >
+
+      {statusTransitionError !== null && (
+        <MyError>
+          {getUserErrorMessage(statusTransitionError, DEFAULT_MESSAGE_ERROR_STATUS_SWITCH)}
+        </MyError>
+      )}
+
       {pendingStatusChange ? (
         <TicketsAdd
           isModal={true}
@@ -381,42 +378,45 @@ export function ListTicketKanban() {
             if (!pendingStatusChange) {
               return;
             }
+            try {
+              if (technicianUserId !== undefined) {
+                await createTicketTeamMemberAsync({
+                  ticketId: pendingStatusChange.ticket.id,
+                  payload: {
+                    id: technicianUserId,
+                    role: "assigned",
+                    type: "User",
+                  },
+                });
+              }
 
-            if (technicianUserId !== undefined) {
-              await createTicketTeamMemberAsync({
+              if (technicianGroupId !== undefined) {
+                await createTicketTeamMemberAsync({
+                  ticketId: pendingStatusChange.ticket.id,
+                  payload: {
+                    id: technicianGroupId,
+                    role: "assigned",
+                    type: "Group",
+                  },
+                });
+              }
+
+              await updateTicketStatusAsync({
                 ticketId: pendingStatusChange.ticket.id,
-                payload: {
-                  id: technicianUserId,
-                  role: "assigned",
-                  type: "User",
-                },
+                statusId: pendingStatusChange.statusId,
               });
-            }
 
-            if (technicianGroupId !== undefined) {
-              await createTicketTeamMemberAsync({
-                ticketId: pendingStatusChange.ticket.id,
-                payload: {
-                  id: technicianGroupId,
-                  role: "assigned",
-                  type: "Group",
-                },
-              });
-            }
-
-            await updateTicketStatusAsync({
-              ticketId: pendingStatusChange.ticket.id,
-              statusId: pendingStatusChange.statusId,
-            });
-
-            if (pendingStatusChange.nextModeAfterSuccess === "resolve") {
-              setPendingStatusChange(null);
-              setPendingTransition({
-                mode: "resolve",
-                nextModeAfterSuccess: "review",
-                ticket: pendingStatusChange.ticket,
-              });
-              return;
+              if (pendingStatusChange.nextModeAfterSuccess === "resolve") {
+                setPendingStatusChange(null);
+                setPendingTransition({
+                  mode: "resolve",
+                  nextModeAfterSuccess: "review",
+                  ticket: pendingStatusChange.ticket,
+                });
+                return;
+              }
+            } catch (error) {
+              setStatusTransitionError(error);
             }
 
             closeStatusTransitionModal();

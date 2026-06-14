@@ -1,112 +1,426 @@
-## petite description et remarque
+# Workflow Kanban de changement de statut des tickets
 
-les name de de status et les listes des status utilise dans un ticket ne vient pas de d'un api mais est gérer statiquement dnas le code de GLPI. a part cela, le name qui s'affiche est en fonction du choix de langue de GLPI
+* il y a d'abord trois grands states pour savoir si le ticket est dans nouveau, en cours ou clos
 
-## Récupérer les éléments actuellement liés au ticket
+  * `pendingStatusChange`
+  * `pendingTransition`
+  * `pendingResolvedReview`
 
-```
-GET /glpi-legacy-api/Ticket/282/Item_Ticket/
-```
-ou :
-```
-GET /glpi-legacy-api/Item_Ticket
-```
-Puis tu filtres :
-```
-link.tickets_id === 282
-```
+* il y a aussi une fonction `handleTicketDrop` qui est utilisée quand le bouton ticket est relâché dans la zone qu’on voulait
 
-## tableau de statut
+  * cela est possible grâce à `onTicketDrop`
 
-| Valeur API | Libellé FR        | Libellé EN GLPI     | Sens métier                                                                  |
-| ---------: | ----------------- | ------------------- | ---------------------------------------------------------------------------- |
-|        `1` | Nouveau           | New                 | Ticket créé, pas encore traité.                                              |
-|       `10` | Validation        | Approval            | Ticket en attente d’approbation/validation.                                  |
-|        `2` | En cours (Attribué) | Processing assigned | Ticket pris en charge par un technicien/groupe.                              |
-|        `3` | En cours planifié | Processing planned  | Intervention planifiée.                                                      |
-|        `4` | En attente        | Pending             | Ticket bloqué temporairement : attente utilisateur, fournisseur, pièce, etc. |
-|        `5` | Résolu            | Solved              | Solution proposée / problème résolu.                                         |
-|        `6` | Clos              | Closed              | Ticket terminé définitivement.                                               |
+    * `onTicketDrop` est une props de `SectionKanban`
+    * cette fonction est ensuite utilisée dans `onDrop`
 
+* `onDrop`
 
-## champ type lors de la création d’un ticket GLPI :
+  * c’est un événement de drag and drop
+  * il permet de dire quoi faire après le dépôt de l’élément dans la zone voulue
 
-1 = Incident
-2 = Demande / Request
+* cette fonction prend en paramètre :
 
-## Règles simples à appliquer dans new app
+  * l’id du ticket qui est dans la balise `SectionKanban`
 
-Création ticket
-→ toujours status = Nouveau
+    * cet id est récupéré lors du drop de cette manière :
 
-Nouveau → En cours attribué
-→ autorisé
-→ idéalement demander un technicien ou un groupe
+      * on stocke l’id du ticket qu’on a déplacé dans `event.dataTransfer`
 
-En cours attribué → En attente
-→ autorisé
-→ demander un commentaire obligatoire
+      * cela se fait grâce à :
 
-En attente → En cours attribué
-→ autorisé
-→ commentaire conseillé
+        ```ts
+        event.dataTransfer.setData("ticketId", String(groupTicket.id));
+        ```
 
-En cours attribué → Résolu
-→ autorisé
-→ demander une solution obligatoire
+      * cela se fait durant `onDragStart`
 
-Résolu → Clos
-→ autorisé
+      * puis on le récupère dans `onDrop` grâce à :
 
-Résolu → En cours attribué
-→ réouverture avant clôture
-→ commentaire obligatoire
+        ```ts
+        const ticketId = Number(event.dataTransfer.getData("ticketId"));
+        ```
 
-Clos → En cours attribué
-→ réouverture après clôture
-→ commentaire obligatoire
+  * le nom de la clé en string constante du kanban de destination
 
-Clos → Nouveau
-→ à éviter
+    * `new`
+    * `in_progress`
+    * `done`
 
-## étape de validation
-itils_validationsteps_id (dans TicketValidation de api legacy)
+  * l’`id_status` actuel du ticket
 
-## Signification de ton résultat TicketValidation
-```
-{
-  "id": 4,
-  "itils_validationsteps_id": 4,
-  "entities_id": 0,
-  "users_id": 2,
-  "tickets_id": 287,
-  "users_id_validate": 0,
-  "itilvalidationtemplates_id": 0,
-  "itemtype_target": "User",
-  "items_id_target": 2,
-  "comment_submission": "<p>demande de validation</p>",
-  "comment_validation": null,
-  "status": 2,
-  "submission_date": "2026-06-11 21:06:35",
-  "validation_date": null
-}
-```
+* le rôle de cette fonction est de configurer le passage de statut A vers statut B
 
-| Champ                        | Signification                                                 |
-| ---------------------------- | ------------------------------------------------------------- |
-| `id`                         | ID de la demande de validation.                               |
-| `itils_validationsteps_id`   | Étape de validation utilisée.                                 |
-| `entities_id`                | Entité GLPI concernée.                                        |
-| `users_id`                   | Utilisateur qui a envoyé la demande de validation.            |
-| `tickets_id`                 | Ticket concerné.                                              |
-| `users_id_validate`          | Utilisateur qui a répondu. `0` = personne n’a encore répondu. |
-| `itilvalidationtemplates_id` | Gabarit utilisé. `0` = aucun gabarit.                         |
-| `itemtype_target`            | Type de validateur ciblé : ici `User`.                        |
-| `items_id_target`            | ID du validateur ciblé : ici utilisateur `2`.                 |
-| `comment_submission`         | Message envoyé au validateur.                                 |
-| `comment_validation`         | Réponse du validateur. `null` tant qu’il n’a pas répondu.     |
-| `status`                     | Statut de cette validation.                                   |
-| `submission_date`            | Date d’envoi de la demande.                                   |
-| `validation_date`            | Date de réponse. `null` tant qu’il n’a pas répondu.           |
-| `timeline_position`          | Position dans la timeline GLPI.                               |
-| `last_reminder_date`         | Dernier rappel envoyé, si GLPI envoie des rappels.            |
+* concernant le passage de statut A vers statut B, il y a différentes variables avec le préfixe `should`
+
+  * elles permettent de dire :
+
+    * quel est le statut actuel du ticket
+    * vers quel statut le ticket veut aller
+
+  * `shouldCloseNewTicket`
+
+    * Nouveau → Terminé
+
+  * `shouldResolveNewTicket`
+
+    * Nouveau → Résolu
+
+  * `requiresAssignmentStep`
+
+    * Nouveau → En cours
+
+  * `shouldResolveTicket`
+
+    * En cours → Résolu
+
+  * `shouldCloseInProgressTicket`
+
+    * En cours → Terminé
+
+  * `shouldApproveResolvedTicket`
+
+    * Résolu → Terminé / Clos
+
+  * `shouldRefuseResolvedTicket`
+
+    * Résolu → En cours
+
+  * `shouldReopenClosedTicket`
+
+    * Clos → En cours
+
+  * `shouldReturnClosedTicketToNew`
+
+    * Clos → Nouveau
+
+* c’est grâce à ces variables avec préfixe qu’on peut faire une condition
+
+  * pour savoir dans quel statut se trouve actuellement le ticket
+  * pour savoir vers où est sa destination
+
+* après cela, on peut faire un changement de state parmi ces states :
+
+  * `pendingStatusChange`
+  * `pendingTransition`
+  * `pendingResolvedReview`
+
+* ces states correspondent à la configuration du passage :
+
+  * statut A → statut B
+
+* chaque state possède ses paramètres
+
+* `pendingStatusChange`
+
+  * `nextModeAfterSuccess?`
+
+    * constante string de type `TicketStatusTransitionMode`
+
+    * permet de dire quel est le prochain statut après succès de la mise en place du statut actuel
+
+    * autrement dit :
+
+      * statut de destination future après succès de la mise en place du statut de destination actuelle
+
+    * valeurs possibles :
+
+      * `resolve`
+
+        * demander une solution
+
+      * `approve`
+
+        * approuver la solution
+
+      * `refuse`
+
+        * refuser la solution
+
+      * `reopen`
+
+        * demander une raison de réouverture
+
+  * `statusId`
+
+    * stocke l’id du statut de destination qu’on va appliquer maintenant
+
+  * `ticket`
+
+    * variable de type `Ticket`
+    * permet d’identifier le ticket dont on veut manipuler le statut
+
+* `pendingTransition`
+
+  * `mode`
+
+    * type : `TicketStatusTransitionMode`
+
+  * `nextModeAfterSuccess?`
+
+    * similaire à l’explication précédente
+    * pour celui-ci, c’est directement de type string
+    * valeur par défaut :
+
+      * `review`
+    * valeur possible :
+
+      * `review`
+      * `null`
+    * cela veut dire qu’on peut utiliser cet attribut avec la valeur `review`
+    * ou ne pas utiliser cet attribut
+
+  * `review`
+
+    * permet de faire une comparaison après avoir passé le ticket à résolu
+    * le passage à résolu se fait grâce à la création d’une solution
+    * le but est ensuite de passer :
+
+      * statut Résolu → statut Clos
+
+  * `targetStatusId?`
+
+    * similaire à l’explication précédente
+
+  * `ticket`
+
+    * similaire à l’explication précédente
+
+* `pendingResolvedReview`
+
+  * `refuseStatusId`
+
+    * id du statut de rollback si la solution est refusée
+    * cela veut dire que le ticket revient à cet id de statut si le choix de la solution est refusé
+
+  * `solutionId?`
+
+    * id de la solution à valider
+
+  * `ticket`
+
+    * similaire à l’explication précédente
+
+* la création des interfaces selon ces 3 grands states est créée grâce à :
+
+  * composant `TicketsAdd`
+
+    * utilisé avec `pendingStatusChange`
+
+    * `isModal`
+
+      * permet de réajuster les boutons du composant
+      * permet d’afficher :
+
+        * `annuler`
+        * `créer`
+      * au lieu d’afficher seulement `annuler` lors de la création de ticket
+
+    * `isAssignmentStepOnly`
+
+      * permet de choisir quoi afficher quand c’est seulement l’action d’assignation
+      * cela concerne :
+
+        * l’assignation d’un user technicien au ticket
+        * l’assignation d’un groupe de techniciens au ticket
+
+    * `onClose`
+
+      * permet de passer la fonction `closeStatusTransitionModal`
+
+      * cette fonction est appelée lors de la fermeture du modal
+
+      * elle est appelée en cas de succès de toutes les opérations de changement de statut
+
+      * `closeStatusTransitionModal`
+
+        * cette fonction sert à fermer proprement la modal de changement de statut
+
+        * elle sert aussi à réinitialiser tous les états temporaires liés au workflow
+
+        * `setIsStatusRequirementModalOpen(false)`
+
+          * ça ferme la modal
+
+        * `setPendingStatusChange(null)`
+
+          * ça annule l’étape d’assignation en attente
+          * `pendingStatusChange` sert quand le ticket doit d’abord être assigné avant de changer de statut
+
+        * `setPendingTransition(null)`
+
+          * ça annule la transition spéciale en attente
+          * `pendingTransition` sert pour les actions comme :
+
+            * `resolve`
+
+              * saisir une solution
+            * `refuse`
+
+              * refuser une solution
+            * `reopen`
+
+              * rouvrir un ticket
+            * `approve`
+
+              * approuver une solution
+
+        * `setPendingResolvedReview(null)`
+
+          * ça annule l’étape “Valider / Refuser la solution”
+          * `pendingResolvedReview` sert quand le ticket est déjà Résolu
+          * l’utilisateur doit choisir :
+
+            * Valider la solution
+            * Refuser la solution
+
+        * `setStatusTransitionError(null)`
+
+          * ça efface l’ancienne erreur
+
+    * `onSubmitAssignmentStep`
+
+      * permet de créer une fonction à utiliser dans le composant fille après
+
+      * dans cette fonction, les différentes actions effectuées sont :
+
+        * assignation de user technicien au ticket si le ticket n’est pas encore assigné
+        * assignation de groupe technicien au ticket si le ticket n’est pas encore assigné
+        * passage de Nouveau → En cours
+        * si `pendingStatusChange.nextModeAfterSuccess` est égal à `resolve`
+
+          * on fait passer vers le statut Résolu
+
+  * composant `TicketStatusTransitionForm`
+
+    * utilisé avec `pendingTransition`
+
+    * `mode`
+
+      * permet de configurer quel mode choisir parmi ceux listés dans `TicketStatusTransitionMode`
+
+      * valeurs possibles :
+
+        * `resolve`
+        * `approve`
+        * `refuse`
+        * `reopen`
+
+      * cela permet de configurer l’affichage à afficher dans `TicketStatusTransitionForm`
+
+    * `isPending`
+
+      * permet de mettre l’état du hook qui effectue le CRUD dans cette partie de `TicketStatusTransitionForm`
+      * cela est utilisé dans la fonction `onSubmit`
+
+    * `submitError`
+
+      * permet de mettre l’erreur retournée par le hook qui effectue le CRUD
+      * cela est utilisé dans la fonction `onSubmit`
+
+    * `onClose`
+
+      * similaire à l’explication précédente
+
+    * `onSubmit`
+
+      * similaire à l’explication précédente
+
+      * si `pendingTransition.mode === "resolve"`
+
+        * créer la solution
+        * mettre à jour le ticket
+        * si `pendingTransition.nextModeAfterSuccess === "review"`
+
+          * passer de Résolu → Clos
+
+      * si `pendingTransition.mode === "refuse"`
+
+        * prendre la dernière solution insérée
+
+        * si aucune solution n’a encore été insérée :
+
+          * `redirectToMissingSolutionStep`
+
+            * fonction qui permet de réassigner le statut du ticket à assigné/en cours
+            * puis de le changer en état résolu
+            * puis de le faire passer directement vers clos
+
+        * mise à jour de la solution associée au ticket
+
+        * création de `Followup`
+
+          * un `Followup` est un suivi
+          * c’est-à-dire un message ou commentaire ajouté dans la timeline du ticket
+
+        * mise à jour du ticket
+
+      * si `pendingTransition.mode === "approve"`
+
+        * appel de la fonction `openResolvedReviewModal`
+        * cette fonction ouvre la modal “Valider ou refuser la solution”
+        * elle est utilisée pour un ticket déjà résolu
+
+      * si `pendingTransition.mode === "reopen"`
+
+        * créer la solution
+        * mettre à jour le statut du ticket
+
+  * composant `TicketResolvedReviewForm`
+
+    * utilisé avec `pendingResolvedReview`
+
+    * `isPending`
+
+      * similaire à l’explication précédente
+
+    * `submitError`
+
+      * similaire à l’explication précédente
+
+    * `onClose`
+
+      * similaire à l’explication précédente
+
+    * `onApprove`
+
+      * similaire à l’explication précédente
+      * prend la dernière solution du ticket
+      * redirige vers la fonction `redirectToMissingSolutionStep` si aucune solution n’est associée au ticket
+      * met à jour le statut de la solution à `ACCEPTED`
+      * crée un `Followup` s’il y a un commentaire
+      * met à jour le statut du ticket à `CLOSED`
+      * appelle la fonction `closeStatusTransitionModal`
+
+    * `onRefuse`
+
+      * similaire à l’explication précédente
+      * prend la dernière solution du ticket
+      * redirige vers la fonction `redirectToMissingSolutionStep` si aucune solution n’est associée au ticket
+      * met à jour le statut de la solution à `REFUSED`
+      * crée un `Followup`
+      * met à jour le statut du ticket vers `refuseStatusId`
+        * statut de destination en cas de refus
+      * appelle la fonction `closeStatusTransitionModal`
+
+* remarque :
+
+  * `isStatusRequirementModalOpen`
+
+    * state qui sert à dire si la modal de changement de statut est ouverte ou fermée
+
+    * cette modal affiche selon le cas :
+
+      * formulaire d’assignation
+      * formulaire de solution
+      * formulaire de validation/refus
+      * formulaire de réouverture
+
+    * ce qui décide le contenu de la modal, ce sont surtout :
+
+      * `pendingStatusChange`
+      * `pendingTransition`
+      * `pendingResolvedReview`
+
+  * `draggingTicketId`
+
+    * state qui sert à savoir quel ticket est actuellement en train d’être déplacé avec drag & drop

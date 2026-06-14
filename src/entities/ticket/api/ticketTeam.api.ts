@@ -10,7 +10,7 @@ export async function createTicketTeamMember(params: {
   payload: CreateTicketTeamMemberPayload;
   ticketId: number | string;
 }): Promise<void> {
-  await glpiPost<void>(
+  await glpiPost(
     `/Assistance/Ticket/${params.ticketId}/TeamMember`,
     params.payload,
   );
