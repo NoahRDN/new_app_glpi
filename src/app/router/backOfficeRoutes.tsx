@@ -16,6 +16,7 @@ import { DashboardPage } from "../../pages/backoffice/DashboardPage";
 import { TicketsPage as BackOfficeTicketsPage } from "../../pages/backoffice/TicketsPage";
 import { TicketDetailPage } from "../../pages/backoffice/TicketDetailPage";
 import { KanbanSettingsPage } from "../../pages/backoffice/KanbanSettingsPage";
+import { UserTestPage } from "../../pages/other/UserTestPage";
 
 export const backOfficeRoutes: RouteObject = {
   children: [
@@ -86,6 +87,10 @@ export const backOfficeRoutes: RouteObject = {
         {
           path: "memo-test",
           element: <MemoTest />,
+        },
+        {
+          path: "user-test",
+          element: <UserTestPage />,
         },
       ],
     },

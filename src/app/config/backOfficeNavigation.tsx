@@ -10,6 +10,7 @@ import {
   // Printer,
   // TestTube,
   PaintBucket,
+  Users,
 } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
@@ -49,6 +50,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     description: "Réinitialisation multi-ressources GLPI",
     Icon: RotateCcw,
     // isHorizontalRowDown: true,
+  },
+  {
+    id: "user-test",
+    path: "/admin/user-test",
+    label: "User Test",
+    description: "CRUD local user test via SQLite",
+    Icon: Users,
   },
 
   // {

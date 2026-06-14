@@ -6,7 +6,6 @@ export async function createSuperCost(createSuperCostPayload: CreateSuperCost): 
 }
 
 export async function deleteSuperCost(id_ticket: number) {
-    console.log("ito: ", id_ticket);
   return localDelete(`/user-cost/${id_ticket}`);
 }
 

@@ -30,6 +30,10 @@ const router = createBrowserRouter([
     element: <Navigate to="/admin/reset-data" replace />,
   },
   {
+    path: "/user-test",
+    element: <Navigate to="/admin/user-test" replace />,
+  },
+  {
     path: "*",
     element: <Navigate to="/" replace />,
   },
