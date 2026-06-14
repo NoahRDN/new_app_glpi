@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import { getSuperCosts } from "../api/superCost.api";
+import { getSuperCosts } from "../api/ticketSuperCost.api";
 
 export const superCostQueryKey = ["superCost"] as const;
 

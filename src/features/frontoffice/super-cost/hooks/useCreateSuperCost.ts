@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createSuperCost } from "../api/superCost.api";
+import { createSuperCost } from "../api/ticketSuperCost.api";
 
 export const superCostQueryKey = ["superCost"] as const;
 

@@ -22,6 +22,17 @@ CREATE TABLE IF NOT EXISTS super_cost (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
 
+CREATE TABLE IF NOT EXISTS super_cost_1 (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id_ticket INTEGER NOT NULL,
+  type_cout TEXT NOT NULL CHECK(TEXT IN ("cout_saisi", "reouverture", "glpi")),
+  cout REAL NOT NULL,
+  id_item INTEGER,
+  category TEXT,
+  group_super_cost_1 TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+) STRICT;
+
 CREATE TABLE IF NOT EXISTS user_test (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nom TEXT NOT NULL CHECK(length(nom) <= 100),

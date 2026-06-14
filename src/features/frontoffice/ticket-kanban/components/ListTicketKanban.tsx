@@ -28,7 +28,7 @@ import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSoluti
 import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
 import { AddSuperCost } from "./AddSuperCost";
-import { deleteSuperCost } from "../api/superCost.api";
+import { deleteSuperCost } from "../../super-cost/api/ticketSuperCost.api";
 import { MyError } from "../../../../shared/ui/MyError";
 import { hasAssignedTechnicianOrGroup } from "../../../../entities/ticket/lib/ticketTeamMember.lib";
 // import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";

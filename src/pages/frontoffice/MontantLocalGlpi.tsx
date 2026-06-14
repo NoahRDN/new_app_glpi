@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useTicketCostsCustomGroupByCategorie } from "../../features/frontoffice/ticket-cost-custom/hooks/useTicketCostsCustomGroupByCategorie";
-import { useSuperCost } from "../../features/frontoffice/ticket-kanban/hooks/useSuperCost";
+import { useTicketCostsCustomGroupByCategorie } from "../../features/frontoffice/super-cost/hooks/useSuperCostGroupByCategorie";
+import { useSuperCost } from "../../features/frontoffice/super-cost/hooks/useSuperCost";
 import { Button } from "../../shared/ui/Button";
 import { DataTable } from "../../shared/ui/DataTable";
 import type { SuperCost } from "../../features/frontoffice/ticket-kanban/model/superCost.types";
