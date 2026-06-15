@@ -40,22 +40,23 @@ export function MontantLocalGlpi1(){
                     let glpi = 0;
                     let cout_saisi = 0;
                     let reouverture = 0;
-
+                    let estDejaCalcule = false;
                     superCost1GroupByCategorieTypeCoutLastMax.map((superCost1) => {
                         if (superCost1.category !== category) {
                             return
                         }
+                        if (estDejaCalcule) {
+                            return
+                        }
                         if (superCost1.type_cout === "glpi") {
-                            glpi = superCost1.cout + glpi;
+                            glpi = superCost1.cout;
+                            estDejaCalcule = true;
                         }
                     })
 
                     superCost1GroupByCategorieTypeCout.map((superCost1) => {
                         if (superCost1.category !== category) {
                             return
-                        }
-                        if (superCost1.type_cout === "glpi") {
-                            glpi = superCost1.cout + glpi;
                         }
                         if (superCost1.type_cout === "cout_saisi") {
                             cout_saisi = superCost1.cout + cout_saisi;

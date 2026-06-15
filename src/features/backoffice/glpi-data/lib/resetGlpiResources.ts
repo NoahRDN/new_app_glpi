@@ -11,6 +11,7 @@ import { deleteTicketItemLink, getTicketItemLinks } from "../../../../entities/t
 import { deleteTicketCost, getTicketCosts } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { deleteTicketFollowup, getTicketFollowups } from "../../../../entities/ticket/api/ticketFollowup.api";
 import { deleteTicketSolution, getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
+import { deleteSuperCost1, getSuperCosts1 } from "../../../frontoffice/super-cost1/api/superCost1.api";
 
 export async function resetGlpiResources(params: {
   forceDelete?: boolean;
@@ -36,6 +37,21 @@ export async function resetGlpiResources(params: {
           } catch (caughtError) {
             errors.push({
               id: link.id,
+              message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+            });
+          }
+        }
+      } else if (resourceId === "superCost") {
+        const superCosts = await getSuperCosts1();
+        totalFound = superCosts.length;
+
+        for (const cost of superCosts) {
+          try {
+            await deleteSuperCost1(cost.id);
+            deletedCount += 1;
+          } catch (caughtError) {
+            errors.push({
+              id: cost.id,
               message: caughtError instanceof Error ? caughtError.message : String(caughtError),
             });
           }
@@ -119,7 +135,8 @@ export async function resetGlpiResources(params: {
       resourceId === "ticketLinks" ||
       resourceId === "ticketCosts" ||
       resourceId === "ticketFollowups" ||
-      resourceId === "ticketSolutions"
+      resourceId === "ticketSolutions" ||
+      resourceId === "superCost"
     ) {
       results.push(await resetSpecialResource(resourceId));
       continue;

@@ -15,7 +15,8 @@ export type GlpiDataResourceId =
   | "computerModels"
   | "monitorModels"
   | "groups"
-  | "documents";
+  | "documents"
+  | "superCost";
 
 export type GlpiDataResourceConfig = {
   description: string;
@@ -46,6 +47,15 @@ export const GLPI_DATA_RESOURCES: GlpiDataResourceConfig[] = [
     endpoint: "/Item_Ticket",
     id: "ticketLinks",
     label: "Liaisons ticket / element",
+    optionalColumns: [],
+    requiredColumns: [],
+    resetEnabled: true,
+  },
+   {
+    description: "suppression local super cost",
+    endpoint: "/super-cost-1",
+    id: "superCost",
+    label: "superCost",
     optionalColumns: [],
     requiredColumns: [],
     resetEnabled: true,
