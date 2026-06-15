@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/user-cost-1")
 public class SuperCost1Controller {
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -32,6 +33,21 @@ public class SuperCost1Controller {
             FROM super_cost_1
             ORDER BY id DESC
         """);
+    }
+
+    @GetMapping("/reouverture/{id_ticket}")
+    public List<Map<String, Object>> findSommeReouvertureByIdTicket(@PathVariable String id_ticket) {
+        return jdbcTemplate.queryForList("""
+            SELECT SUM(cout)
+            FROM super_cost_1
+            WHERE type_cout="reouverture"
+            OR type_cout="cout_saisi"
+            AND group_super_cost_1 = (
+                SELECT MAX(group_super_cost_1)
+                FROM super_cost_1
+            )
+            AND id_ticket= ?
+        """,id_ticket);
     }
 
     @GetMapping("/{id_ticket}")
@@ -53,6 +69,24 @@ public class SuperCost1Controller {
                 COUNT(id_item) AS nombre_asset,
                 SUM(cout) AS cout
             FROM super_cost_1
+            GROUP BY category, type_cout
+        """);
+    }
+
+    @GetMapping("/group-by-category-type-cout/last-max")
+    public List<Map<String, Object>> findAllGroupByCategoryTypeCoutLastMax() {
+        return jdbcTemplate.queryForList("""
+            SELECT 
+                category,
+                type_cout,
+                COUNT(id_item) AS nombre_asset,
+                SUM(cout) AS cout
+            FROM super_cost_1
+            where 
+                group_super_cost_1 = (
+                    SELECT MAX(group_super_cost_1)
+                    FROM super_cost_1
+                ) 
             GROUP BY category, type_cout
         """);
     }

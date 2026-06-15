@@ -54,7 +54,6 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
         data: superCost1ByIdTicketData
     }= useSuperCost1ByIdTicket(ticket ? ticket.id : 0)
     
-    
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -65,8 +64,16 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
             }
             const group_super_cost_1 = superCost1ByIdTicketData?.at(0)?.group_super_cost_1
 
-            const cout_saisi_final = formSupercost1.cout * totalCostTicket / 100;
 
+            let cout_saisi_final : number = 0;
+            if (superCost1ByIdTicketData) {
+                superCost1ByIdTicketData.map((superCost1) => {
+                    cout_saisi_final = cout_saisi_final + superCost1.cout 
+                    
+                })
+            }
+            cout_saisi_final = formSupercost1.cout *  cout_saisi_final / 100
+            
             if (group_super_cost_1) {
                 ticketAssetLinks?.map(async (ticketAssetLink) => {
                     try {

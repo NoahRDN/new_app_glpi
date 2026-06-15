@@ -1,4 +1,5 @@
 import { useSuperCost1GroupByCategorieTypeCout } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1GroupByCategorie";
+import { useSuperCost1GroupByCategorieTypeCoutLastMax } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1GroupByCategorieLastMax";
 import { DataTable } from "../../shared/ui/DataTable";
 
 export function MontantLocalGlpi1(){
@@ -6,6 +7,10 @@ export function MontantLocalGlpi1(){
     const {
         data: superCost1GroupByCategorieTypeCout
     }=  useSuperCost1GroupByCategorieTypeCout()
+
+    const {
+        data: superCost1GroupByCategorieTypeCoutLastMax
+    }=  useSuperCost1GroupByCategorieTypeCoutLastMax()
 
 
     const categories : string[] = [];
@@ -30,11 +35,20 @@ export function MontantLocalGlpi1(){
             ]}
         >
             
-            {superCost1GroupByCategorieTypeCout && categories &&
+            {superCost1GroupByCategorieTypeCout && categories && superCost1GroupByCategorieTypeCoutLastMax &&
                 categories.map((category) => {
                     let glpi = 0;
                     let cout_saisi = 0;
                     let reouverture = 0;
+
+                    superCost1GroupByCategorieTypeCoutLastMax.map((superCost1) => {
+                        if (superCost1.category !== category) {
+                            return
+                        }
+                        if (superCost1.type_cout === "glpi") {
+                            glpi = superCost1.cout + glpi;
+                        }
+                    })
 
                     superCost1GroupByCategorieTypeCout.map((superCost1) => {
                         if (superCost1.category !== category) {

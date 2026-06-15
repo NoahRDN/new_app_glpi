@@ -5,6 +5,10 @@ export async function getSuperCost1GroupByCategorieTypeCout() : Promise<SuperCos
     return localGet<SuperCost1GroupByCategoryTypeCout[]>("/user-cost-1/group-by-category-type-cout");
 }
 
+export async function getSuperCost1GroupByCategorieTypeCoutLastMax() : Promise<SuperCost1GroupByCategoryTypeCout[]>{
+    return localGet<SuperCost1GroupByCategoryTypeCout[]>("/user-cost-1/group-by-category-type-cout/last-max");
+}
+
 export async function createSuperCost1(createSuperCostPayload: CreateSuperCost1): Promise<SuperCost1> {
   return localPost("/user-cost-1", createSuperCostPayload);
 }
@@ -15,6 +19,10 @@ export async function deleteSuperCost1(id_ticket: number) {
 
 export async function getSuperCosts1():  Promise<SuperCost1[]>{
     return localGet("/user-cost-1");
+}
+
+export async function getSommeReouvertureByIdTicket(id_ticket: number):  Promise<number>{
+    return localGet(`/user-cost-1/reouverture/${id_ticket}`);
 }
 
 export async function getSuperCost1ByIdTicket(id_ticket: number):  Promise<SuperCost1[]>{

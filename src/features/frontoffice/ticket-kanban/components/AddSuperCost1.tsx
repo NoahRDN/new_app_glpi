@@ -38,16 +38,10 @@ export function AddSuperCost1({ticket, onClose}: AddSuperCost1Props){
     } = useTicketAssetLinks()
 
     const ticketAssetLinks = ticketAssetLinksData?.filter((link) => link.tickets_id === ticket?.id);
-    const totalCostByCategory = ticketsCostData
-        ? ticketsCostData.reduce<Record<string, number>>((acc, ticketCost) => {
-            const category = ticketCost.; // ou ticketCost.category selon ton objet
-            const cost = totalCost(ticketCost);
-
-            acc[category] = (acc[category] ?? 0) + cost;
-
-            return acc;
-            }, {})
-        : {};
+    const totalCostTicket = ticketsCostData ? ticketsCostData.reduce((sum, ticketCost) => {
+        return sum + totalCost(ticketCost);
+    }, 0) : -1;
+        
     const [montant, setMontant] = useState<number>(0);
 
     const {
