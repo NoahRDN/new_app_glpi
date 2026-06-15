@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS super_cost (
 CREATE TABLE IF NOT EXISTS super_cost_1 (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   id_ticket INTEGER NOT NULL,
-  type_cout TEXT NOT NULL CHECK(TEXT IN ("cout_saisi", "reouverture", "glpi")),
+  type_cout TEXT NOT NULL CHECK(type_cout IN ("cout_saisi", "reouverture", "glpi")),
   cout REAL NOT NULL,
   id_item INTEGER,
   category TEXT,

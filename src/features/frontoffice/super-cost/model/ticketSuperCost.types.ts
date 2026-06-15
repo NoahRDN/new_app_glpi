@@ -22,3 +22,4 @@ export type SuperCost = {
     category: string,
     cout_glpi: number
 }
+

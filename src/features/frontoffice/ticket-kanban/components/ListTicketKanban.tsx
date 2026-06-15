@@ -27,19 +27,24 @@ import { TicketResolvedReviewForm } from "./TicketResolvedReviewForm";
 import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
 import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
-import { AddSuperCost } from "./AddSuperCost";
+// import { AddSuperCost } from "./AddSuperCost";
 import { deleteSuperCost } from "../../super-cost/api/ticketSuperCost.api";
 import { MyError } from "../../../../shared/ui/MyError";
 import { hasAssignedTechnicianOrGroup } from "../../../../entities/ticket/lib/ticketTeamMember.lib";
+import { AddSuperCost1 } from "./AddSuperCost1";
+import { AddReouverture } from "./AddReouverture";
 // import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
 export function ListTicketKanban() {
   const DEFAULT_MESSAGE_ERROR_STATUS_SWITCH = "Impossible de valider le changement de statut.";
   const [isReopen, setIsReopen] = useState<boolean>()
+  const [isModalReopenTicket, setIsModalReopenTicket] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isStatusRequirementModalOpen, setIsStatusRequirementModalOpen] = useState(false);
   const [statusTransitionError, setStatusTransitionError] = useState<unknown>(null);
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [ticketReopen, setTicketReopen] = useState<Ticket | null>(null);
+
   const [pendingTransition, setPendingTransition] = useState<{
     mode: TicketStatusTransitionMode;
     nextModeAfterSuccess?: "review";
@@ -179,6 +184,11 @@ export function ListTicketKanban() {
     if (!droppedTicket) {
       return;
     }
+
+    if (ticketReopen === null) {
+      setTicketReopen(droppedTicket);
+    }
+
     const currentStatusId = droppedTicket.status?.id;
     const alreadyHasAssignment = hasAssignedTechnicianOrGroup(droppedTicket);
     const isDoneDestination = destinationGroupKey === "done";
@@ -342,7 +352,23 @@ export function ListTicketKanban() {
           setIsModalOpenSuperCost(false)
       }}
     >
-      <AddSuperCost ticket={ticket} onClose={() => setIsModalOpenSuperCost(false)}  />
+      {/* <AddSuperCost ticket={ticket} onClose={() => setIsModalOpenSuperCost(false)}  /> */}
+      <AddSuperCost1 ticket={ticket} onClose={() => setIsModalOpenSuperCost(false)}  />
+    </Modal>
+
+    <Modal
+      isOpen={isModalReopenTicket}
+      title="Ajout Réouverture"
+      onClose={() => {
+          setIsModalReopenTicket(false);
+          closeStatusTransitionModal();
+
+      }}
+    >
+      <AddReouverture ticket={ticketReopen} onClose={() => {
+        setIsModalReopenTicket(false);
+        closeStatusTransitionModal();
+        }}  />
     </Modal>
 
     <Modal
@@ -469,10 +495,10 @@ export function ListTicketKanban() {
                 ticketId: pendingResolvedReview.ticket.id,
                 statusId: TICKET_STATUS_IDS.CLOSED,
               });
-
+              setIsModalOpenSuperCost(true);
               setTicket(pendingResolvedReview.ticket)
               closeStatusTransitionModal();
-              setIsModalOpenSuperCost(true);
+              
             } catch (error) {
               setStatusTransitionError(error);
             }
@@ -535,6 +561,8 @@ export function ListTicketKanban() {
           onIsReopen={setIsReopen}
           onSubmit={async ({ comment }) => {
             try {
+              console.log("ticket reopen: ", ticket);
+
               setStatusTransitionError(null);
               if (pendingTransition.mode === "resolve") {
                 const createdSolution = await createTicketSolutionAsync({
@@ -568,23 +596,6 @@ export function ListTicketKanban() {
               if (pendingTransition.mode === "reopen") {
                 if (!isReopen) {
                   await deleteSuperCost(pendingTransition.ticket.id);
-                } else{
-                  // const ticketCostsAllData = await getTicketCosts();
-                  // const ticketCosts: Record<string, TicketCost[]> | undefined= ticketCostsAllData?.reduce(
-                  //     (acc, item) => {
-                  //         const key = String(item.id);
-              
-                  //         (acc[key] ??= []).push(item);
-                  //         return acc;
-                  //     },
-                  //     {} as Record<string, TicketCost[]>
-                  // );
-                  // console.log(ticketCostsAllData);
-                  // const totalCost = ticketCostsAllData.reduce(
-                  //     (costSum, cost) => costSum + (Number(cost.cost_time) * Number(cost.actiontime) + Number(cost.cost_fixed)),
-                  //     0
-                  // );
-
                 }
               }
 
@@ -650,6 +661,12 @@ export function ListTicketKanban() {
                   statusId: pendingTransition.targetStatusId,
                 });
               }
+              if (isReopen) {
+                setIsModalReopenTicket(true);
+                setIsStatusRequirementModalOpen(false);
+                setTicketReopen(ticket);
+                return
+              }
               closeStatusTransitionModal();
             } catch (error) {
               setStatusTransitionError(error);
@@ -689,7 +706,7 @@ export function ListTicketKanban() {
                 setDraggingTicketId(null);
               }}
             >
-              <p className="font-semibold text-(--text-primary)"><span className="font-semibold text-(--text-primary)">#{groupTicket.external_id}</span> {groupTicket.name}</p>
+              <p className="font-semibold text-(--text-primary)"><span className="font-semibold text-(--text-primary)">#{groupTicket.external_id} - #{groupTicket.id}</span> {groupTicket.name}</p>
               
               <p className="mt-1 text-xs text-(--text-secondary)">
                 {ticketKanbanGroup.label}

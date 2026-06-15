@@ -54,6 +54,8 @@ export function SectionKanban({
 
         const ticketId = Number(event.dataTransfer.getData("ticketId"));
 
+        console.log("groupTicket: ", ticketId);
+
         if (Number.isNaN(ticketId)) {
           return;
         }

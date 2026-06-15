@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { useTicketCostsCustomGroupByCategorie } from "../../features/frontoffice/super-cost/hooks/useSuperCostGroupByCategorie";
+import { useSuperCostGroupByCategorie } from "../../features/frontoffice/super-cost/hooks/useSuperCostGroupByCategorie";
 import { useSuperCost } from "../../features/frontoffice/super-cost/hooks/useSuperCost";
 import { Button } from "../../shared/ui/Button";
 import { DataTable } from "../../shared/ui/DataTable";
-import type { SuperCost } from "../../features/frontoffice/ticket-kanban/model/superCost.types";
-
+import type { SuperCost } from "../../features/frontoffice/super-cost/model/ticketSuperCost.types";
 export function MontantLocalGlpi(){
     const [categorieItemDetail, setCategorieItemDetail] = useState<string>("");
 
     const {
         data: ticketCostsCustomData
-    } = useTicketCostsCustomGroupByCategorie();
+    } = useSuperCostGroupByCategorie();
 
     const {
         data: superCostsData

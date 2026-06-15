@@ -29,7 +29,13 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     id: "montant-local-glpi",
     label: "Cost Local & GLPI",
     path: "/montant-local-glpi",
-    // isHorizontalRowDown: true,
+  },
+  {
+    description: "Montant Cost Local Saisie et GLPI 1",
+    Icon: CircleDollarSign,
+    id: "montant-local-glpi-1",
+    label: "Cost Local & GLPI 1",
+    path: "/montant-local-glpi-1",
   },
   // {
   //   description: "Page d'accueil du portail",
@@ -37,6 +43,7 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
   //   id: "front-home",
   //   label: "Accueil",
   //   path: "/",
+  // isHorizontalRowDown: true,
   // },
   // {
   //   description: "Catalogue des services IT",

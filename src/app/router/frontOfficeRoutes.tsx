@@ -8,6 +8,7 @@ import { GeneralViewElementPage } from "../../pages/frontoffice/GeneralViewEleme
 import { TicketsPage } from "../../pages/frontoffice/TicketsPage";
 import { TicketsKanbanPage } from "../../pages/frontoffice/TicketsKanbanPage";
 import { MontantLocalGlpi } from "../../pages/frontoffice/MontantLocalGlpi";
+import { MontantLocalGlpi1 } from "../../pages/frontoffice/MontantLocalGlpi1";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -50,6 +51,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "montant-local-glpi",
           element: <MontantLocalGlpi />,
+        },
+        {
+          path: "montant-local-glpi-1",
+          element: <MontantLocalGlpi1 />,
         },
       ],
     },
