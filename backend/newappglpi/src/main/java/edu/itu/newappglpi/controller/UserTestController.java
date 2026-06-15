@@ -2,6 +2,7 @@ package edu.itu.newappglpi.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -175,8 +176,8 @@ public class UserTestController {
         userTest.setPrenom(prenom);
         userTest.setDateDeNaissance(LocalDate.parse(dateDeNaissance, dateFormatter));
         userTest.setFavoriteNumber(favoriteNumber);
-        userTest.setDateAdd(LocalDateTime.parse(dateAdd, dateTimeFormatter));
-        userTest.setDateUpdate(LocalDateTime.parse(dateUpdate, dateTimeFormatter));
+        userTest.setDateAdd(parseDateTime(dateAdd));
+        userTest.setDateUpdate(parseDateTime(dateUpdate));
         userTest.setDeleted(isDeleted != null && isDeleted != 0);
         return userTest;
     }
@@ -201,5 +202,19 @@ public class UserTestController {
 
     private boolean isBlank(Object value) {
         return value == null || String.valueOf(value).trim().isEmpty();
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+
+        // Format ISO : 2026-06-17T13:15:00.000Z
+        if (value.contains("T")) {
+            return OffsetDateTime.parse(value).toLocalDateTime();
+        }
+
+        // Format SQLite : 2026-06-17 13:15:00
+        return LocalDateTime.parse(value, dateTimeFormatter);
     }
 }

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useSuperCost1 } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1";
 import { useSuperCost1GroupByCategorieTypeCout } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1GroupByCategorie";
 import { useSuperCost1GroupByCategorieTypeCoutLastMax } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1GroupByCategorieLastMax";
-import type { SuperCost1 } from "../../features/frontoffice/super-cost1/model/ticketSuperCost1.types";
 import { Button } from "../../shared/ui/Button";
 import { DataTable } from "../../shared/ui/DataTable";
 
@@ -21,14 +20,9 @@ export function MontantLocalGlpi1(){
             data: superCostsData
     } = useSuperCost1();
 
-    let superCostsDetail : SuperCost1[] = [];
-        if (superCostsData) {
-        superCostsDetail =  superCostsData.filter((superCostData) => {
-            if (superCostData.category === categorieItemDetail) {
-                return superCostData;
-            }
-        });
-    }
+    const superCostsDetail = superCostsData?.filter(
+        (superCostData) => superCostData.category === categorieItemDetail
+    ) ?? [];
 
     const superCostsDetailUnique = superCostsDetail.filter((superCostDetail, index, array) => {
         return index === array.findIndex((item) =>
