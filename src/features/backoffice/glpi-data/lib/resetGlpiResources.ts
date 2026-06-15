@@ -11,7 +11,7 @@ import { deleteTicketItemLink, getTicketItemLinks } from "../../../../entities/t
 import { deleteTicketCost, getTicketCosts } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { deleteTicketFollowup, getTicketFollowups } from "../../../../entities/ticket/api/ticketFollowup.api";
 import { deleteTicketSolution, getTicketSolutions } from "../../../../entities/ticket/api/ticketSolution.api";
-import { deleteSuperCost1, getSuperCosts1 } from "../../../frontoffice/super-cost1/api/superCost1.api";
+import { deleteAllSuperCost1, getSuperCosts1 } from "../../../frontoffice/super-cost1/api/superCost1.api";
 
 export async function resetGlpiResources(params: {
   forceDelete?: boolean;
@@ -45,13 +45,14 @@ export async function resetGlpiResources(params: {
         const superCosts = await getSuperCosts1();
         totalFound = superCosts.length;
 
-        for (const cost of superCosts) {
+        for (const superCost of superCosts) {
           try {
-            await deleteSuperCost1(cost.id);
+            // await deleteSuperCost1(superCost.id);
+            await deleteAllSuperCost1()
             deletedCount += 1;
           } catch (caughtError) {
             errors.push({
-              id: cost.id,
+              id: superCost.id,
               message: caughtError instanceof Error ? caughtError.message : String(caughtError),
             });
           }

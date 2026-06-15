@@ -17,6 +17,10 @@ export async function deleteSuperCost1(id_ticket: number) {
   return localDelete(`/user-cost-1/${id_ticket}`);
 }
 
+export async function deleteAllSuperCost1() {
+  return localDelete(`/user-cost-1`);
+}
+
 export async function getSuperCosts1():  Promise<SuperCost1[]>{
     return localGet("/user-cost-1");
 }

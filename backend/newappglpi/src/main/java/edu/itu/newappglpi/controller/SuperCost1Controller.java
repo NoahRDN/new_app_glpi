@@ -86,6 +86,10 @@ public class SuperCost1Controller {
                 group_super_cost_1 = (
                     SELECT MAX(group_super_cost_1)
                     FROM super_cost_1
+                    WHERE id_ticket=
+                    (
+                        SELECT id_ticket FROM super_cost_1
+                    )
                 ) 
             GROUP BY category, type_cout
         """);
