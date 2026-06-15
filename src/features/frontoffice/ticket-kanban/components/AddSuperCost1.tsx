@@ -18,13 +18,14 @@ type AddSuperCost1Props = {
 };
 
 export function AddSuperCost1({ticket, onClose}: AddSuperCost1Props){
+    const now = new Date().toISOString();
     const [formSupercost1, setFormSupercost1] = useState<CreateSuperCost1>({
         cout: -1,
         id_ticket: -1,
         id_item: -1,
         category: "",
         type_cout: "cout_saisi",
-        group_super_cost_1: ""
+        group_super_cost_1: now
     });
 
     const idsCost = ticket ? ticket.costs.map((cost) => cost.id) : []
@@ -37,10 +38,16 @@ export function AddSuperCost1({ticket, onClose}: AddSuperCost1Props){
     } = useTicketAssetLinks()
 
     const ticketAssetLinks = ticketAssetLinksData?.filter((link) => link.tickets_id === ticket?.id);
-    const totalCostTicket = ticketsCostData ? ticketsCostData.reduce((sum, ticketCost) => {
-        return sum + totalCost(ticketCost);
-    }, 0) : -1;
-        
+    const totalCostByCategory = ticketsCostData
+        ? ticketsCostData.reduce<Record<string, number>>((acc, ticketCost) => {
+            const category = ticketCost.; // ou ticketCost.category selon ton objet
+            const cost = totalCost(ticketCost);
+
+            acc[category] = (acc[category] ?? 0) + cost;
+
+            return acc;
+            }, {})
+        : {};
     const [montant, setMontant] = useState<number>(0);
 
     const {

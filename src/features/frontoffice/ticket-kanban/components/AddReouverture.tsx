@@ -9,9 +9,9 @@ import { useTicketAssetLinks } from "../../ticket/hooks/useTicketAssetLinks";
 import { useTicketsCostByIds } from "../../ticket-costs/hooks/useTicketsCostByIds";
 import { totalCost } from "../../../../entities/ticket-cost/lib/ticketCost";
 import { useCreateSuperCost1 } from "../../super-cost1/hooks/useCreateSuperCost1";
+import { useSuperCost1ByIdTicket } from "../../super-cost1/hooks/useSuperCost1ByIdTicket";
 
 
-// [fix] a revoir la valeur reel a assigne group_super_cost_1
 type AddSuperCost1Props = {
   onClose: () => void;
   ticket: Ticket | null;
@@ -24,10 +24,9 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
         id_item: -1,
         category: "",
         type_cout: "reouverture",
-        group_super_cost_1: ""
+        group_super_cost_1: ""  
     });
 
-    console.log("ticket: ", ticket);
     const idsCost = ticket ? ticket.costs.map((cost) => cost.id) : []
     const {
         data: ticketsCostData,
@@ -51,19 +50,33 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
         error: createSuperCost1Error,
     } = useCreateSuperCost1();    
 
+    const {
+        data: superCost1ByIdTicketData
+    }= useSuperCost1ByIdTicket(ticket ? ticket.id : 0)
+    
+    
+
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+
         if (formSupercost1 !== null && ticket !== null) {
+            if (totalCostTicket === -1) {
+                throw new Error("totalCostTicket non présent")
+            }
+            const group_super_cost_1 = superCost1ByIdTicketData?.at(0)?.group_super_cost_1
+
             const cout_saisi_final = formSupercost1.cout * totalCostTicket / 100;
-            console.log("cout_saisi_final: ", cout_saisi_final);
-            console.log("cout_saisi_final detail: formSupercost1.cout: ", formSupercost1.cout, " - totalCostTicket: ", totalCostTicket, " - ticketsCostData: ", ticketsCostData, " - ticket: ", ticket);
-            ticketAssetLinks?.map(async (ticketAssetLink) => {
-                try {
-                    await createSuperCost1Async({id_ticket: ticket.id,cout:cout_saisi_final, category: ticketAssetLink.itemtype, id_item: ticketAssetLink.items_id, type_cout:formSupercost1.type_cout, group_super_cost_1: formSupercost1.group_super_cost_1})
-                } catch (error) {
-                    console.error(error)
-                }
-            })
+
+            if (group_super_cost_1) {
+                ticketAssetLinks?.map(async (ticketAssetLink) => {
+                    try {
+                        await createSuperCost1Async({id_ticket: ticket.id,cout:cout_saisi_final, category: ticketAssetLink.itemtype, id_item: ticketAssetLink.items_id, type_cout:formSupercost1.type_cout, group_super_cost_1: group_super_cost_1})
+                    } catch (error) {
+                        console.error(error)
+                    }
+                })
+            }
+
         } else{
             throw new Error("Aucun donné à créer reçu")
         }

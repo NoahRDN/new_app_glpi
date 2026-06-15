@@ -1,8 +1,8 @@
-export type SuperCost1GroupByCategory = {
+export type SuperCost1GroupByCategoryTypeCout = {
     category: string,
     nombre_asset: number,
-    cout_saisi: number,
-    cout_glpi: number,
+    type_cout: string,
+    cout: number,
     total: number
 }
 

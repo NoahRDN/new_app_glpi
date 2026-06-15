@@ -28,11 +28,11 @@ import { getTicketSolutions } from "../../../../entities/ticket/api/ticketSoluti
 import type { TicketKanbanGroupKey } from "../model/ticketKanban.types";
 import { useKanbanSettings } from "../../../shared/kanban-settings/hooks/useKanbanSettings";
 // import { AddSuperCost } from "./AddSuperCost";
-import { deleteSuperCost } from "../../super-cost/api/ticketSuperCost.api";
 import { MyError } from "../../../../shared/ui/MyError";
 import { hasAssignedTechnicianOrGroup } from "../../../../entities/ticket/lib/ticketTeamMember.lib";
 import { AddSuperCost1 } from "./AddSuperCost1";
 import { AddReouverture } from "./AddReouverture";
+import { deleteSuperCost1 } from "../../super-cost1/api/superCost1.api";
 // import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
 export function ListTicketKanban() {
@@ -183,10 +183,6 @@ export function ListTicketKanban() {
 
     if (!droppedTicket) {
       return;
-    }
-
-    if (ticketReopen === null) {
-      setTicketReopen(droppedTicket);
     }
 
     const currentStatusId = droppedTicket.status?.id;
@@ -561,8 +557,6 @@ export function ListTicketKanban() {
           onIsReopen={setIsReopen}
           onSubmit={async ({ comment }) => {
             try {
-              console.log("ticket reopen: ", ticket);
-
               setStatusTransitionError(null);
               if (pendingTransition.mode === "resolve") {
                 const createdSolution = await createTicketSolutionAsync({
@@ -595,7 +589,7 @@ export function ListTicketKanban() {
 
               if (pendingTransition.mode === "reopen") {
                 if (!isReopen) {
-                  await deleteSuperCost(pendingTransition.ticket.id);
+                  await deleteSuperCost1(pendingTransition.ticket.id);
                 }
               }
 
@@ -664,7 +658,7 @@ export function ListTicketKanban() {
               if (isReopen) {
                 setIsModalReopenTicket(true);
                 setIsStatusRequirementModalOpen(false);
-                setTicketReopen(ticket);
+                setTicketReopen(pendingTransition.ticket);
                 return
               }
               closeStatusTransitionModal();

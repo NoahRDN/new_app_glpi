@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSuperCost1GroupByCategorie } from "../api/superCost1.api";
+import { getSuperCost1GroupByCategorieTypeCout } from "../api/superCost1.api";
 
-export function useSuperCost1GroupByCategorie(){
+export function useSuperCost1GroupByCategorieTypeCout(){
     return useQuery({
         queryKey: ["superCost1GroupByCategorie"],
-        queryFn: () => getSuperCost1GroupByCategorie()
+        queryFn: () => getSuperCost1GroupByCategorieTypeCout()
     })
 }

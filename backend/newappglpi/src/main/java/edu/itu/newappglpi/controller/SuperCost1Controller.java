@@ -1,5 +1,7 @@
 package edu.itu.newappglpi.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -32,14 +34,29 @@ public class SuperCost1Controller {
         """);
     }
 
-    // @GetMapping("/group-by-category")
-    // public List<Map<String, Object>> findAllGroupByCategory() {
-    //     return jdbcTemplate.queryForList("""
-    //         SELECT category ,count(id_item) AS nombre_asset, SUM(cout_saisi)AS cout_saisi , SUM(cout_glpi) AS cout_glpi, (SUM(cout_saisi) + SUM(cout_glpi)) AS total 
-    //         FROM super_cost
-    //         GROUP BY category
-    //     """);
-    // }
+    @GetMapping("/{id_ticket}")
+    public List<Map<String, Object>> findByIdTicketGroupMax(@PathVariable String id_ticket) {
+        return jdbcTemplate.queryForList("""
+            SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
+            FROM super_cost_1 WHERE id_ticket= ?
+            ORDER BY group_super_cost_1 DESC
+            LIMIT 1;
+        """, id_ticket);
+    }
+
+    @GetMapping("/group-by-category-type-cout")
+    public List<Map<String, Object>> findAllGroupByCategoryTypeCout() {
+        return jdbcTemplate.queryForList("""
+            SELECT 
+                category,
+                type_cout,
+                COUNT(id_item) AS nombre_asset,
+                SUM(cout) AS cout
+            FROM super_cost_1
+            GROUP BY category, type_cout
+        """);
+    }
+
 
     @PostMapping
     public Map<String, Object> create(@RequestBody Map<String, Object> body) {
@@ -64,7 +81,16 @@ public class SuperCost1Controller {
 
     @DeleteMapping("/{id_ticket}")
     public Map<String, Object> delete(@PathVariable String id_ticket) {
-        jdbcTemplate.update("DELETE FROM super_cost_1 where id_ticket= ?",
+        jdbcTemplate.update("""
+            DELETE FROM super_cost_1 
+            where 
+                group_super_cost_1 = (
+                    SELECT MAX(group_super_cost_1)
+                    FROM super_cost_1
+                )
+            AND id_ticket= ?
+            AND type_cout="cout_saisi"
+        """,
             id_ticket
         );
         return Map.of("success", true);
