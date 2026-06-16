@@ -1,4 +1,4 @@
-import { CircleDollarSign, Globe, Kanban, TicketPlus } from "lucide-react";
+import { CircleDollarSign, FileSpreadsheet, Globe, Kanban, TicketPlus } from "lucide-react";
 import type { OfficeNavigationItem } from "./officeNavigation.types";
 
 export const frontOfficeNavigation: OfficeNavigationItem[] = [
@@ -36,6 +36,13 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     id: "montant-local-glpi-1",
     label: "Cost Local & GLPI 1",
     path: "/montant-local-glpi-1",
+  },
+  {
+    description: "Importation scenario ticket",
+    Icon: FileSpreadsheet,
+    id: "import-frontoffice-super-cost",
+    label: "Import scenario ticket",
+    path: "/import-frontoffice-super-cost",
   },
   // {
   //   description: "Page d'accueil du portail",

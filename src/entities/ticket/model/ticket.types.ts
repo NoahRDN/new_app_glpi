@@ -111,6 +111,7 @@ export type Ticket = {
 
 export type TicketFilters = {
   name: string;
+  external_id?: string;
 };
 
 export type CreateTicketPayload = {

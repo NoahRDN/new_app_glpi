@@ -404,6 +404,42 @@ export const GLPI_EVAL_TICKET_COSTS_JUIN_2026_PROFILE: GlpiImportProfile = {
   ],
 };
 
+export const GLPI_SCENARIO_TICKET: GlpiImportProfile = {
+  id: "scenario-ticket",
+  importOrder: 500,
+  label: "Scenario ticket",
+  mode: "single-resource",
+  requiredHeaders: [
+    "Num_Ticket",
+    "mvt",
+    "valeur",
+  ],
+  resourceMappings: {
+    tickets: {
+      ticketRef: {
+        header: "Num_Ticket",
+        required: true,
+        transform: "trim",
+      },
+      mvt: {
+        header: "mvt",
+        required: true,
+        transform: "trim",
+      },
+      valeur: {
+        header: "valeur",
+        required: true,
+        transform: "number",
+      },
+    },
+  },
+  previewColumns: [
+    { field: "ticketRef", label: "Ticket", resource: "tickets" },
+    { field: "mvt", label: "Mouvement", resource: "tickets" },
+    { field: "valeur", label: "Valeur", resource: "tickets" },
+  ],
+};
+
 export const BUILT_IN_GLPI_IMPORT_PROFILES: GlpiImportProfile[] = [
   GLPI_USER_PROFILE,
   GLPI_TICKET_PROFILE,
@@ -414,4 +450,5 @@ export const BUILT_IN_GLPI_IMPORT_PROFILES: GlpiImportProfile[] = [
   GLPI_EVAL_ASSETS_JUIN_2026_PROFILE,
   GLPI_EVAL_TICKETS_JUIN_2026_PROFILE,
   GLPI_EVAL_TICKET_COSTS_JUIN_2026_PROFILE,
+  GLPI_SCENARIO_TICKET
 ];
