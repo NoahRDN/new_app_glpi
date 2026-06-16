@@ -1,0 +1,8 @@
+Num_Ticket,mvt,valeur
+1,"close",100
+2,"close",150
+1,"open","5"
+2,"open","10"
+1,"close","45"
+2,"close","150"
+2,"cancel",0
