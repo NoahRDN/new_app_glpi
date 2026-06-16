@@ -90,21 +90,27 @@ export async function reouverturChoice({
     const ticketId = ticket.id
 
     const superCost1ByIdTicketData = await getSuperCost1ByIdTicket(ticket ? ticket.id : -1)
+    console.log("superCost1ByIdTicketData: ", superCost1ByIdTicketData)
+    let group_super_cost_1 = "";
+    superCost1ByIdTicketData.map((superCost1ByIdTicket) => {
+        if (superCost1ByIdTicket.type_cout === "cout_saisi") {
+            group_super_cost_1 = superCost1ByIdTicket.group_super_cost_1
+        }
+    })
 
-    console.log("superCost1ByIdTicketData: ", superCost1ByIdTicketData);
-    const group_super_cost_1 = superCost1ByIdTicketData?.at(0)?.group_super_cost_1
-
-    let cout_saisi_final : number = 0;
-    if (superCost1ByIdTicketData) {
-        superCost1ByIdTicketData.map((superCost1) => {
-            cout_saisi_final = cout_saisi_final + superCost1.cout 
-            
-        })
-    }
-    cout_saisi_final = cout *  cout_saisi_final / 100
+    
 
     const ticketItems = await getTicketAssetLinksByTicketId(ticketId);
     ticketItems.map(async (ticketItem) => {
+        let cout_saisi_final : number = 0;
+        if (superCost1ByIdTicketData) {
+            superCost1ByIdTicketData.map((superCost1) => {
+                if (superCost1.id_item == ticketItem.items_id && superCost1.type_cout === "cout_saisi") {
+                    cout_saisi_final = cout_saisi_final + superCost1.cout 
+                }
+            })
+        }
+        cout_saisi_final = cout *  cout_saisi_final / 100
         const createSuperCost1Playload_REOUVERTURE : CreateSuperCost1 = {
             category: ticketItem.itemtype,
             cout: cout_saisi_final,

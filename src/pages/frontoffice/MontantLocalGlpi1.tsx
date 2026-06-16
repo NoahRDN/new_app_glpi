@@ -28,6 +28,11 @@ export function MontantLocalGlpi1(){
         );
     });
 
+    if (superCostsDetail.length > 0) {
+        console.log('superCostsDetail: ', superCostsDetail)
+        console.log('superCostsDetailUnique: ', superCostsDetailUnique)
+    }
+    
     const categories : string[] = [];
     
     if (superCost1GroupByCategorieTypeCout) {
@@ -44,8 +49,8 @@ export function MontantLocalGlpi1(){
         <DataTable 
             tableHeads={[
                 "categorie item",
-                "nombre item",
                 "nombre ticket",
+                "nombre item",
                 "Total GLPI",
                 "Total Super Cout",
                 "total Reouverture", 
@@ -96,8 +101,8 @@ export function MontantLocalGlpi1(){
                     return (
                         <tr key={category}>
                             <td className="border border-(--panel-border) px-4 py-4">{category}</td>
-                            <td className="border border-(--panel-border) px-4 py-4">{itemsCategory.length}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{ticketsCategory.length}</td>
+                            <td className="border border-(--panel-border) px-4 py-4">{itemsCategory.length}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{glpi}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{cout_saisi}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{reouverture}</td>
@@ -123,37 +128,47 @@ export function MontantLocalGlpi1(){
                     "id ticket",
                     "Id Item",
                     "Cout GLPI", 
-                    "Cout Reouverture", 
                     "Cout Super Cost",
+                    "Cout Reouverture", 
+                    "Total", 
                 ]}
             >
                 {superCostsDetailUnique.map((superCostDetail) => {
-                    const coutGlpi = superCostsDetail.find((superCost) => {
-                        return (
+                    let coutGlpi = 0;
+                    superCostsDetail.find((superCost) => {
+                        if (
                             superCost.id_item === superCostDetail.id_item &&
                             superCost.type_cout === "glpi" &&
                             superCost.category === superCostDetail.category &&
                             superCost.id_ticket === superCostDetail.id_ticket 
-                        );
-                    })?.cout ?? 0;
+                        ){
+                            coutGlpi = coutGlpi + superCost.cout;
+                        }
+                    });
 
-                    const coutReouverture = superCostsDetail.find((superCost) => {
-                        return (
+                    let coutReouverture = 0
+                    superCostsDetail.map((superCost) => {
+                        if (
                             superCost.id_item === superCostDetail.id_item &&
                             superCost.type_cout === "reouverture" &&
                             superCost.category === superCostDetail.category &&
                             superCost.id_ticket === superCostDetail.id_ticket 
-                        );
-                    })?.cout ?? 0;
+                        ){
+                            coutReouverture = coutReouverture + superCost.cout
+                        }
+                    });
 
-                    const coutSuperCost = superCostsDetail.find((superCost) => {
-                        return (
+                    let coutSuperCost = 0;
+                    superCostsDetail.map((superCost) => {
+                        if (
                             superCost.id_item === superCostDetail.id_item &&
                             superCost.type_cout === "cout_saisi" &&
                             superCost.category === superCostDetail.category &&
                             superCost.id_ticket === superCostDetail.id_ticket 
-                        );
-                    })?.cout ?? 0;
+                        ){
+                            coutSuperCost = coutSuperCost + superCost.cout
+                        }
+                    })
 
                     return (
                         <tr key={`${superCostDetail.category}-${superCostDetail.id_item}-${superCostDetail.id_ticket}-${superCostDetail.group_super_cost_1}`}>
@@ -162,8 +177,9 @@ export function MontantLocalGlpi1(){
                             <td className="border border-(--panel-border) px-4 py-4">{superCostDetail.id_ticket}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{superCostDetail.id_item}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{coutGlpi}</td>
-                            <td className="border border-(--panel-border) px-4 py-4">{coutReouverture}</td>
                             <td className="border border-(--panel-border) px-4 py-4">{coutSuperCost}</td>
+                            <td className="border border-(--panel-border) px-4 py-4">{coutReouverture}</td>
+                            <td className="border border-(--panel-border) px-4 py-4">{coutGlpi + coutSuperCost + coutReouverture}</td>
                         </tr>
                     );
                 })}

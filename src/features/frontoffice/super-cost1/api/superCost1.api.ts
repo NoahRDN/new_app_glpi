@@ -14,7 +14,7 @@ export async function createSuperCost1(createSuperCostPayload: CreateSuperCost1)
 }
 
 export async function deleteSuperCost1CoutSaisi(id_ticket: number) {
-  return localDelete(`/user-cost-1/${id_ticket}/cout_saisi`);
+  return localDelete(`/user-cost-1/${id_ticket}/cout_saisie`);
 }
 
 export async function deleteAllSuperCost1() {
@@ -30,7 +30,5 @@ export async function getSommeReouvertureByIdTicket(id_ticket: number):  Promise
 }
 
 export async function getSuperCost1ByIdTicket(id_ticket: number):  Promise<SuperCost1[]>{
-    const result = await localGet(`/user-cost-1/${id_ticket}`);
-    console.log("result: ", result, " id: ", id_ticket);
     return localGet(`/user-cost-1/${id_ticket}`);
 }

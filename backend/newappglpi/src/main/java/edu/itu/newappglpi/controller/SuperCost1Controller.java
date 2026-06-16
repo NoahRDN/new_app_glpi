@@ -64,7 +64,7 @@ public class SuperCost1Controller {
                     FROM super_cost_1
                     WHERE id_ticket = ?
                 ) 
-            ) OR (
+            )OR (
                 id_ticket = ?
                 AND type_cout="glpi"
                 AND group_super_cost_1 = (
@@ -74,7 +74,7 @@ public class SuperCost1Controller {
                     AND type_cout="glpi"
                 ) 
             )
-        """, id_ticket);
+        """, id_ticket, id_ticket, id_ticket, id_ticket);
     }
 
     @GetMapping("/group-by-category-type-cout")
@@ -134,25 +134,24 @@ public class SuperCost1Controller {
         return Map.of("success", true);
     }
 
-    @DeleteMapping("/{id_ticket}/cout-saisie")
-    public Map<String, Object> deleteCoutSaisi(@PathVariable String id_ticket) {
+    @DeleteMapping("/{id_ticket}/cout_saisie")
+    public Map<String, Object> deleteCoutSaisiMax(@PathVariable String id_ticket) {
         jdbcTemplate.update("""
             DELETE FROM super_cost_1 
-            where 
-                group_super_cost_1 = (
-                    SELECT MAX(group_super_cost_1)
-                    FROM super_cost_1
-                    WHERE id_ticket = ?
-                )
-            AND id_ticket= ?
+            where id_ticket=?
+            AND  group_super_cost_1 = (
+                SELECT MAX(group_super_cost_1)
+                FROM super_cost_1
+                WHERE id_ticket=?
+            )
             AND type_cout="cout_saisi"
         """,
-            id_ticket);
+            id_ticket, id_ticket);
         return Map.of("success", true);
     }
 
     @DeleteMapping("/{id_ticket}")
-    public Map<String, Object> delete(@PathVariable String id_ticket) {
+    public Map<String, Object> deleteMax(@PathVariable String id_ticket) {
         jdbcTemplate.update("""
             DELETE FROM super_cost_1 
             where 
@@ -163,7 +162,7 @@ public class SuperCost1Controller {
                 )
             AND id_ticket= ?
         """,
-            id_ticket
+            id_ticket, id_ticket
         );
         return Map.of("success", true);
     }
