@@ -24,13 +24,6 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     path: "/ticket-kanban",
   },
   {
-    description: "Montant Cost Local Saisie et GLPI",
-    Icon: CircleDollarSign,
-    id: "montant-local-glpi",
-    label: "Cost Local & GLPI",
-    path: "/montant-local-glpi",
-  },
-  {
     description: "Montant Cost Local Saisie et GLPI 1",
     Icon: CircleDollarSign,
     id: "montant-local-glpi-1",
@@ -44,6 +37,13 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     label: "Import scenario ticket",
     path: "/import-frontoffice-super-cost",
   },
+  // {
+  //   description: "Montant Cost Local Saisie et GLPI",
+  //   Icon: CircleDollarSign,
+  //   id: "montant-local-glpi",
+  //   label: "Cost Local & GLPI",
+  //   path: "/montant-local-glpi",
+  // },
   // {
   //   description: "Page d'accueil du portail",
   //   Icon: House,

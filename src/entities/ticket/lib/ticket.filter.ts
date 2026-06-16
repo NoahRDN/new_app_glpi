@@ -9,7 +9,10 @@ export function buildTicketFilter(
   const name = filters.name.trim();
   const external_id = filters.external_id?.trim();
 
+    console.log("bonjour")
+
   if (name.length > 0) {
+    console.log("donccc")
     const searchParts: string[] = [];
 
     searchParts.push(`name=ilike=*${name}*`);

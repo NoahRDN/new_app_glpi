@@ -13,8 +13,8 @@ export async function createSuperCost1(createSuperCostPayload: CreateSuperCost1)
   return localPost("/user-cost-1", createSuperCostPayload);
 }
 
-export async function deleteSuperCost1(id_ticket: number) {
-  return localDelete(`/user-cost-1/${id_ticket}`);
+export async function deleteSuperCost1CoutSaisi(id_ticket: number) {
+  return localDelete(`/user-cost-1/${id_ticket}/cout_saisie`);
 }
 
 export async function deleteAllSuperCost1() {

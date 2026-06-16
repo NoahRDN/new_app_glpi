@@ -39,26 +39,42 @@ public class SuperCost1Controller {
     @GetMapping("/reouverture/{id_ticket}")
     public List<Map<String, Object>> findSommeReouvertureByIdTicket(@PathVariable String id_ticket) {
         return jdbcTemplate.queryForList("""
-            SELECT SUM(cout)
-            FROM super_cost_1
-            WHERE type_cout="reouverture"
-            OR type_cout="cout_saisi"
+            WHERE (
+                type_cout = "reouverture"
+                OR type_cout = "cout_saisi"
+            )
             AND group_super_cost_1 = (
                 SELECT MAX(group_super_cost_1)
                 FROM super_cost_1
+                WHERE id_ticket = ?
             )
-            AND id_ticket= ?
+            AND id_ticket = ?
         """,id_ticket);
     }
 
     @GetMapping("/{id_ticket}")
     public List<Map<String, Object>> findByIdTicketGroupMax(@PathVariable String id_ticket) {
         return jdbcTemplate.queryForList("""
-            SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
-            FROM super_cost_1 WHERE id_ticket= ?
-            ORDER BY group_super_cost_1 DESC
-            LIMIT 1;
-        """, id_ticket);
+            SELECT id, id_ticket, type_cout, cout, id_item, category, group_super_cost_1, created_at
+            FROM super_cost_1
+            WHERE (
+                id_ticket = ?
+                AND group_super_cost_1 = (
+                    SELECT MAX(group_super_cost_1)
+                    FROM super_cost_1
+                    WHERE id_ticket = ?
+                ) 
+            )OR (
+                id_ticket = ?
+                AND type_cout="glpi"
+                AND group_super_cost_1 = (
+                    SELECT MAX(group_super_cost_1)
+                    FROM super_cost_1
+                    WHERE id_ticket = ?
+                    AND type_cout="glpi"
+                ) 
+            )
+        """, id_ticket, id_ticket, id_ticket, id_ticket);
     }
 
     @GetMapping("/group-by-category-type-cout")
@@ -118,19 +134,35 @@ public class SuperCost1Controller {
         return Map.of("success", true);
     }
 
+    @DeleteMapping("/{id_ticket}/cout_saisie")
+    public Map<String, Object> deleteCoutSaisiMax(@PathVariable String id_ticket) {
+        jdbcTemplate.update("""
+            DELETE FROM super_cost_1 
+            where id_ticket=?
+            AND  group_super_cost_1 = (
+                SELECT MAX(group_super_cost_1)
+                FROM super_cost_1
+                WHERE id_ticket=?
+            )
+            AND type_cout="cout_saisi"
+        """,
+            id_ticket, id_ticket);
+        return Map.of("success", true);
+    }
+
     @DeleteMapping("/{id_ticket}")
-    public Map<String, Object> delete(@PathVariable String id_ticket) {
+    public Map<String, Object> deleteMax(@PathVariable String id_ticket) {
         jdbcTemplate.update("""
             DELETE FROM super_cost_1 
             where 
                 group_super_cost_1 = (
                     SELECT MAX(group_super_cost_1)
                     FROM super_cost_1
+                    WHERE id_ticket = ?
                 )
             AND id_ticket= ?
-            AND type_cout="cout_saisi"
         """,
-            id_ticket
+            id_ticket, id_ticket
         );
         return Map.of("success", true);
     }

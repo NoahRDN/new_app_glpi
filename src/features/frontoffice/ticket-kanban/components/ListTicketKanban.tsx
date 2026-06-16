@@ -32,7 +32,7 @@ import { MyError } from "../../../../shared/ui/MyError";
 import { hasAssignedTechnicianOrGroup } from "../../../../entities/ticket/lib/ticketTeamMember.lib";
 import { AddSuperCost1 } from "./AddSuperCost1";
 import { AddReouverture } from "./AddReouverture";
-import { deleteSuperCost1 } from "../../super-cost1/api/superCost1.api";
+import { deleteSuperCost1CoutSaisi } from "../../super-cost1/api/superCost1.api";
 // import { getTicketCosts, type TicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 
 export function ListTicketKanban() {
@@ -589,7 +589,7 @@ export function ListTicketKanban() {
 
               if (pendingTransition.mode === "reopen") {
                 if (!isReopen) {
-                  await deleteSuperCost1(pendingTransition.ticket.id);
+                  await deleteSuperCost1CoutSaisi(pendingTransition.ticket.id);
                 }
               }
 
