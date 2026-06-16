@@ -30,9 +30,9 @@ import {
   deleteState,
   findStateByName,
 } from "../../../../entities/state/api/state.api";
-import { createTicketCost, deleteTicketCost, getTicketCostByIds } from "../../../../entities/ticket-cost/api/ticketCost.api";
+import { createTicketCost, deleteTicketCost } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { createTicketFollowup } from "../../../../entities/ticket/api/ticketFollowup.api";
-import { createTicketItemLink, deleteTicketItemLink, getTicketAssetLinks, getTicketAssetLinksByTicketId } from "../../../../entities/ticket/api/ticketItem.api";
+import { createTicketItemLink, deleteTicketItemLink } from "../../../../entities/ticket/api/ticketItem.api";
 import { createTicketSolution, updateTicketSolution } from "../../../../entities/ticket/api/ticketSolution.api";
 import { createTicketTeamMember } from "../../../../entities/ticket/api/ticketTeam.api";
 import {
@@ -64,10 +64,9 @@ import type {
   RecognizedGlpiParsedFile,
 } from "../model/glpiImportProfile.types";
 import { normalizeKey } from "../../../../shared/lib/normalizeKey";
-import { createSuperCost1, deleteSuperCost1, getSuperCost1ByIdTicket } from "../../../frontoffice/super-cost1/api/superCost1.api";
-import type { CreateSuperCost1 } from "../../../frontoffice/super-cost1/model/ticketSuperCost1.types";
-import { totalCost } from "../../../../entities/ticket-cost/lib/ticketCost";
-import { getAllTickets, getTicket } from "../../../../entities/ticket/api/ticket.api";
+import { getAllTickets } from "../../../../entities/ticket/api/ticket.api";
+import { traitementImportScenarioTicket } from "../lib/traitementImportScenarioTicket";
+import { GLPIChoice } from "../../../frontoffice/super-cost1/lib/traitementScenarioTicket";
 
 type ImportFilesInput = {
   imageZipFiles?: File[];
@@ -799,6 +798,9 @@ async function importEvalTicketsFile(
         context.ticketIdsByRef.set(normalizeKey(refTicket), ticketId);
       }
 
+      const tickets = await getAllTickets({name:""});
+      console.log("tickets import: ", tickets);
+
       if (ticketId !== null) {
         rollbackActions.push({
           label: `ticket#${ticketId}`,
@@ -981,29 +983,6 @@ async function importEvalTicketCostsFile(
           run: () => deleteTicketCost(ticketCostId),
         });
       }
-      const ticketCostsIds : number[] = [];
-      const ticket = await getTicket(ticketId);
-      ticket.costs.map((cost) => ticketCostsIds.push(cost.id))
-      const ticketItems = await getTicketAssetLinksByTicketId(ticketId);
-      const ticketCosts = await getTicketCostByIds(ticketCostsIds)
-      const now = new Date().toISOString();
-      let costTotal = 0
-
-      ticketCosts.map((ticketCost) => {
-        costTotal = costTotal + totalCost(ticketCost)
-      })
-
-      ticketItems.map(async (ticketItem) => {
-        const createSuperCost1Playload : CreateSuperCost1 = {
-            category: ticketItem.itemtype,
-            cout: costTotal,
-            group_super_cost_1: now,
-            id_item: ticketItem.items_id,
-            id_ticket: ticketId, 
-            type_cout:"glpi"         
-        }
-        await createSuperCost1(createSuperCost1Playload)
-      })
       
 
       importedCount += 1;
@@ -1011,6 +990,19 @@ async function importEvalTicketCostsFile(
       throw new ImportRowError(rowIndex, caughtError);
     }
   }
+
+  try {
+    const tickets = await getAllTickets({name:""});
+    console.log("tickets: ", tickets);
+    for(const ticket of tickets){
+      await GLPIChoice({ticket: ticket, cout: 0})
+    }
+    
+  } catch (error) {
+    console.log(error)
+    throw new Error("Erreur lors de l'insertion GLPI", { cause: error });
+  }
+  
 
   return {
     importedCount,
@@ -1038,104 +1030,11 @@ async function importScenarioTicket(
         continue;
       }
 
-      const idReferenceTicketString = normalizeKey(String(data.ticketRef ?? ""))
-      const tickets = await getAllTickets({name:"", external_id:idReferenceTicketString})
-      
-      const ticket = tickets.at(0)
-      const  ticketId = ticket?.id;
-      if (!ticketId) {
-        continue;
-      }
-
-      const costCSV = Number(data.valeur ?? -1);
+      const idReferenceTicketStringCSV = normalizeKey(String(data.ticketRef ?? "-1-string"))
       const mvtCSV = normalizeKey(String(data.mvt ?? "-1-string"));
+      const costCSV = Number(data.valeur ?? -1);
 
-      if (mvtCSV === "close") {
-        const idsCost = ticket ? ticket.costs.map((cost) => cost.id) : []
-        const ticketsCostData = await getTicketCostByIds(idsCost)
-
-        const totalCostTicket = ticketsCostData ? ticketsCostData.reduce((sum, ticketCost) => {
-            return sum + totalCost(ticketCost);
-        }, 0) : -1;
-
-        const ticketAssetLinksData = await getTicketAssetLinks();
-
-        const ticketAssetLinks = ticketAssetLinksData?.filter((link) => link.tickets_id === ticket?.id);
-
-        const itemsType : string[] = [];
-        const nombreCategoryTicketAssetLinks = ticketAssetLinks ? ticketAssetLinks.reduce((sum, ticketAssetLink) => {
-            if (!itemsType.includes(ticketAssetLink.itemtype)) {
-                itemsType.push(ticketAssetLink.itemtype);
-                return sum + 1;
-            }
-            return sum;
-        } ,0) : 0;
-        const cout_saisi_final = costCSV / nombreCategoryTicketAssetLinks;
-
-        const ticketItems = await getTicketAssetLinksByTicketId(ticketId);
-        const now = new Date().toISOString();
-
-        ticketItems.map(async (ticketItem) => {
-          const createSuperCost1Playload_SUPER_COST : CreateSuperCost1 = {
-              category: ticketItem.itemtype,
-              cout: cout_saisi_final,
-              group_super_cost_1: now,
-              id_item: ticketItem.items_id,
-              id_ticket: ticketId, 
-              type_cout:"cout_saisi"         
-          }
-
-          const createSuperCost1Playload_GLPI : CreateSuperCost1 = {
-              category: ticketItem.itemtype,
-              cout: totalCostTicket,
-              group_super_cost_1: now,
-              id_item: ticketItem.items_id,
-              id_ticket: ticketId, 
-              type_cout:"glpi"         
-          }
-          await createSuperCost1(createSuperCost1Playload_SUPER_COST)
-          
-          await createSuperCost1(createSuperCost1Playload_GLPI)
-          console.log(`cout_saisi ${ticket.id} -  ${ticketItem.id}: `, createSuperCost1Playload_SUPER_COST, ` - `, createSuperCost1Playload_GLPI)
-          
-        })
-      } 
-
-      if (mvtCSV === "cancel") {
-        await deleteSuperCost1(ticket.id);
-        console.log(`cancel ${ticket.id} `)
-
-      }
-
-      if (mvtCSV === "open") {
-        const superCost1ByIdTicketData = await getSuperCost1ByIdTicket(ticket ? ticket.id : -1)
-
-        const group_super_cost_1 = superCost1ByIdTicketData?.at(0)?.group_super_cost_1
-
-        let cout_saisi_final : number = 0;
-        if (superCost1ByIdTicketData) {
-            superCost1ByIdTicketData.map((superCost1) => {
-                cout_saisi_final = cout_saisi_final + superCost1.cout 
-                
-            })
-        }
-        cout_saisi_final = costCSV *  cout_saisi_final / 100
-        
-
-        const ticketItems = await getTicketAssetLinksByTicketId(ticketId);
-        ticketItems.map(async (ticketItem) => {
-          const createSuperCost1Playload_REOUVERTURE : CreateSuperCost1 = {
-              category: ticketItem.itemtype,
-              cout: cout_saisi_final,
-              group_super_cost_1: group_super_cost_1 ?? "-1 String",
-              id_item: ticketItem.items_id,
-              id_ticket: ticketId, 
-              type_cout:"reouverture"         
-          }
-          console.log(`reouverture ${ticket.id} -  ${ticketItem.id}: `, createSuperCost1Playload_REOUVERTURE)
-          await createSuperCost1(createSuperCost1Playload_REOUVERTURE)
-        })
-      }
+      await traitementImportScenarioTicket({numTicket: idReferenceTicketStringCSV, mvt: mvtCSV, valeur: costCSV})
       
       importedCount += 1;
     } catch (caughtError) {

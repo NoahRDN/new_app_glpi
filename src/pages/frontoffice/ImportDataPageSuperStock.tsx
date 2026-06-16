@@ -1,7 +1,7 @@
 import { useMemo, useState, type ChangeEvent } from "react";
-import { FileArchive, FileSpreadsheet, Upload } from "lucide-react";
+import { FileArchive, Upload } from "lucide-react";
 import { Button } from "../../shared/ui/Button";
-import { MyError as ErrorMessage } from "../../shared/ui/MyError";
+import { MyError as ErrorMessage, MyError } from "../../shared/ui/MyError";
 import { Success } from "../../shared/ui/Succcess";
 import { BUILT_IN_GLPI_IMPORT_PROFILES } from "../../features/backoffice/glpi-data/model/builtInGlpiImportProfiles";
 import { parseCsvWithGlpiProfile } from "../../features/backoffice/glpi-data/lib/parseCsvWithGlpiProfile";
@@ -17,6 +17,11 @@ import type {
   RecognizedGlpiParsedFile,
   UnknownGlpiParsedFile,
 } from "../../features/backoffice/glpi-data/model/glpiImportProfile.types";
+import { Label } from "../../shared/ui/Label";
+import { Input } from "../../shared/ui/Input";
+import { Select } from "../../shared/ui/Select";
+import { traitementImportScenarioTicket } from "../../features/backoffice/glpi-data/lib/traitementImportScenarioTicket";
+import { getUserErrorMessage } from "../../shared/errors/AppError";
 
 type FileParseError = {
   fileName: string;
@@ -108,7 +113,7 @@ export function ImportDataPageSuperStock() {
   const [compatibleProfilesBySlot, setCompatibleProfilesBySlot] = useState<Partial<Record<CsvImportFileSlotId, GlpiImportProfile[]>>>({});
   const [parsedFilesBySlot, setParsedFilesBySlot] = useState<Partial<Record<ImportFileSlotId, ParsedGlpiImportAsset[]>>>({});
   const [parseErrorsBySlot, setParseErrorsBySlot] = useState<Partial<Record<ImportFileSlotId, FileParseError>>>({});
-  const [importImages, setImportImages] = useState(true);
+  const [importImages] = useState(false);
   const { error, importFiles, isImporting, result } = useImportGlpiCsv();
 
   const parsedFiles = useMemo(
@@ -351,25 +356,88 @@ export function ImportDataPageSuperStock() {
     });
   }
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorInsertionManuel("")
+
+    try {
+      await traitementImportScenarioTicket({numTicket: numTicket, mvt: mvt, valeur: valeur})
+      
+    } catch (error) {
+      setErrorInsertionManuel(error)
+    }
+  
+  }
   const canImport = parsedFiles.some((file) => isRecognizedFile(file) || isImagesZipFile(file));
+
+  const [numTicket, setNumTicket] = useState<string>("1")
+  const [mvt, setMvt] = useState<string>("open")
+  const [valeur, setValeur] = useState<number>(0)
+  const [isCancel, setIsCancel] = useState<boolean>(false)
+  const [errorInsertionManuel, setErrorInsertionManuel] = useState<unknown>()
+
+  if (errorInsertionManuel) {
+    return <MyError>
+      {getUserErrorMessage(errorInsertionManuel, "Erreur lors de l'insertion manuel")}
+    </MyError>
+  }
+
 
   return (
     <>
-      <section className="col-span-12">
-        <div className="flex items-center justify-between gap-4 rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--text-secondary)" }}>
-              Import data
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
-              Import CSV par profils GLPI
-            </h2>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-(--panel-soft)">
-            <FileSpreadsheet size={20} />
-          </div>
-        </div>
+      <section className="col-span-12 rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+        <h1 className="text-xs font-semibold uppercase">Saisi Manuelle</h1>
+        <section>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div>
+              <Label className="mb-3">
+                Numero ticket
+              </Label>
+              <Input
+                value={numTicket}
+                onChange={(event) => {
+                  setNumTicket(event.target.value)
+                }} 
+                type="number" />
+            </div>
+
+            <div className="flex flex-col">
+              <Label className="mb-3">
+                Type Action
+              </Label>
+              <Select
+                value={mvt}
+                onChange={ (event) => {
+                  setMvt(event.target.value)
+                  if (event.target.value === "cancel") {
+                    setIsCancel(true)
+                  } else {
+                    setIsCancel(false)
+                  }
+                }}
+              >
+                <option value="open">open</option>
+                <option value="close">close</option>
+                <option value="cancel">cancel</option>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="mb-3">
+                Value
+              </Label>
+              <Input 
+                value={valeur}
+                onChange={(event) => {
+                  setValeur(Number(event.target.value))
+                }} 
+                type="number" disabled={isCancel} />
+            </div>
+            <Button type="submit" className="mt-5">Enregistrer</Button>
+          </form>
+        </section>
       </section>
+
 
       <section className="col-span-12 rounded-[18px] border p-6 xl:col-span-4" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
         <div className="space-y-5">
@@ -425,18 +493,6 @@ export function ImportDataPageSuperStock() {
             </div>
           ))}
         </div>
-
-        <label className="mt-6 flex cursor-pointer items-center gap-3 rounded-[12px] p-4" style={{ backgroundColor: "var(--panel-soft)" }}>
-          <input
-            checked={importImages}
-            className="h-4 w-4 accent-(--accent-blue)"
-            type="checkbox"
-            onChange={(event) => setImportImages(event.target.checked)}
-          />
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Importer les images ZIP
-          </span>
-        </label>
 
         <Button className="mt-5" disabled={!canImport || isImporting} onClick={handleImport}>
           <Upload size={18} />
