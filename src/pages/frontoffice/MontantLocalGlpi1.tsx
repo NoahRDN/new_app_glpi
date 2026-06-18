@@ -27,11 +27,6 @@ export function MontantLocalGlpi1(){
             item.id_ticket === superCostDetail.id_ticket
         );
     });
-
-    if (superCostsDetail.length > 0) {
-        console.log('superCostsDetail: ', superCostsDetail)
-        console.log('superCostsDetailUnique: ', superCostsDetailUnique)
-    }
     
     const categories : string[] = [];
     
@@ -42,7 +37,6 @@ export function MontantLocalGlpi1(){
                 return
             }
         })
-        console.log("superCost1GroupByCategorieTypeCout: ", superCost1GroupByCategorieTypeCout);
     }
 
     return <div className="p-5 bg-white col-span-12">
@@ -135,7 +129,8 @@ export function MontantLocalGlpi1(){
             >
                 {superCostsDetailUnique.map((superCostDetail) => {
                     let coutGlpi = 0;
-                    superCostsDetail.find((superCost) => {
+                    
+                    superCostsDetail.find((superCost) => { 
                         if (
                             superCost.id_item === superCostDetail.id_item &&
                             superCost.type_cout === "glpi" &&

@@ -413,6 +413,7 @@ export const GLPI_SCENARIO_TICKET: GlpiImportProfile = {
     "Num_Ticket",
     "mvt",
     "valeur",
+    "mode_reouverture"
   ],
   resourceMappings: {
     tickets: {
@@ -431,12 +432,18 @@ export const GLPI_SCENARIO_TICKET: GlpiImportProfile = {
         required: true,
         transform: "number",
       },
+      mode_reouverture: {
+        header: "mode_reouverture",
+        required: true,
+        transform: "number",
+      },
     },
   },
   previewColumns: [
     { field: "ticketRef", label: "Ticket", resource: "tickets" },
     { field: "mvt", label: "Mouvement", resource: "tickets" },
     { field: "valeur", label: "Valeur", resource: "tickets" },
+    { field: "mode_reouverture", label: "mode_reouverture", resource: "tickets" },
   ],
 };
 

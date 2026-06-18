@@ -36,6 +36,21 @@ public class SuperCost1Controller {
         """);
     }
 
+    @GetMapping("/max-glpi")
+    public List<Map<String, Object>> findAllMaxGLPI() {
+        return jdbcTemplate.queryForList("""
+            SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
+            FROM super_cost_1
+            type_cout="glpi"
+            AND group_super_cost_1 = (
+                SELECT MAX(group_super_cost_1)
+                FROM super_cost_1
+                WHERE id_ticket = ?
+                AND type_cout="glpi"
+            ) 
+        """);
+    }
+
     @GetMapping("/reouverture/{id_ticket}")
     public List<Map<String, Object>> findSommeReouvertureByIdTicket(@PathVariable String id_ticket) {
         return jdbcTemplate.queryForList("""
@@ -59,22 +74,57 @@ public class SuperCost1Controller {
             FROM super_cost_1
             WHERE (
                 id_ticket = ?
-                AND group_super_cost_1 = (
+                AND type_cout="cout_saisi"
+                AND group_super_cost_1 =(
                     SELECT MAX(group_super_cost_1)
                     FROM super_cost_1
                     WHERE id_ticket = ?
-                ) 
-            )OR (
+                    AND type_cout="cout_saisi"
+                )
+            ) GROUP BY id_item
+        """, id_ticket, id_ticket);
+    }
+
+    @GetMapping("/{id_ticket}/min")
+    public List<Map<String, Object>> findByIdTicketGroupMin(@PathVariable String id_ticket) {
+        return jdbcTemplate.queryForList("""
+            SELECT id, id_ticket, type_cout, cout, id_item, category, group_super_cost_1, created_at
+            FROM super_cost_1
+            WHERE (
                 id_ticket = ?
-                AND type_cout="glpi"
+                AND type_cout="cout_saisi"
                 AND group_super_cost_1 = (
-                    SELECT MAX(group_super_cost_1)
+                    SELECT MIN(group_super_cost_1)
                     FROM super_cost_1
                     WHERE id_ticket = ?
-                    AND type_cout="glpi"
+                    AND type_cout="cout_saisi"
                 ) 
-            )
-        """, id_ticket, id_ticket, id_ticket, id_ticket);
+            ) GROUP BY id_item
+        """, id_ticket, id_ticket);
+    }
+
+    @GetMapping("/{id_ticket}/moyenne")
+    public List<Map<String, Object>> findByIdTicketGroupMoyenne(@PathVariable String id_ticket) {
+        return jdbcTemplate.queryForList("""
+            SELECT id, id_ticket, type_cout, avg(cout) as cout, id_item, category, group_super_cost_1, created_at
+            FROM super_cost_1
+            WHERE (
+                id_ticket = ?
+                AND type_cout="cout_saisi"
+            ) GROUP BY id_item;
+        """, id_ticket);
+    }
+
+    @GetMapping("/{id_ticket}/somme")
+    public List<Map<String, Object>> findByIdTicketGroupSomme(@PathVariable String id_ticket) {
+        return jdbcTemplate.queryForList("""
+            SELECT id, id_ticket, type_cout, SUM(cout) as cout, id_item, category, group_super_cost_1, created_at
+            FROM super_cost_1
+            WHERE (
+                id_ticket = ?
+                AND type_cout="cout_saisi"
+            ) GROUP BY id_item
+        """, id_ticket);
     }
 
     @GetMapping("/group-by-category-type-cout")

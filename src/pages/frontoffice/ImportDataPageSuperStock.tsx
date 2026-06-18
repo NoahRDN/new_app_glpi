@@ -336,6 +336,7 @@ export function ImportDataPageSuperStock() {
   }
 
   async function handleImport() {
+    setIsInsertSuccess(false)
     const recognizedFiles = sortRecognizedFilesByProfileOrder(parsedFiles.filter(isRecognizedFile));
     const imageZipFileNames = new Set(parsedFiles.filter(isImagesZipFile).map((file) => file.fileName));
     const selectedFiles = Object.values(selectedFilesBySlot).filter((file): file is File => Boolean(file));
@@ -359,10 +360,12 @@ export function ImportDataPageSuperStock() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorInsertionManuel("")
-
+    setIsInsertSuccess(false)
     try {
-      await traitementImportScenarioTicket({numTicket: numTicket, mvt: mvt, valeur: valeur})
-      
+      const isSuccess = await traitementImportScenarioTicket({numTicket: numTicket, mvt: mvt, valeur: valeur, modeReouveture: modeReouverture})
+      if (isSuccess) {
+        setIsInsertSuccess(true)
+      }
     } catch (error) {
       setErrorInsertionManuel(error)
     }
@@ -373,8 +376,11 @@ export function ImportDataPageSuperStock() {
   const [numTicket, setNumTicket] = useState<string>("1")
   const [mvt, setMvt] = useState<string>("open")
   const [valeur, setValeur] = useState<number>(0)
+  const [modeReouverture, setModeReouverture] = useState<number>(1)
   const [isCancel, setIsCancel] = useState<boolean>(false)
   const [errorInsertionManuel, setErrorInsertionManuel] = useState<unknown>()
+  const [isInsertSuccess, setIsInsertSuccess] = useState<boolean>(false)
+
 
   if (errorInsertionManuel) {
     return <MyError>
@@ -382,9 +388,16 @@ export function ImportDataPageSuperStock() {
     </MyError>
   }
 
+ 
+
 
   return (
     <>
+        {isInsertSuccess && <MyError className="text-green-600 bg-green-200">
+          <p>Est insérer avec success</p>
+        </MyError>} 
+      
+
       <section className="col-span-12 rounded-[18px] border p-6" style={{ backgroundColor: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
         <h1 className="text-xs font-semibold uppercase">Saisi Manuelle</h1>
         <section>
@@ -419,6 +432,23 @@ export function ImportDataPageSuperStock() {
                 <option value="open">open</option>
                 <option value="close">close</option>
                 <option value="cancel">cancel</option>
+              </Select>
+            </div>
+
+            <div className="flex flex-col">
+              <Label className="mb-3">
+                Mode reouveture
+              </Label>
+              <Select
+                value={modeReouverture}
+                onChange={ (event) => {
+                  setModeReouverture(Number(event.target.value))
+                }}
+              >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
               </Select>
             </div>
 

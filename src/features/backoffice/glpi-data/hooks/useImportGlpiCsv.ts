@@ -798,9 +798,6 @@ async function importEvalTicketsFile(
         context.ticketIdsByRef.set(normalizeKey(refTicket), ticketId);
       }
 
-      const tickets = await getAllTickets({name:""});
-      console.log("tickets import: ", tickets);
-
       if (ticketId !== null) {
         rollbackActions.push({
           label: `ticket#${ticketId}`,
@@ -993,13 +990,12 @@ async function importEvalTicketCostsFile(
 
   try {
     const tickets = await getAllTickets({name:""});
-    console.log("tickets: ", tickets);
     for(const ticket of tickets){
       await GLPIChoice({ticket: ticket, cout: 0})
     }
     
   } catch (error) {
-    console.log(error)
+    console.error(error)
     throw new Error("Erreur lors de l'insertion GLPI", { cause: error });
   }
   
@@ -1033,8 +1029,9 @@ async function importScenarioTicket(
       const idReferenceTicketStringCSV = normalizeKey(String(data.ticketRef ?? "-1-string"))
       const mvtCSV = normalizeKey(String(data.mvt ?? "-1-string"));
       const costCSV = Number(data.valeur ?? -1);
+      const modeReouvetureCSV = Number(data.mode_reouverture ?? -1);
 
-      await traitementImportScenarioTicket({numTicket: idReferenceTicketStringCSV, mvt: mvtCSV, valeur: costCSV})
+      await traitementImportScenarioTicket({numTicket: idReferenceTicketStringCSV, mvt: mvtCSV, valeur: costCSV, modeReouveture: modeReouvetureCSV})
       
       importedCount += 1;
     } catch (caughtError) {

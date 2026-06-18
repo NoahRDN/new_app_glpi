@@ -1,8 +1,9 @@
 import { getTicketCostByIds } from "../../../../entities/ticket-cost/api/ticketCost.api";
 import { totalCost } from "../../../../entities/ticket-cost/lib/ticketCost";
+import { getTicket, updateTicket, type UpdateTicketPayload } from "../../../../entities/ticket/api/ticket.api";
 import { getTicketAssetLinks, getTicketAssetLinksByTicketId } from "../../../../entities/ticket/api/ticketItem.api";
 import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
-import { createSuperCost1, getSuperCost1ByIdTicket } from "../api/superCost1.api";
+import { createSuperCost1, getSuperCost1ByIdTicket, getSuperCost1ByIdTicketMin, getSuperCost1ByIdTicketMoyenne, getSuperCost1ByIdTicketSomme } from "../api/superCost1.api";
 import type { CreateSuperCost1 } from "../model/ticketSuperCost1.types";
 
 type ChoiceType = {
@@ -10,10 +11,15 @@ type ChoiceType = {
     cout: number
 }
 
+type ReouvertureChoiceType = {
+    ticket: Ticket,
+    cout: number
+    modeReouveture: number
+}
+
 export async function GLPIChoice({
     ticket, 
 }: ChoiceType){
-    console.log("holaaa");
     const ticketId = ticket.id
     const idsCost = ticket ? ticket.costs.map((cost) => cost.id) : []
     const ticketsCostData = await getTicketCostByIds(idsCost)
@@ -38,8 +44,6 @@ export async function GLPIChoice({
             type_cout:"glpi"         
         }
         await createSuperCost1(createSuperCost1Playload_GLPI)
-
-        console.log(`cout_saisi ${ticket.id} -  ${ticketItem.id}: `, ` - `, createSuperCost1Playload_GLPI)  
     }
 }
 
@@ -78,38 +82,87 @@ export async function closeChoice({
 
     
         await createSuperCost1(createSuperCost1Playload_SUPER_COST)
+    }
+    const ticket1 = await getTicket(ticket.id)
 
-        console.log(`cout_saisi ${ticket.id} -  ${ticketItem.id}: `, createSuperCost1Playload_SUPER_COST)  
+    if (ticket1.status?.id !== 6) {
+        const newStatusPlayload : UpdateTicketPayload = {
+            id: ticket1.id,
+            status: {
+                id: 6
+            }
+        } 
+        await updateTicket(newStatusPlayload)
     }
 }
 
 export async function reouverturChoice({
     ticket,
-    cout
-}: ChoiceType){
+    cout,
+    modeReouveture
+}: ReouvertureChoiceType){
     const ticketId = ticket.id
 
     const superCost1ByIdTicketData = await getSuperCost1ByIdTicket(ticket ? ticket.id : -1)
-    console.log("superCost1ByIdTicketData: ", superCost1ByIdTicketData)
+    const getSuperCost1ByIdTicketMinData = await getSuperCost1ByIdTicketMin(ticket ? ticket.id : -1)
+    const getSuperCost1ByIdTicketMoyenneData = await getSuperCost1ByIdTicketMoyenne(ticket ? ticket.id : -1)
+    const getSuperCost1ByIdTicketSommeData = await getSuperCost1ByIdTicketSomme(ticket ? ticket.id : -1)
+
+    
     let group_super_cost_1 = "";
+
+    
     superCost1ByIdTicketData.map((superCost1ByIdTicket) => {
         if (superCost1ByIdTicket.type_cout === "cout_saisi") {
             group_super_cost_1 = superCost1ByIdTicket.group_super_cost_1
         }
     })
 
-    
-
     const ticketItems = await getTicketAssetLinksByTicketId(ticketId);
-    ticketItems.map(async (ticketItem) => {
-        let cout_saisi_final : number = 0;
-        if (superCost1ByIdTicketData) {
-            superCost1ByIdTicketData.map((superCost1) => {
-                if (superCost1.id_item == ticketItem.items_id && superCost1.type_cout === "cout_saisi") {
-                    cout_saisi_final = cout_saisi_final + superCost1.cout 
-                }
-            })
+    let cout_saisi_final : number = 0;
+
+    for(const ticketItem of ticketItems){
+        cout_saisi_final = 0;
+        if (modeReouveture === 1) {
+            if (superCost1ByIdTicketData) {
+                superCost1ByIdTicketData.map((superCost1) => {
+                    if (superCost1.id_item == ticketItem.items_id && superCost1.type_cout === "cout_saisi") {
+                        cout_saisi_final = cout_saisi_final + superCost1.cout 
+                    }
+                })
+            }
         }
+
+        if (modeReouveture === 2) {
+            if (getSuperCost1ByIdTicketMinData) {
+                getSuperCost1ByIdTicketMinData.map((superCost1) => {
+                    if (superCost1.id_item == ticketItem.items_id && superCost1.type_cout === "cout_saisi") {
+                        cout_saisi_final = cout_saisi_final + superCost1.cout 
+                    }
+                })
+            }
+        }
+
+        if (modeReouveture === 3) {
+            if (getSuperCost1ByIdTicketMoyenneData) {
+                getSuperCost1ByIdTicketMoyenneData.map((superCost1) => {
+                if (superCost1.id_item == ticketItem.items_id && superCost1.type_cout === "cout_saisi") {
+                    cout_saisi_final = cout_saisi_final + Number(superCost1.cout) 
+                }
+                })
+            }
+        }
+
+        if (modeReouveture === 4) {
+            if (getSuperCost1ByIdTicketSommeData) {
+                getSuperCost1ByIdTicketSommeData.map((superCost1) => {
+                    if (superCost1.id_item == ticketItem.items_id && superCost1.type_cout === "cout_saisi") {
+                        cout_saisi_final = cout_saisi_final + Number(superCost1.cout)
+                    }
+                })
+            }
+        }
+        
         cout_saisi_final = cout *  cout_saisi_final / 100
         const createSuperCost1Playload_REOUVERTURE : CreateSuperCost1 = {
             category: ticketItem.itemtype,
@@ -119,7 +172,17 @@ export async function reouverturChoice({
             id_ticket: ticketId, 
             type_cout:"reouverture"         
         }
-        console.log(`reouverture ${ticket.id} -  ${ticketItem.id}: `, createSuperCost1Playload_REOUVERTURE)
         await createSuperCost1(createSuperCost1Playload_REOUVERTURE)
-    })
+    }
+    const ticket1 = await getTicket(ticket.id)
+    if (ticket1.status?.id !== 2) {
+        const newStatusPlayload : UpdateTicketPayload = {
+            id: ticket1.id,
+            status: {
+                id: 2
+            }
+        } 
+        await updateTicket(newStatusPlayload)
+    }
+
 }

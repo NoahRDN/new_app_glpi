@@ -5,6 +5,7 @@ import { Input } from "../../../../shared/ui/Input";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
 import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
 import { reouverturChoice } from "../../super-cost1/lib/traitementScenarioTicket";
+import { Select } from "../../../../shared/ui/Select";
 
 type AddSuperCost1Props = {
   onClose: () => void;
@@ -15,6 +16,7 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
     const [cout, setCout] = useState<number>(0);    
     const [error, setError] = useState<unknown>();
     const [isCreatingSuperCost, setIsCreatingSuperCost] = useState<boolean>(false) 
+    const [modeReouverture, setModeReouverture] = useState<number>(1)
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -22,7 +24,7 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
         if (ticket !== null) {
             try{
                 setIsCreatingSuperCost(true);
-                await reouverturChoice({ticket:ticket,cout:cout });
+                await reouverturChoice({ticket:ticket,cout:cout, modeReouveture: modeReouverture});
                 setIsCreatingSuperCost(false);
             } catch (error) {
                 setIsCreatingSuperCost(false);
@@ -51,6 +53,21 @@ export function AddReouverture({ticket, onClose}: AddSuperCost1Props){
                     setCout(Number(event.target.value));
                 }}
             />
+
+            <Label htmlFor="modeReouverture">
+                Choisir mode reouverture
+            </Label>
+            <Select
+                value={modeReouverture}
+                onChange={(event) => {
+                    setModeReouverture(Number(event.target.value))
+                }}
+            >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </Select>
 
             <div className="flex gap-3">
                     <Button

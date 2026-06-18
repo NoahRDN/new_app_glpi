@@ -5,6 +5,10 @@ export async function getSuperCost1GroupByCategorieTypeCout() : Promise<SuperCos
     return localGet<SuperCost1GroupByCategoryTypeCout[]>("/user-cost-1/group-by-category-type-cout");
 }
 
+export async function getSuperCost1MaxGlpi() : Promise<SuperCost1[]>{
+    return localGet<SuperCost1[]>("/user-cost-1/max-glpi");
+}
+
 export async function getSuperCost1GroupByCategorieTypeCoutLastMax() : Promise<SuperCost1GroupByCategoryTypeCout[]>{
     return localGet<SuperCost1GroupByCategoryTypeCout[]>("/user-cost-1/group-by-category-type-cout/last-max");
 }
@@ -31,4 +35,16 @@ export async function getSommeReouvertureByIdTicket(id_ticket: number):  Promise
 
 export async function getSuperCost1ByIdTicket(id_ticket: number):  Promise<SuperCost1[]>{
     return localGet(`/user-cost-1/${id_ticket}`);
+}
+
+export async function getSuperCost1ByIdTicketMin(id_ticket: number):  Promise<SuperCost1[]>{
+    return localGet(`/user-cost-1/${id_ticket}/min`);
+}
+
+export async function getSuperCost1ByIdTicketMoyenne(id_ticket: number):  Promise<SuperCost1[]>{
+    return localGet(`/user-cost-1/${id_ticket}/moyenne`);
+}
+
+export async function getSuperCost1ByIdTicketSomme(id_ticket: number):  Promise<SuperCost1[]>{
+    return localGet(`/user-cost-1/${id_ticket}/somme`);
 }

@@ -1,0 +1,20 @@
+lasa misy mode
+
+mode 1: ilay cout farany no alaina,
+mode 2: ilay voalohany no alaina
+mode 3: moyenne an'ilay cout rehetra hatrizay no alaina
+mode 4: somme ny cout rehetra
+
+ny reouverture ihany no voakasika @ io 
+exemple:
+mode 1:
+mode 2:
+mode 3:
+mode 4:
+
+
+ao @ interface lasa misy zone de liste 1, 2, 3, 4
+
+any @ import sy canban misy an'ilay mode 
+
+mety 0 ny supercost
