@@ -1,75 +1,127 @@
-# React + TypeScript + Vite
+[Francais](./README.fr.md)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# new_app_glpi
 
-Currently, two official plugins are available:
+`new_app_glpi` is a GLPI-oriented application split into two areas:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `Frontoffice`: user-facing portal
+- `Backoffice`: administration, imports, reset tools, local SQLite CRUD, and dashboard features
 
-## React Compiler
+The frontend is built with `React + TypeScript + Vite`, and the local backend is a small `Spring Boot + SQLite` service used for project-specific data such as local settings and local CRUD pages.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Main features
 
-Note: This will impact Vite dev & build performances.
+- Frontoffice and backoffice routing separation
+- GLPI OAuth / API integration
+- Asset listing and ticket kanban
+- CSV import with profiles and rollback logic
+- GLPI reset tools
+- Local SQLite-backed features like kanban settings and `user-test`
+- Light and dark themes
 
-## Expanding the ESLint configuration
+## Tech stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Frontend: `React`, `TypeScript`, `Vite`, `Tailwind CSS`, `TanStack React Query`
+- Backend: `Spring Boot`, `JdbcTemplate`, `SQLite`
+- External system: `GLPI API v2` and `GLPI legacy API`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Project structure
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Key directories:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `src/app`: app shell, routing, layouts, navigation
+- `src/pages`: routed pages
+- `src/features`: feature-level UI, hooks, and business logic
+- `src/entities`: API clients, types, and entity-level logic
+- `src/shared`: reusable UI, helpers, API clients, config
+- `backend/newappglpi`: local Spring Boot + SQLite backend
+- `public/import-samples`: sample files for import testing
+
+For a more detailed codebase map, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Getting started
+
+### 1. Install frontend dependencies
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configure environment variables
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Use `.env` and `.env.example` to configure the GLPI connection.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Typical values used by the frontend include:
+
+- `GLPI_PROXY_TARGET`
+- `GLPI_API_PATH`
+- `GLPI_LEGACY_API_PATH`
+- OAuth client credentials and user credentials
+
+### 3. Run the frontend
+
+```bash
+npm run dev
 ```
+
+By default, Vite runs on:
+
+```text
+http://localhost:5173
+```
+
+### 4. Run the local backend
+
+From the backend folder:
+
+```bash
+cd backend/newappglpi
+./mvnw spring-boot:run
+```
+
+The local backend runs on:
+
+```text
+http://localhost:8081
+```
+
+It is used through the Vite proxy with `/local-api`.
+
+## Build
+
+Frontend production build:
+
+```bash
+npm run build
+```
+
+Backend compile:
+
+```bash
+cd backend/newappglpi
+./mvnw -DskipTests compile
+```
+
+## Notable routes
+
+- Frontoffice root: `/`
+- Frontoffice asset list: `/asset-general-element`
+- Frontoffice ticket kanban: `/ticket-kanban`
+- Backoffice root: `/admin`
+- Backoffice tickets: `/admin/tickets`
+- Backoffice import: `/admin/import-data`
+- Backoffice reset: `/admin/reset-data`
+- Backoffice kanban settings: `/admin/kanban-settings`
+- Backoffice local CRUD example: `/admin/user-test`
+
+## Documentation
+
+- Architecture details: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- Filter notes: [utilitaire/documentation/filtre.md](./utilitaire/documentation/filtre.md)
+- SQLite backend setup notes: [utilitaire/documentation/init-sqlite-springboot.md](./utilitaire/documentation/init-sqlite-springboot.md)
+
+## Notes
+
+- The backoffice remains protected by local auth logic.
+- The frontoffice is currently accessible without login.
+- Some local features depend on the Spring backend being available.
