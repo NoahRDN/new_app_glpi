@@ -1808,3 +1808,247 @@ en tableau :
 Donc maintenant, tu peux faire .map() :
 
 Object.entries(TICKET_TYPE_LABELS).map(...)
+
+## C’est quoi un callback ?
+
+Un callback, c’est une fonction que tu donnes à une autre fonction pour qu’elle l’appelle plus tard.
+
+Exemple simple :
+
+function direBonjour(callback: () => void) {
+  console.log("Avant");
+  callback();
+  console.log("Après");
+}
+
+direBonjour(() => {
+  console.log("Bonjour Noah");
+});
+
+Résultat :
+
+Avant
+Bonjour Noah
+Après
+
+Ici, cette partie est un callback :
+
+() => {
+  console.log("Bonjour Noah");
+}
+
+Tu la donnes à direBonjour, et direBonjour l’appelle.
+
+ ## signification du symbole "|"
+
+Ce type s’appelle une union type. Plus précisément ici, c’est une union de littéraux string.
+
+exemple : 
+```
+export type GlpiDataResourceId =
+  | "users"
+  | "ticketLinks"
+  | "ticketFollowups"
+  | "ticketSolutions"
+  | "ticketCosts"
+  | "tickets"
+  | "computers"
+  | "monitors"
+  | "phones"
+  | "printers"
+  | "states"
+  | "locations"
+  | "manufacturers"
+  | "computerModels"
+  | "monitorModels"
+  | "groups"
+  | "documents"
+  | "superCost";
+``` 
+
+# Est-ce qu’on peut faire row[header] avec un objet normal
+
+Oui, en JavaScript tu peux faire ça avec n’importe quel objet.
+
+Exemple :
+
+const user = {
+  username: "Noah",
+  age: 17,
+};
+
+const key = "username";
+
+console.log(user[key]); // "Noah"
+
+Mais en TypeScript, il y a une différence.
+
+Avec un objet dynamique comme :
+
+type CsvRawRow = Record<string, string | undefined>;
+
+TypeScript accepte facilement :
+
+const header = "Num_Ticket";
+const value = row[header];
+
+Parce que Record<string, ...> veut dire :
+
+n’importe quelle clé string est possible.
+
+Mais avec un objet strict :
+
+type User = {
+  username: string;
+  age: number;
+};
+
+const user: User = {
+  username: "Noah",
+  age: 17,
+};
+
+const key = "username";
+const value = user[key];
+
+Ça peut marcher si TypeScript comprend que key vaut exactement "username".
+
+Mais si tu écris :
+
+const key: string = "username";
+const value = user[key];
+
+TypeScript peut refuser, parce que string est trop large. Il se dit :
+
+key pourrait être "email", "id", "abc", etc.
+
+Version propre :
+
+const key: keyof User = "username";
+const value = user[key];
+
+keyof User veut dire :
+
+clé autorisée de User
+
+Donc :
+
+"username" | "age"
+
+# Pourquoi utiliser Map et non Record pour compter
+Tu as demandé :
+
+const counts = new Map<string, number>();
+
+Pourquoi pas un Record ?
+
+Les deux sont possibles.
+
+Avec Record :
+
+const counts: Record<string, number> = {};
+
+counts["mvt"] = (counts["mvt"] ?? 0) + 1;
+
+Avec Map :
+
+const counts = new Map<string, number>();
+
+counts.set("mvt", (counts.get("mvt") ?? 0) + 1);
+
+Map est pratique quand tu fais une vraie structure de comptage dynamique. Elle a des méthodes propres :
+
+set()
+get()
+has()
+entries()
+
+Record est plus simple pour un objet JSON-like.
+
+Dans ce cas précis, les deux peuvent marcher. J’ai proposé Map parce que c’est clair pour compter et parcourir les entrées.
+
+# Cette forme s’appelle une IIFE : Immediately Invoked Function Expression.
+
+```
+{(() => {
+  if (!isCsvSlotId(slot.id)) {
+    return null;
+  }
+
+  const csvSlotId = slot.id;
+  const compatibleProfiles = compatibleProfilesBySlot[csvSlotId] ?? [];
+
+  if (compatibleProfiles.length <= 1) {
+    return null;
+  }
+
+  return (
+    <div>
+      ...
+    </div>
+  );
+})()}
+```
+
+signification: "fonction créée puis appelée immédiatement"
+
+# Pourquoi utiliser "||" et non "??" ici
+
+Tu parles de :
+
+rawFile.headers.join(" ; ") || "<aucune>"
+
+La différence est importante.
+
+## "||"
+
+|| utilise la valeur de droite si la valeur de gauche est falsy.
+
+Les valeurs falsy principales sont :
+
+false
+0
+""
+null
+undefined
+NaN
+
+Donc :
+
+"" || "<aucune>"
+
+donne :
+
+<aucune>
+
+## "??"
+
+?? utilise la valeur de droite seulement si la valeur de gauche est :
+
+null
+ou
+undefined
+
+Donc :
+
+"" ?? "<aucune>"
+
+donne :
+
+c’est-à-dire une chaîne vide.
+
+## C’est quoi Boolean(parsedFile)
+
+```
+Boolean("hello")      // true
+Boolean(123)          // true
+Boolean({})           // true
+Boolean([])           // true
+
+Boolean(null)         // false
+Boolean(undefined)    // false
+Boolean("")           // false
+Boolean(0)            // false
+Boolean(false)        // false
+```
+

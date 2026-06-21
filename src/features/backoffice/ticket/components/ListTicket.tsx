@@ -65,7 +65,7 @@ export function ListTicket() {
     <DataTable
       tableHeads={[
         <Input type="checkbox" />,
-        "N°",
+        "N° Ligne",
         "Titre",
         "Statut",
         "Priorité",

@@ -8,11 +8,6 @@ export type CsvRawFile = {
   rows: CsvRawRow[];
 };
 
-export type GlpiImportMode =
-  | "single-resource"
-  | "related-resources"
-  | "independent-resources";
-
 export type GlpiTransformKey =
   | "none"
   | "trim"
@@ -39,7 +34,6 @@ export type GlpiImportProfile = {
   id: string;
   importOrder?: number;
   label: string;
-  mode: GlpiImportMode;
   previewColumns: GlpiPreviewColumn[];
   requiredHeaders: string[];
   resourceMappings: Partial<Record<GlpiDataResourceId, GlpiResourceMapping>>;

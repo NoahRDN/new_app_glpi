@@ -4,10 +4,7 @@ import type {
   GlpiImportProfile,
   ParsedGlpiImportFile,
 } from "../model/glpiImportProfile.types";
-
-function normalizeHeader(header: string) {
-  return header.trim().toLowerCase();
-}
+import { normalizeHeader } from "../../../../shared/lib/normalizeHeader";
 
 function buildMissingHeadersReason(profile: GlpiImportProfile, headers: string[]) {
   const normalizedHeaders = new Set(headers.map(normalizeHeader));

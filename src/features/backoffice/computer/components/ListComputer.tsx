@@ -101,7 +101,7 @@ export function ListComputer() {
       <DataTable
         tableHeads={[
           <Input type="checkbox" />,
-          "N°",
+          "N° Ligne",
           "Nom",
           "Type",
           "Statut",

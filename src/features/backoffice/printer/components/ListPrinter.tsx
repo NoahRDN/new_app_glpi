@@ -90,7 +90,7 @@ export function ListPrinter() {
       <DataTable
         tableHeads={[
           <Input type="checkbox" />,
-          "N°",
+          "N° Ligne",
           "Nom",
           "Type",
           "Statut",

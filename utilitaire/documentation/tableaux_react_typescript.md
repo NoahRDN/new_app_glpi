@@ -334,6 +334,49 @@ const sortedUsers = [...users].sort((a, b) =>
   a.username.localeCompare(b.username),
 );
 ```
+nombre négatif → leftProfile avant rightProfile
+nombre positif → rightProfile avant leftProfile
+0 → garder ordre équivalent
+
+Ceci :
+
+.sort((a, b) => a - b)
+
+est croissant parce que tu fais :
+
+a - b
+
+Exemple :
+
+[3, 1, 2].sort((a, b) => a - b);
+// [1, 2, 3]
+
+Ceci est décroissant :
+
+[3, 1, 2].sort((a, b) => b - a);
+// [3, 2, 1]
+
+Même si tu appelles les paramètres autrement :
+
+.sort((left, right) => right - left)
+
+c’est toujours décroissant.
+
+Donc ce n’est pas le nom a,b ou b,a qui compte. C’est le calcul retourné.
+
+## Trier des dates
+
+Si tu as des dates string ISO :
+
+const dates = ["2026-06-16", "2026-01-10", "2026-12-01"];
+
+Tri croissant :
+
+dates.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+Tri décroissant :
+
+dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
 ---
 
@@ -344,6 +387,8 @@ const firstTenTickets = tickets.slice(0, 10);
 ```
 
 `slice()` ne modifie pas le tableau original.
+
+Prends les 10 premiers éléments de file.entries,
 
 ---
 

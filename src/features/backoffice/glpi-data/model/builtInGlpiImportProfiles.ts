@@ -4,7 +4,6 @@ export const GLPI_USER_PROFILE: GlpiImportProfile = {
   id: "glpi-users-v1",
   importOrder: 10,
   label: "Utilisateurs GLPI",
-  mode: "single-resource",
   requiredHeaders: ["username", "realname", "firstname"],
   resourceMappings: {
     users: {
@@ -36,7 +35,6 @@ export const GLPI_TICKET_PROFILE: GlpiImportProfile = {
   id: "glpi-tickets-v1",
   importOrder: 20,
   label: "Tickets GLPI",
-  mode: "single-resource",
   requiredHeaders: ["name", "content"],
   resourceMappings: {
     tickets: {
@@ -88,7 +86,6 @@ export const GLPI_COMPUTER_PROFILE: GlpiImportProfile = {
   id: "glpi-computers-v1",
   importOrder: 30,
   label: "Ordinateurs GLPI",
-  mode: "single-resource",
   requiredHeaders: ["name"],
   resourceMappings: {
     computers: {
@@ -126,7 +123,6 @@ export const GLPI_LOCATION_PROFILE: GlpiImportProfile = {
   id: "glpi-locations-v1",
   importOrder: 40,
   label: "Emplacements GLPI",
-  mode: "single-resource",
   requiredHeaders: ["name"],
   resourceMappings: {
     locations: {
@@ -152,7 +148,6 @@ export const GLPI_PRINTER_PROFILE: GlpiImportProfile = {
   id: "glpi-printers-v1",
   importOrder: 45,
   label: "Imprimantes GLPI",
-  mode: "single-resource",
   requiredHeaders: ["name"],
   resourceMappings: {
     printers: {
@@ -190,7 +185,6 @@ export const GLPI_GROUP_PROFILE: GlpiImportProfile = {
   id: "glpi-groups-v1",
   importOrder: 50,
   label: "Groupes GLPI",
-  mode: "single-resource",
   requiredHeaders: ["name"],
   resourceMappings: {
     groups: {
@@ -216,7 +210,6 @@ export const GLPI_EVAL_ASSETS_JUIN_2026_PROFILE: GlpiImportProfile = {
   id: "glpi-eval-assets-juin-2026-v1",
   importOrder: 210,
   label: "Éval Juin 2026 - Feuille 1 Assets",
-  mode: "single-resource",
   requiredHeaders: [
     "Name",
     "Status",
@@ -287,7 +280,6 @@ export const GLPI_EVAL_TICKETS_JUIN_2026_PROFILE: GlpiImportProfile = {
   id: "glpi-eval-tickets-juin-2026-v1",
   importOrder: 220,
   label: "Éval Juin 2026 - Feuille 2 Tickets",
-  mode: "single-resource",
   requiredHeaders: [
     "Ref_Ticket",
     "Date",
@@ -365,7 +357,6 @@ export const GLPI_EVAL_TICKET_COSTS_JUIN_2026_PROFILE: GlpiImportProfile = {
   id: "glpi-eval-ticket-costs-juin-2026-v1",
   importOrder: 230,
   label: "Éval Juin 2026 - Feuille 3 Coûts",
-  mode: "single-resource",
   requiredHeaders: [
     "Num_Ticket",
     "Duration_second",
@@ -408,7 +399,6 @@ export const GLPI_SCENARIO_TICKET: GlpiImportProfile = {
   id: "scenario-ticket",
   importOrder: 500,
   label: "Scenario ticket",
-  mode: "single-resource",
   requiredHeaders: [
     "Num_Ticket",
     "mvt",

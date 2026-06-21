@@ -23,6 +23,10 @@ type FileParseError = {
   message: string;
 };
 
+// const IMPORT_FILE_SLOT_IDS = ["csv1", "csv2", "csv3", "imagesZip", "csv4"] as const;
+
+// type ImportFileSlotId = typeof IMPORT_FILE_SLOT_IDS[number];
+
 type ImportFileSlotId = "csv1" | "csv2" | "csv3" | "imagesZip";
 
 type ImportFileSlot = {
@@ -726,13 +730,15 @@ export function ImportDataPage() {
                           <table className="min-w-full">
                             <thead>
                               <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                                <th className="px-4 py-4">N° Ligne</th>
                                 <th className="px-4 py-4">Fichier</th>
                                 <th className="px-4 py-4">Reference detectee</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {file.entries.slice(0, 10).map((entry) => (
+                              {file.entries.map((entry, index) => (
                                 <tr key={`${file.fileName}-${entry.fileName}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
+                                  <td className="border border-(--panel-border) px-4 py-4">{index + 1}</td>
                                   <td className="border border-(--panel-border) px-4 py-4">{entry.fileName}</td>
                                   <td className="border border-(--panel-border) px-4 py-4">{entry.reference}</td>
                                 </tr>
@@ -770,14 +776,16 @@ export function ImportDataPage() {
                       <table className="min-w-full">
                         <thead>
                           <tr className="text-left text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-secondary)" }}>
+                            <th className="px-4 py-4">N° Ligne</th>
                             {file.profile.previewColumns.map((column) => (
                               <th key={`${column.resource}-${column.field}`} className="px-4 py-4">{column.label}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {file.rows.slice(0, 10).map((row, rowIndex) => (
+                          {file.rows.map((row, rowIndex) => (
                             <tr key={`${file.fileName}-${rowIndex}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
+                              <td className="px-4 py-3">{rowIndex + 1 }</td>
                               {file.profile.previewColumns.map((column) => {
                                 const resource = row[column.resource];
                                 const value = resource?.[column.field];

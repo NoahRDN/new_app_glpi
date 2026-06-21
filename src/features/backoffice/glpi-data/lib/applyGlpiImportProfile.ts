@@ -1,3 +1,4 @@
+import { normalizeHeader } from "../../../../shared/lib/normalizeHeader";
 import type {
   CsvRawRow,
   GlpiFieldMapping,
@@ -11,10 +12,10 @@ function getRawValueByHeader(
   rawRow: CsvRawRow,
   expectedHeader: string,
 ) {
-  const expected = expectedHeader.trim().toLowerCase();
+  const expected = normalizeHeader(expectedHeader);
 
   const actualHeader = Object.keys(rawRow).find(
-    (header) => header.trim().toLowerCase() === expected,
+    (header) => normalizeHeader(header) === expected,
   );
 
   if (!actualHeader) {

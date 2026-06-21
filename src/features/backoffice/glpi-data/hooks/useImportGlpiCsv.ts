@@ -621,7 +621,7 @@ async function importEvalAssetsFile(
   for (const [rowIndex, row] of file.rows.entries()) {
     try {
       const data = getRowBucket(row, "computers");
-
+      console.log("data: ", data);
       if (!data) {
         continue;
       }
