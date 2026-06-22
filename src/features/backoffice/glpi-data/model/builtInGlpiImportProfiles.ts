@@ -208,7 +208,7 @@ export const GLPI_GROUP_PROFILE: GlpiImportProfile = {
 
 export const GLPI_EVAL_ASSETS_JUIN_2026_PROFILE: GlpiImportProfile = {
   id: "glpi-eval-assets-juin-2026-v1",
-  importOrder: 210,
+  importOrder: 1,
   label: "Éval Juin 2026 - Feuille 1 Assets",
   requiredHeaders: [
     "Name",
@@ -438,13 +438,13 @@ export const GLPI_SCENARIO_TICKET: GlpiImportProfile = {
 };
 
 export const BUILT_IN_GLPI_IMPORT_PROFILES: GlpiImportProfile[] = [
+  GLPI_EVAL_ASSETS_JUIN_2026_PROFILE,
   GLPI_USER_PROFILE,
   GLPI_TICKET_PROFILE,
   GLPI_COMPUTER_PROFILE,
   GLPI_LOCATION_PROFILE,
   GLPI_PRINTER_PROFILE,
   GLPI_GROUP_PROFILE,
-  GLPI_EVAL_ASSETS_JUIN_2026_PROFILE,
   GLPI_EVAL_TICKETS_JUIN_2026_PROFILE,
   GLPI_EVAL_TICKET_COSTS_JUIN_2026_PROFILE,
   GLPI_SCENARIO_TICKET

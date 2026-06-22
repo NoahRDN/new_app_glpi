@@ -888,3 +888,323 @@ Exemples :
 const text = await entry.async("text");        // pour lire un .txt, .csv, .json
 const blob = await entry.async("blob");        // pour lire une image
 const buffer = await entry.async("arraybuffer"); // pour binaire
+
+# Ce qu’il faut implémenter pour rollback importScenarioTicket
+
+Tu dois faire au minimum 3 modifications.
+
+## Modification 1 : passer rollbackActions à importScenarioTicket
+
+Dans importRecognizedFile, remplacer :
+
+return importScenarioTicket(file);
+
+par :
+
+return importScenarioTicket(file, rollbackActions);
+
+Et changer la signature :
+
+async function importScenarioTicket(
+  file: RecognizedGlpiParsedFile,
+  rollbackActions: RollbackAction[],
+): Promise<ImportExecutionSummary> {
+## Modification 2 : ne plus avaler l’erreur
+
+Actuellement, tu fais :
+
+catch (caughtError) {
+  console.error(caughtError)
+}
+
+Il faut plutôt faire :
+
+catch (caughtError) {
+  throw new ImportRowError(rowIndex, caughtError);
+}
+
+Mais pour ça, il faut récupérer rowIndex dans la boucle :
+
+for (const [rowIndex, row] of file.rows.entries()) {
+
+au lieu de :
+
+for (const [, row] of file.rows.entries()) {
+
+Donc la boucle devient :
+
+for (const [rowIndex, row] of file.rows.entries()) {
+  try {
+    // traitement de la ligne
+  } catch (caughtError) {
+    throw new ImportRowError(rowIndex, caughtError);
+  }
+}
+
+Comme ça, si une ligne scénario échoue, l’erreur remonte jusqu’au grand catch, et le rollback global peut se lancer.
+
+## Modification 3 : enregistrer ce qu’il faut annuler
+
+C’est la partie la plus importante.
+
+Dans importScenarioTicket, tu appelles :
+
+await traitementImportScenarioTicket({
+  numTicket: idReferenceTicketStringCSV,
+  mvt: mvtCSV,
+  valeur: costCSV,
+  modeReouveture: modeReouvetureCSV
+});
+
+Mais cette fonction ne semble pas retourner les éléments créés ou modifiés.
+
+Pour faire un rollback propre, il faut savoir :
+
+quel super_cost a été créé ;
+quel ticket a été modifié ;
+quel était l’ancien état du ticket avant modification ;
+éventuellement quelles lignes liées ont été créées.
+
+Par exemple, il faudrait que traitementImportScenarioTicket retourne quelque chose comme :
+
+{
+  createdSuperCostId: 15,
+  updatedTicketId: 42,
+  previousTicketValues: {
+    status: 2,
+    solvedate: null,
+    closedate: null
+  }
+}
+
+Ensuite, tu peux ajouter des actions de rollback :
+
+if (result.createdSuperCostId) {
+  rollbackActions.push({
+    label: `superCost#${result.createdSuperCostId}`,
+    run: () => deleteSuperCost(result.createdSuperCostId),
+  });
+}
+
+Et pour un ticket modifié :
+
+if (result.updatedTicketId && result.previousTicketValues) {
+  rollbackActions.push({
+    label: `ticket#${result.updatedTicketId}`,
+    run: () =>
+      updateGlpiResourceItem(
+        getGlpiDataResource("tickets"),
+        result.updatedTicketId,
+        result.previousTicketValues,
+      ),
+  });
+}
+
+Le principe est simple :
+
+Si tu crées quelque chose → rollback = supprimer
+Si tu modifies quelque chose → rollback = remettre l’ancienne valeur
+##  Version corrigée de base
+
+Voici une base plus correcte pour importScenarioTicket :
+
+async function importScenarioTicket(
+  file: RecognizedGlpiParsedFile,
+  rollbackActions: RollbackAction[],
+): Promise<ImportExecutionSummary> {
+  let importedCount = 0;
+
+  for (const [rowIndex, row] of file.rows.entries()) {
+    try {
+      const data = getRowBucket(row, "tickets");
+
+      if (!data) {
+        continue;
+      }
+
+      const idReferenceTicketStringCSV = normalizeKey(String(data.ticketRef ?? "-1-string"));
+      const mvtCSV = normalizeKey(String(data.mvt ?? "-1-string"));
+      const costCSV = Number(data.valeur ?? -1);
+      const modeReouvetureCSV = Number(data.mode_reouverture ?? -1);
+
+      const result = await traitementImportScenarioTicket({
+        numTicket: idReferenceTicketStringCSV,
+        mvt: mvtCSV,
+        valeur: costCSV,
+        modeReouveture: modeReouvetureCSV,
+      });
+
+      // Exemple à adapter selon ce que retourne vraiment ton backend
+      if (result.createdSuperCostId) {
+        rollbackActions.push({
+          label: `superCost#${result.createdSuperCostId}`,
+          run: () => deleteSuperCost(result.createdSuperCostId),
+        });
+      }
+
+      importedCount += 1;
+    } catch (caughtError) {
+      throw new ImportRowError(rowIndex, caughtError);
+    }
+  }
+
+  return {
+    importedCount,
+    resources: [
+      {
+        importedCount,
+        label: "Coûts de ticket",
+        resourceId: "superCost",
+        skippedCount: 0,
+      },
+    ],
+  };
+}
+
+Et dans importRecognizedFile :
+
+if (file.profile.id === SCENARIO_TICKET) {
+  return importScenarioTicket(file, rollbackActions);
+}
+
+# Exemple de fonction pour récupérer les CSV dans un ZIP
+
+Tu peux ajouter une fonction séparée :
+
+const SUPPORTED_CSV_EXTENSIONS = /\.csv$/i;
+
+function getCsvZipEntries(zip: JSZip) {
+  return Object.values(zip.files).filter(
+    (entry) =>
+      !entry.dir &&
+      !isIgnoredZipEntry(entry.name) &&
+      SUPPORTED_CSV_EXTENSIONS.test(entry.name),
+  );
+}
+
+C’est presque la même logique que pour les images, mais avec .csv.
+
+## Extraire les CSV du ZIP comme des vrais File
+
+Comme ton parser CSV actuel travaille avec un File, le plus simple est de convertir chaque entrée CSV du ZIP en File.
+
+Exemple :
+
+export async function extractCsvFilesFromZip(file: File): Promise<File[]> {
+  const zip = await loadZip(file);
+  const csvEntries = getCsvZipEntries(zip);
+
+  return Promise.all(
+    csvEntries.map(async (entry) => {
+      const fileName = getZipEntryFileName(entry.name);
+      const blob = await entry.async("blob");
+
+      return new File([blob], fileName, {
+        type: "text/csv",
+      });
+    }),
+  );
+}
+
+Donc si ton ZIP contient :
+
+assets.csv
+tickets.csv
+scenario.csv
+
+la fonction retourne :
+
+[
+  File("assets.csv"),
+  File("tickets.csv"),
+  File("scenario.csv")
+]
+
+Après ça, tu peux les traiter presque comme si l’utilisateur les avait sélectionnés manuellement dans <input type="file">.
+
+# creation photo de profil user
+## Associer l’image à un utilisateur comme document
+
+Avec ta fonction actuelle createDocumentWithFile, tu peux déjà créer un document et le lier à un élément GLPI grâce à :
+
+items_id: payload.items_id,
+itemtype: payload.itemtype,
+
+Dans ton code, ces deux champs sont mis dans uploadManifest.
+
+Donc pour lier une image à un utilisateur, l’idée serait :
+
+await createDocumentWithFile({
+  comment: "Photo de l'utilisateur importée automatiquement.",
+  file: imageFile,
+  fileName: imageFile.name,
+  items_id: userId,
+  itemtype: "User",
+  name: `photo-utilisateur-${userId}`,
+});
+
+Ici :
+
+items_id: userId
+
+veut dire : l’id de l’utilisateur.
+
+Et :
+
+itemtype: "User"
+
+veut dire : l’élément concerné est un utilisateur.
+
+Donc mentalement, tu dis à GLPI :
+
+Créer un document image et le lier à l'utilisateur #12.
+
+Mais attention : ça crée un document associé à l’utilisateur, pas forcément sa vraie photo de profil dans l’interface GLPI.
+
+## Pour une vraie photo de profil
+
+Pour une vraie photo de profil, il faut probablement une logique différente.
+
+Ton API utilisateur actuelle permet de récupérer, créer, modifier ou supprimer des utilisateurs avec des routes comme :
+
+GET /Administration/User/:id
+PATCH /Administration/User/:id
+
+La fonction updateUser fait un PATCH sur /Administration/User/${id} avec les champs utilisateur à modifier.
+
+Donc il faut vérifier si ton backend GLPI accepte un champ du genre :
+
+picture
+
+ou :
+
+picture_file
+
+ou encore un endpoint spécial pour l’avatar.
+
+Je ne veux pas te dire un nom de champ exact sans vérifier dans ton backend, parce que ça dépend de l’API GLPI utilisée et de la manière dont ton projet l’expose.
+
+La méthode propre serait :
+
+1. uploader l’image comme document
+2. récupérer l’id du document créé
+3. mettre à jour l’utilisateur avec la référence de ce document
+
+Exemple logique :
+
+const createdDocument = await createDocumentWithFile({
+  comment: "Photo de profil importée.",
+  file: imageFile,
+  fileName: imageFile.name,
+  items_id: userId,
+  itemtype: "User",
+  name: `photo-profil-${userId}`,
+});
+
+await updateUser({
+  id: userId,
+  // champ à confirmer selon ton backend GLPI
+  picture: createdDocument.id,
+});
+
+Mais le champ picture est à confirmer dans ton modèle User / GlpiUser ou dans l’API GLPI que tu utilises.
