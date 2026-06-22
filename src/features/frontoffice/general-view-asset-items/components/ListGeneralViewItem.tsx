@@ -1,3 +1,6 @@
+import { Download } from "lucide-react";
+import { downloadCsv } from "../../../../shared/lib/csv";
+import { getAllGeneralViewAssetItems } from "../api/generalViewAssetItems.api";
 import { getUserErrorMessage } from "../../../../shared/errors/AppError";
 import { Button } from "../../../../shared/ui/Button";
 import { DataTable } from "../../../../shared/ui/DataTable";
@@ -7,7 +10,7 @@ import { useGeneralViewAssetItemsPage } from "../hooks/useGeneralViewAssetItems"
 import { MyError } from "../../../../shared/ui/MyError";
 import { RefreshCcw } from "lucide-react";
 import { useState } from "react";
-import type { GeneralViewAssetItemsFilters } from "../model/generalViewAssetItems.types";
+import type { GeneralViewAssetItemsFilters, GeneralViewAssetItems } from "../model/generalViewAssetItems.types";
 import {  generalViewAssetItemsFiltersDefaultValues } from "../model/generalViewAssetItems.config";
 import { useDebounce } from "../../../../shared/hooks/useDebounce";
 import { useAssets } from "../../../backoffice/assets/hooks/useAssets";
@@ -15,6 +18,8 @@ import { Select } from "../../../../shared/ui/Select";
 import { AssetImages } from "../../../shared/asset-images/components/AssetImages";
 
 export function ListGeneralViewItem(){
+    const [isExportingCsv, setIsExportingCsv] = useState(false);
+    const [exportCsvError, setExportCsvError] = useState<unknown>(null);
     const [filters, setFilters] = useState<GeneralViewAssetItemsFilters>({...generalViewAssetItemsFiltersDefaultValues})
     const [page, setPage] = useState(0);
     const [limit, setLimit] = useState(5);
@@ -69,7 +74,94 @@ export function ListGeneralViewItem(){
         </div>
     }
 
+    const csvColumns = [
+    {
+        header: "Numéro ligne",
+        getValue: (_item: GeneralViewAssetItems, index: number) => index + 1,
+    },
+    {
+        header: "Nom",
+        getValue: (item: GeneralViewAssetItems) => item.name,
+    },
+    {
+        header: "Type technique",
+        getValue: (item: GeneralViewAssetItems) => item.itemType,
+    },
+    {
+        header: "Type affiché",
+        getValue: (item: GeneralViewAssetItems) => item.itemTypeLabel,
+    },
+    {
+        header: "Date de création",
+        getValue: (item: GeneralViewAssetItems) => item.dateCreation,
+    },
+    {
+        header: "Date de modification",
+        getValue: (item: GeneralViewAssetItems) => item.dateMod,
+    },
+    {
+        header: "Entité",
+        getValue: (item: GeneralViewAssetItems) => item.entity?.name,
+    },
+    {
+        header: "Récursif",
+        getValue: (item: GeneralViewAssetItems) => item.isRecursive ? "Oui" : "Non",
+    },
+    {
+        header: "Fabricant",
+        getValue: (item: GeneralViewAssetItems) => item.manufacturer?.name,
+    },
+    {
+        header: "Statut",
+        getValue: (item: GeneralViewAssetItems) => item.status?.name,
+    },
+    {
+        header: "Utilisateur",
+        getValue: (item: GeneralViewAssetItems) => item.user?.name,
+    },
+    {
+        header: "Technicien",
+        getValue: (item: GeneralViewAssetItems) => item.userTech?.name,
+    },
+    ];
+
+    async function handleExportCsv() {
+        try {
+            setIsExportingCsv(true);
+            setExportCsvError(null);
+
+            const items = await getAllGeneralViewAssetItems(debouncedFilters);
+
+            downloadCsv({
+            filename: "inventaire-assets.csv",
+            rows: items,
+            columns: csvColumns,
+            });
+        } catch (error) {
+            setExportCsvError(error);
+        } finally {
+            setIsExportingCsv(false);
+        }
+    }
+
+    // function handleExportCurrentPageCsv() {
+    //     downloadCsv({
+    //         filename: "inventaire-assets-page-actuelle.csv",
+    //         rows: generalViewAssetItems,
+    //         columns: csvColumns,
+    //     });
+    // }
+
     return <>
+
+        {exportCsvError && (
+            <MyError>
+                {getUserErrorMessage(
+                exportCsvError,
+                "Erreur lors de l’export CSV.",
+                )}
+            </MyError>
+        )}
         <DataTable
             tableHeads={[
                 <Input type="checkbox" />, 
@@ -160,6 +252,14 @@ export function ListGeneralViewItem(){
                             refetchAssets()
                         }}
                     ><RefreshCcw size={18} />Actualiser</Button>
+                    <Button
+                    type="button"
+                    disabled={isExportingCsv}
+                    onClick={handleExportCsv}
+                    >
+                    <Download size={18} />
+                    {isExportingCsv ? "Export..." : "Exporter CSV"}
+                    </Button>
                 </div>
             }
 
