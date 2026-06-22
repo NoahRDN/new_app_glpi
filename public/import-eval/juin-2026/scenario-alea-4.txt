@@ -1,0 +1,8 @@
+ticket 1; close; 50
+ticket 2; close; 150
+ticket 1; open; 5 => 1
+ticket 1; close; 49
+ticket 1; open; 10 => 4
+
+ticket 2; open; 10 => 3
+ticket 2; close; 300

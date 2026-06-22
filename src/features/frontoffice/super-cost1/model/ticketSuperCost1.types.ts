@@ -12,8 +12,26 @@ export type CreateSuperCost1 = {
     category: string,
     type_cout: TYPE_COUT,
     cout: number,
-    group_super_cost_1: string
+    group_super_cost_1: string,
+    mode_reouverture?: number,
+    pourcentage?: number
 }
+
+export type UpdateSuperCost1ReouverturePayload = {
+    cout: number,
+    groupSuperCost1: string
+    idTicket: number,
+    idItem: number,
+}
+
+export type UpdateSuperCost1CoutSaisiePayload = {
+    cout: number,
+    groupSuperCost1: string
+    idTicket: number,
+    idItem: number,
+}
+
+
 
 type TYPE_COUT = 
     | "cout_saisi" 
@@ -29,4 +47,6 @@ export type SuperCost1 = {
     category: string,
     group_super_cost_1: string,
     created_at: string
+    mode_reouverture: number
+    pourcentage: number
 }

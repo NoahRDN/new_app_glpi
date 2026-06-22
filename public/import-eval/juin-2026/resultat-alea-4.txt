@@ -1,0 +1,11 @@
+List SuperCost: 7
+List Reouverture: 6
+
+resultat:
+Computer: 832,675
+Monitor: 454,125
+
+scenario alea 4 
+49 => 52 (supercost)
+300 => 600 (supercost)
+7.5 => 15 (reouverture, 3)

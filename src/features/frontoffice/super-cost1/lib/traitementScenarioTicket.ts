@@ -3,18 +3,25 @@ import { totalCost } from "../../../../entities/ticket-cost/lib/ticketCost";
 import { getTicket, updateTicket, type UpdateTicketPayload } from "../../../../entities/ticket/api/ticket.api";
 import { getTicketAssetLinks, getTicketAssetLinksByTicketId } from "../../../../entities/ticket/api/ticketItem.api";
 import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
-import { createSuperCost1, getSuperCost1ByIdTicket, getSuperCost1ByIdTicketMin, getSuperCost1ByIdTicketMoyenne, getSuperCost1ByIdTicketSomme } from "../api/superCost1.api";
+import { createSuperCost1, getAllSuperCostReouvertureAfterClose, getSuperCost1ByIdTicket, getSuperCost1ByIdTicketMin, getSuperCost1ByIdTicketMoyenne, getSuperCost1ByIdTicketSomme, updateSuperCosts1CoutSaisie, updateSuperCosts1Reouverture } from "../api/superCost1.api";
 import type { CreateSuperCost1 } from "../model/ticketSuperCost1.types";
 
 type ChoiceType = {
     ticket: Ticket,
-    cout: number
+    cout: number,
+    isUpdate?: boolean
+    group_super_cost_1_update?: string,
+    id_ticket_update?: number
 }
 
 type ReouvertureChoiceType = {
     ticket: Ticket,
     cout: number
     modeReouveture: number
+    isUpdate?: boolean
+    group_super_cost_1_update?: string,
+    id_ticket_update?: number,
+    pourcentage?: number
 }
 
 export async function GLPIChoice({
@@ -49,7 +56,10 @@ export async function GLPIChoice({
 
 export async function closeChoice({
     ticket,
-    cout
+    cout,
+    isUpdate = false,
+    group_super_cost_1_update= "-1 string",
+    id_ticket_update= -1
 }: ChoiceType){
     const ticketId = ticket.id
 
@@ -80,8 +90,36 @@ export async function closeChoice({
             type_cout:"cout_saisi"         
         }
 
+        if (!isUpdate) {
+            await createSuperCost1(createSuperCost1Playload_SUPER_COST)
+        } else {
+            await updateSuperCosts1CoutSaisie({
+                cout: cout_saisi_final,
+                groupSuperCost1: group_super_cost_1_update,
+                idItem:ticketItem.items_id,
+                idTicket: id_ticket_update
+            })
+
+            const results = await getAllSuperCostReouvertureAfterClose(group_super_cost_1_update)
+            console.log("results: ", results);
+            await Promise.all(
+                results.map(async (result) => {
+                    const ticket1 = await getTicket(result.id_ticket)
+                    await reouverturChoice({
+                        cout: result.cout,
+                        modeReouveture: result. mode_reouverture,
+                        ticket: ticket1,
+                        group_super_cost_1_update: result.group_super_cost_1,
+                        id_ticket_update: Number(result.id_ticket),
+                        isUpdate: true,
+                        pourcentage: result.pourcentage
+                    })
+                })
+            )
+            
+            
+        }
     
-        await createSuperCost1(createSuperCost1Playload_SUPER_COST)
     }
     const ticket1 = await getTicket(ticket.id)
 
@@ -99,14 +137,18 @@ export async function closeChoice({
 export async function reouverturChoice({
     ticket,
     cout,
-    modeReouveture
+    modeReouveture,
+    isUpdate = false,
+    group_super_cost_1_update= "-1 string",
+    id_ticket_update= -1,
+    pourcentage=-1
 }: ReouvertureChoiceType){
     const ticketId = ticket.id
 
-    const superCost1ByIdTicketData = await getSuperCost1ByIdTicket(ticket ? ticket.id : -1)
-    const getSuperCost1ByIdTicketMinData = await getSuperCost1ByIdTicketMin(ticket ? ticket.id : -1)
-    const getSuperCost1ByIdTicketMoyenneData = await getSuperCost1ByIdTicketMoyenne(ticket ? ticket.id : -1)
-    const getSuperCost1ByIdTicketSommeData = await getSuperCost1ByIdTicketSomme(ticket ? ticket.id : -1)
+    const superCost1ByIdTicketData = await getSuperCost1ByIdTicket(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
+    const getSuperCost1ByIdTicketMinData = await getSuperCost1ByIdTicketMin(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
+    const getSuperCost1ByIdTicketMoyenneData = await getSuperCost1ByIdTicketMoyenne(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
+    const getSuperCost1ByIdTicketSommeData = await getSuperCost1ByIdTicketSomme(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
 
     
     let group_super_cost_1 = "";
@@ -163,16 +205,36 @@ export async function reouverturChoice({
             }
         }
         
-        cout_saisi_final = cout *  cout_saisi_final / 100
+        if (isUpdate) {
+            console.log("pourcentage: ", pourcentage)
+            console.log("cout_saisi_final: ", cout_saisi_final)
+            cout_saisi_final = pourcentage *  cout_saisi_final / 100
+        } else {
+            cout_saisi_final = cout *  cout_saisi_final / 100
+        }
+        console.log("cout_saisi_final: ", cout_saisi_final , "cout: ", cout, "ticket: ", ticket.id)
         const createSuperCost1Playload_REOUVERTURE : CreateSuperCost1 = {
             category: ticketItem.itemtype,
             cout: cout_saisi_final,
             group_super_cost_1: group_super_cost_1 ?? "-1 String",
             id_item: ticketItem.items_id,
             id_ticket: ticketId, 
-            type_cout:"reouverture"         
+            type_cout:"reouverture", 
+            mode_reouverture: modeReouveture, 
+            pourcentage: cout
         }
-        await createSuperCost1(createSuperCost1Playload_REOUVERTURE)
+        if (!isUpdate) {
+            await createSuperCost1(createSuperCost1Playload_REOUVERTURE)
+        } else {
+            console.log("hola")
+            await updateSuperCosts1Reouverture({
+                cout: cout_saisi_final,
+                groupSuperCost1: group_super_cost_1_update,
+                idItem: ticketItem.items_id,
+                idTicket: id_ticket_update
+            })
+            
+        }
     }
     const ticket1 = await getTicket(ticket.id)
     if (ticket1.status?.id !== 2) {

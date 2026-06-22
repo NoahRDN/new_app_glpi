@@ -37,6 +37,14 @@ export const frontOfficeNavigation: OfficeNavigationItem[] = [
     label: "Import scenario ticket",
     path: "/import-frontoffice-super-cost",
   },
+  {
+    description: "list supercost reouverture",
+    Icon: FileSpreadsheet,
+    id: "list-supercost-reouverture",
+    label: "list-supercost-reouverture",
+    path: "/list-supercost-reouverture",
+  },
+
   // {
   //   description: "Montant Cost Local Saisie et GLPI",
   //   Icon: CircleDollarSign,

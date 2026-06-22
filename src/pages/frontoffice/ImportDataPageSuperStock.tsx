@@ -802,7 +802,7 @@ export function ImportDataPageSuperStock() {
                               </tr>
                             </thead>
                             <tbody>
-                              {file.entries.slice(0, 10).map((entry) => (
+                              {file.entries.map((entry) => (
                                 <tr key={`${file.fileName}-${entry.fileName}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
                                   <td className="border border-(--panel-border) px-4 py-4">{entry.fileName}</td>
                                   <td className="border border-(--panel-border) px-4 py-4">{entry.reference}</td>
@@ -847,7 +847,7 @@ export function ImportDataPageSuperStock() {
                           </tr>
                         </thead>
                         <tbody>
-                          {file.rows.slice(0, 10).map((row, rowIndex) => (
+                          {file.rows.map((row, rowIndex) => (
                             <tr key={`${file.fileName}-${rowIndex}`} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
                               {file.profile.previewColumns.map((column) => {
                                 const resource = row[column.resource];

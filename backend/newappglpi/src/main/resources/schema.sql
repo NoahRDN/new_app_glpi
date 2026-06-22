@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS super_cost_1 (
   id_item INTEGER,
   category TEXT,
   group_super_cost_1 TEXT NOT NULL,
+  mode_reouverture INTEGER NOT NULL DEFAULT 0,
+  pourcentage REAL NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) STRICT;
 

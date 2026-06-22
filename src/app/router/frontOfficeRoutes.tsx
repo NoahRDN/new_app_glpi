@@ -9,6 +9,7 @@ import { TicketsPage } from "../../pages/frontoffice/TicketsPage";
 import { TicketsKanbanPage } from "../../pages/frontoffice/TicketsKanbanPage";
 import { MontantLocalGlpi1 } from "../../pages/frontoffice/MontantLocalGlpi1";
 import { ImportDataPageSuperStock } from "../../pages/frontoffice/ImportDataPageSuperStock";
+import { ListSupercostReouverture } from "../../pages/frontoffice/ListSupercostReouverture";
 
 export const frontOfficeRoutes: RouteObject = {
   children: [
@@ -55,6 +56,10 @@ export const frontOfficeRoutes: RouteObject = {
         {
           path: "import-frontoffice-super-cost",
           element: <ImportDataPageSuperStock />,
+        },
+        {
+          path: "list-supercost-reouverture",
+          element: <ListSupercostReouverture />,
         },
       ],
     },

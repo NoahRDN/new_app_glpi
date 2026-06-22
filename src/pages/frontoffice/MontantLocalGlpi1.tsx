@@ -3,6 +3,7 @@ import { useSuperCost1 } from "../../features/frontoffice/super-cost1/hooks/useS
 import { useSuperCost1GroupByCategorieTypeCout } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1GroupByCategorie";
 import { Button } from "../../shared/ui/Button";
 import { DataTable } from "../../shared/ui/DataTable";
+import { useSuperCost1MaxGLPI } from "../../features/frontoffice/super-cost1/hooks/useSuperCost1MaxGLPI";
 
 export function MontantLocalGlpi1(){
     const [categorieItemDetail, setCategorieItemDetail] = useState<string>("");
@@ -10,6 +11,12 @@ export function MontantLocalGlpi1(){
     const {
         data: superCost1GroupByCategorieTypeCout
     }=  useSuperCost1GroupByCategorieTypeCout()
+
+
+    const {
+        data: useSuperCost1MaxGLPIData
+    }=  useSuperCost1MaxGLPI()
+    
 
     const {
             data: superCostsData
@@ -53,21 +60,23 @@ export function MontantLocalGlpi1(){
             ]}
         >
             
-            {superCostsData && superCost1GroupByCategorieTypeCout && categories &&
+            {superCostsData && superCost1GroupByCategorieTypeCout && categories && useSuperCost1MaxGLPIData &&
                 categories.map((category) => {
                     let glpi = 0;
                     let cout_saisi = 0;
                     let reouverture = 0;
                     const itemsCategory : number[] = [];
                     const ticketsCategory : string[] = [];
-                    superCost1GroupByCategorieTypeCout.map((superCost1) => {
-                        if (superCost1.category !== category) {
+
+                    useSuperCost1MaxGLPIData.map((superCost1MaxGLPI) => {
+                        if (superCost1MaxGLPI.category !== category) {
                             return
                         }
-                        if (superCost1.type_cout === "glpi") {
-                            glpi = glpi + superCost1.cout;
+                        if (superCost1MaxGLPI.type_cout === "glpi") {
+                            glpi = glpi + superCost1MaxGLPI.cout;
                         }
                     })
+                    
 
                     superCost1GroupByCategorieTypeCout.map((superCost1) => {
                         if (superCost1.category !== category) {
@@ -113,7 +122,7 @@ export function MontantLocalGlpi1(){
                 })
             }
         </DataTable>
-        {superCostsDetailUnique.length > 0 && (
+        {superCostsDetailUnique.length > 0 && useSuperCost1MaxGLPIData && (
             <DataTable 
                 className="mt-5"
                 tableHeads={[
@@ -130,14 +139,14 @@ export function MontantLocalGlpi1(){
                 {superCostsDetailUnique.map((superCostDetail) => {
                     let coutGlpi = 0;
                     
-                    superCostsDetail.find((superCost) => { 
+                    useSuperCost1MaxGLPIData.find((superCost1MaxGLPI) => { 
                         if (
-                            superCost.id_item === superCostDetail.id_item &&
-                            superCost.type_cout === "glpi" &&
-                            superCost.category === superCostDetail.category &&
-                            superCost.id_ticket === superCostDetail.id_ticket 
+                            superCost1MaxGLPI.id_item === superCostDetail.id_item &&
+                            superCost1MaxGLPI.type_cout === "glpi" &&
+                            superCost1MaxGLPI.category === superCostDetail.category &&
+                            superCost1MaxGLPI.id_ticket === superCostDetail.id_ticket 
                         ){
-                            coutGlpi = coutGlpi + superCost.cout;
+                            coutGlpi = coutGlpi + superCost1MaxGLPI.cout;
                         }
                     });
 
