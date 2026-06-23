@@ -5,6 +5,15 @@ public class SuperCost1 {
     private Integer idTicket;
     private Integer idItem;
     private String groupSuperCost1;
+    private Integer id;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public double getCout() {
         return cout;

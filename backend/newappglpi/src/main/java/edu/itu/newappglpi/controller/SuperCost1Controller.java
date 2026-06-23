@@ -1,7 +1,5 @@
 package edu.itu.newappglpi.controller;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
-import edu.itu.newappglpi.model.KanbanSetting;
 import edu.itu.newappglpi.model.SuperCost1;
 
 
@@ -39,6 +35,7 @@ public class SuperCost1Controller {
         return jdbcTemplate.queryForList("""
             SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
             FROM super_cost_1
+            WHERE etat_retablir = 1
             ORDER BY id DESC
         """);
     }
@@ -49,6 +46,18 @@ public class SuperCost1Controller {
             SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
             FROM super_cost_1
             WHERE type_cout="cout_saisi"
+            and etat_retablir = 1
+            ORDER BY id DESC
+        """);
+    }
+
+    @GetMapping("/all-supercost-supprimer")
+    public List<Map<String, Object>> findAllBySuperCostSupprimer() {
+        return jdbcTemplate.queryForList("""
+            SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
+            FROM super_cost_1
+            WHERE type_cout="cout_saisi"
+            and etat_retablir = 0
             ORDER BY id DESC
         """);
     }
@@ -56,9 +65,10 @@ public class SuperCost1Controller {
      @GetMapping("/all-reouverture")
     public List<Map<String, Object>> findAllByReouverture() {
         return jdbcTemplate.queryForList("""
-            SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at
+            SELECT id ,id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, created_at, pourcentage
             FROM super_cost_1
             WHERE type_cout="reouverture" 
+            and etat_retablir = 1
             ORDER BY id DESC
         """);
     }
@@ -75,7 +85,9 @@ public class SuperCost1Controller {
                 FROM super_cost_1
                 WHERE id_ticket = 752
                 AND type_cout="glpi"
+                and etat_retablir = 1
             ) 
+            and etat_retablir = 1
             GROUP BY id_item 
         """, id_ticket, id_ticket);
     }
@@ -100,7 +112,9 @@ public class SuperCost1Controller {
                 WHERE sc2.type_cout = 'glpi'
                 AND sc2.id_ticket = sc.id_ticket
                 AND sc2.id_item = sc.id_item
+                and etat_retablir = 1
             )
+            and etat_retablir = 1
             ORDER BY sc.id_ticket, sc.id_item; 
         """);
     }
@@ -116,8 +130,10 @@ public class SuperCost1Controller {
                 SELECT MAX(group_super_cost_1)
                 FROM super_cost_1
                 WHERE id_ticket = ?
+                and etat_retablir = 1
             )
             AND id_ticket = ?
+            and etat_retablir = 1
         """,id_ticket);
     }
 
@@ -136,8 +152,10 @@ public class SuperCost1Controller {
                     WHERE id_ticket = ?
                     AND type_cout="cout_saisi"
                     AND group_super_cost_1 <= ? 
+                    and etat_retablir = 1
                 )
                 AND group_super_cost_1 <= ? 
+                and etat_retablir = 1
             ) GROUP BY id_item
         """, id_ticket, id_ticket, group_super_cost, group_super_cost);
         } else {
@@ -152,12 +170,39 @@ public class SuperCost1Controller {
                     FROM super_cost_1
                     WHERE id_ticket = ?
                     AND type_cout="cout_saisi"
+                    and etat_retablir = 1
                 )
+                and etat_retablir = 1
             ) GROUP BY id_item
         """, id_ticket, id_ticket);
         }
         
         
+    }
+
+    @PutMapping("/update-supercost")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Map<String, Object>> updateSuperCostRestaure(
+        @RequestBody SuperCost1 payload
+    ) {
+        jdbcTemplate.update(
+            """
+                UPDATE super_cost_1
+                SET etat_retablir = 1
+                WHERE id = ?
+            """,
+            payload.getId()
+        );
+
+        return jdbcTemplate.queryForList(
+            """
+                SELECT
+                    id, id_ticket, type_cout, cout, id_item, category, group_super_cost_1, created_at
+                FROM super_cost_1
+                WHERE id = ?
+            """,
+            payload.getId()
+        );
     }
 
     @PutMapping("/{just_number}/reouverture")
@@ -250,8 +295,10 @@ public class SuperCost1Controller {
                         WHERE id_ticket = ?
                         AND type_cout="cout_saisi"
                         AND group_super_cost_1 <= ?
+                        and etat_retablir = 1
                     )
                     AND group_super_cost_1 <= ? 
+                    and etat_retablir = 1
                 ) GROUP BY id_item
             """, id_ticket, id_ticket, group_super_cost, group_super_cost);
         } else {
@@ -266,7 +313,9 @@ public class SuperCost1Controller {
                     FROM super_cost_1
                     WHERE id_ticket = ?
                     AND type_cout="cout_saisi"
+                    and etat_retablir = 1
                 )
+                and etat_retablir = 1
             ) GROUP BY id_item
         """, id_ticket, id_ticket);
         }
@@ -282,6 +331,7 @@ public class SuperCost1Controller {
                     id_ticket = ?
                     AND type_cout="cout_saisi"
                     AND group_super_cost_1 <= ?
+                    and etat_retablir = 1
                 ) GROUP BY id_item;
             """, id_ticket, group_super_cost);
         } else {
@@ -291,13 +341,27 @@ public class SuperCost1Controller {
                 WHERE (
                     id_ticket = ?
                     AND type_cout="cout_saisi"
+                    and etat_retablir = 1
                 ) GROUP BY id_item;
             """, id_ticket);
         }
     }
 
-    @GetMapping({"/{id_ticket}/somme/{group_super_cost}", "/{id_ticket}/somme"})
-    public List<Map<String, Object>> findByIdTicketGroupSomme(@PathVariable String id_ticket, @PathVariable(required = false) String group_super_cost) {
+    @GetMapping({"/{id_ticket}/somme/{group_super_cost}", "/{id_ticket}/somme", "/{id_ticket}/somme/{reouverture}/{group_super_cost}"})
+    public List<Map<String, Object>> findByIdTicketGroupSomme(@PathVariable String id_ticket, @PathVariable(required = false) String group_super_cost, @PathVariable(required = false) String reouverture) {
+        if (group_super_cost != null && reouverture != null) {
+            return jdbcTemplate.queryForList("""
+                SELECT id, id_ticket, type_cout, SUM(cout) as cout, id_item, category, group_super_cost_1, created_at
+                FROM super_cost_1
+                WHERE (
+                    id_ticket = ?
+                    AND type_cout="reouverture"
+                    AND group_super_cost_1 < ?
+                    and etat_retablir = 1
+                ) GROUP BY id_item
+            """, id_ticket, group_super_cost);
+        }
+
         if (group_super_cost != null) {
             return jdbcTemplate.queryForList("""
                 SELECT id, id_ticket, type_cout, SUM(cout) as cout, id_item, category, group_super_cost_1, created_at
@@ -306,6 +370,7 @@ public class SuperCost1Controller {
                     id_ticket = ?
                     AND type_cout="cout_saisi"
                     AND group_super_cost_1 <= ?
+                    and etat_retablir = 1
                 ) GROUP BY id_item
             """, id_ticket, group_super_cost);
         } else {
@@ -315,6 +380,7 @@ public class SuperCost1Controller {
                 WHERE (
                     id_ticket = ?
                     AND type_cout="cout_saisi"
+                    and etat_retablir = 1
                 ) GROUP BY id_item
             """, id_ticket);
         }
@@ -329,6 +395,7 @@ public class SuperCost1Controller {
                 COUNT(id_item) AS nombre_asset,
                 SUM(cout) AS cout
             FROM super_cost_1
+            WHERE etat_retablir = 1
             GROUP BY category, type_cout
         """);
     }
@@ -350,7 +417,9 @@ public class SuperCost1Controller {
                     (
                         SELECT id_ticket FROM super_cost_1
                     )
+                    and etat_retablir = 1
                 ) 
+                and etat_retablir = 1
             GROUP BY category, type_cout
         """);
     }
@@ -362,12 +431,27 @@ public class SuperCost1Controller {
             FROM super_cost_1
             where group_super_cost_1 >= ?
             and type_cout="reouverture"
+            and etat_retablir = 1
         """, group_super_cost);
     }
 
 
     @PostMapping
     public Map<String, Object> create(@RequestBody Map<String, Object> body) {
+        
+        if (body.get("etat_retablir") != null) {
+            jdbcTemplate.update(
+                "INSERT INTO super_cost_1 (id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, etat_retablir) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                body.get("id_ticket"),
+                body.get("type_cout"),
+                body.get("cout"),
+                body.get("id_item"),
+                body.get("category"),
+                body.get("group_super_cost_1"),
+                body.get("etat_retablir")
+            );
+        }
+        
         if (body.get("mode_reouverture") != null && body.get("pourcentage") != null) {
             jdbcTemplate.update(
                 "INSERT INTO super_cost_1 (id_ticket ,type_cout, cout, id_item ,category , group_super_cost_1, mode_reouverture, pourcentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -401,10 +485,31 @@ public class SuperCost1Controller {
         return Map.of("success", true);
     }
 
+    // @DeleteMapping("/{id_ticket}/cout_saisie")
+    // public Map<String, Object> deleteCoutSaisiMax(@PathVariable String id_ticket) {
+    //     jdbcTemplate.update("""
+    //         DELETE FROM super_cost_1 
+    //         where id_ticket=?
+    //         AND  group_super_cost_1 = (
+    //             SELECT MAX(group_super_cost_1)
+    //             FROM super_cost_1
+    //             WHERE id_ticket=?
+    //         )
+    //         AND type_cout="cout_saisi"
+    //     """,
+    //         id_ticket, id_ticket);
+    //     return Map.of("success", true);
+    // }
+
+// UPDATE super_cost_1
+//                 SET etat_retablir = 1
+//                 WHERE id = ?
+
     @DeleteMapping("/{id_ticket}/cout_saisie")
     public Map<String, Object> deleteCoutSaisiMax(@PathVariable String id_ticket) {
         jdbcTemplate.update("""
-            DELETE FROM super_cost_1 
+            UPDATE super_cost_1
+            SET etat_retablir = 0
             where id_ticket=?
             AND  group_super_cost_1 = (
                 SELECT MAX(group_super_cost_1)

@@ -50,3 +50,7 @@ export type SuperCost1 = {
     mode_reouverture: number
     pourcentage: number
 }
+
+export type Plafond = {
+    pourcentage: number
+}

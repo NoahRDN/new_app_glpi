@@ -3,7 +3,7 @@ import { totalCost } from "../../../../entities/ticket-cost/lib/ticketCost";
 import { getTicket, updateTicket, type UpdateTicketPayload } from "../../../../entities/ticket/api/ticket.api";
 import { getTicketAssetLinks, getTicketAssetLinksByTicketId } from "../../../../entities/ticket/api/ticketItem.api";
 import type { Ticket } from "../../../../entities/ticket/model/ticket.types";
-import { createSuperCost1, getAllSuperCostReouvertureAfterClose, getSuperCost1ByIdTicket, getSuperCost1ByIdTicketMin, getSuperCost1ByIdTicketMoyenne, getSuperCost1ByIdTicketSomme, updateSuperCosts1CoutSaisie, updateSuperCosts1Reouverture } from "../api/superCost1.api";
+import { createSuperCost1, getAllSuperCostReouvertureAfterClose, getPlafond, getSuperCost1ByIdTicket, getSuperCost1ByIdTicketMin, getSuperCost1ByIdTicketMoyenne, getSuperCost1ByIdTicketSomme, updateSuperCosts1CoutSaisie, updateSuperCosts1Reouverture } from "../api/superCost1.api";
 import type { CreateSuperCost1 } from "../model/ticketSuperCost1.types";
 
 type ChoiceType = {
@@ -21,7 +21,8 @@ type ReouvertureChoiceType = {
     isUpdate?: boolean
     group_super_cost_1_update?: string,
     id_ticket_update?: number,
-    pourcentage?: number
+    pourcentage?: number,
+    isRecalcule?: boolean
 }
 
 export async function GLPIChoice({
@@ -145,10 +146,29 @@ export async function reouverturChoice({
 }: ReouvertureChoiceType){
     const ticketId = ticket.id
 
+    const plafond = await getPlafond();
     const superCost1ByIdTicketData = await getSuperCost1ByIdTicket(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
     const getSuperCost1ByIdTicketMinData = await getSuperCost1ByIdTicketMin(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
     const getSuperCost1ByIdTicketMoyenneData = await getSuperCost1ByIdTicketMoyenne(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
     const getSuperCost1ByIdTicketSommeData = await getSuperCost1ByIdTicketSomme(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined)
+    const montantTotalPlafondData = await getSuperCost1ByIdTicketSomme(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined);
+    const montantTotalUtiliseData = await getSuperCost1ByIdTicketSomme(ticket ? ticket.id : -1, isUpdate ? group_super_cost_1_update : undefined, true);
+    
+
+    let montantTotalPlafond = 0;
+    let montantTotalUtilise = 0;
+
+    montantTotalPlafondData.map((montantTotalPlafondValue) => {
+        montantTotalPlafond = montantTotalPlafond +  montantTotalPlafondValue.cout
+    })
+
+    montantTotalUtiliseData.map((montantTotalUtiliseValue) => {
+        montantTotalUtilise = montantTotalUtilise +  montantTotalUtiliseValue.cout
+    })
+
+    montantTotalPlafond = montantTotalPlafond * plafond[0].pourcentage / 100;
+
+    const montantTotalRestant = montantTotalPlafond - montantTotalUtilise
 
     
     let group_super_cost_1 = "";
@@ -212,7 +232,13 @@ export async function reouverturChoice({
         } else {
             cout_saisi_final = cout *  cout_saisi_final / 100
         }
+
+        if (cout_saisi_final > (montantTotalRestant/ticketItems.length)) {
+            cout_saisi_final = montantTotalRestant/ticketItems.length
+        }
+
         console.log("cout_saisi_final: ", cout_saisi_final , "cout: ", cout, "ticket: ", ticket.id)
+        console.log("montantTotalRestant: ", montantTotalRestant, "montantTotalPlafond: ", montantTotalPlafond, "montantTotalUtilise: ", montantTotalUtilise, "plafond: ", plafond);
         const createSuperCost1Playload_REOUVERTURE : CreateSuperCost1 = {
             category: ticketItem.itemtype,
             cout: cout_saisi_final,
@@ -226,7 +252,9 @@ export async function reouverturChoice({
         if (!isUpdate) {
             await createSuperCost1(createSuperCost1Playload_REOUVERTURE)
         } else {
-            console.log("hola")
+            if (modeReouveture === 4) {
+                cout_saisi_final = cout_saisi_final / ticketItems.length
+            }   
             await updateSuperCosts1Reouverture({
                 cout: cout_saisi_final,
                 groupSuperCost1: group_super_cost_1_update,

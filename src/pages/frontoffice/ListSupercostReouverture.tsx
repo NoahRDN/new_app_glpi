@@ -10,6 +10,8 @@ import { Select } from "../../shared/ui/Select";
 import { closeChoice, reouverturChoice } from "../../features/frontoffice/super-cost1/lib/traitementScenarioTicket";
 import type { SuperCost1 } from "../../features/frontoffice/super-cost1/model/ticketSuperCost1.types";
 import { getTicket } from "../../entities/ticket/api/ticket.api";
+import { useSuperCosts1AllSuperCostSupprimer } from "../../features/frontoffice/super-cost1/hooks/useSuperCosts1AllSuperCostSupprimer";
+import { getAllSuperCostReouvertureAfterClose, updateSuperCostRestaure } from "../../features/frontoffice/super-cost1/api/superCost1.api";
 
 export function ListSupercostReouverture(){
     const {
@@ -17,11 +19,16 @@ export function ListSupercostReouverture(){
     }=  useSuperCosts1AllSuperCost()
 
     const {
+        data: superCosts1AllSuperCostSupprimerData
+    }=  useSuperCosts1AllSuperCostSupprimer()
+
+    const {
         data: superCost1AllReouvertureData
     }=  useSuperCost1AllReouverture()
 
     const [isModalOpenReouverture, setIsModalOpenReouverture] = useState(false);
     const [isModalOpenCoutSaisie, setIsModalOpenCoutSaisie] = useState(false);
+    const [isModalOpenRetablir, setIsModalOpenRetablir] = useState(false);
     const [cout, setCout] = useState<number>(0);    
     const [modeReouverture, setModeReouverture] = useState<number>(1)
     const [superCost1Update, setsuperCost1Update] = useState<SuperCost1 | null>(null)
@@ -69,6 +76,45 @@ export function ListSupercostReouverture(){
             id_ticket_update: ticket.id,
             pourcentage: cout
         })
+    }
+
+    async function retablirCost(costARetablir: SuperCost1 | null) {
+        if (costARetablir === null) {
+            console.error("costARetablir n'a pas de valeur pour effectuer la retablissement");
+            return
+        }
+
+
+        if (superCosts1AllSuperCostSupprimerData) {
+            for(const superCosts1AllSuperCostSupprimer of superCosts1AllSuperCostSupprimerData){
+                if (superCosts1AllSuperCostSupprimer.group_super_cost_1 === costARetablir.group_super_cost_1) {
+                    await updateSuperCostRestaure(superCosts1AllSuperCostSupprimer.id);
+                }
+            }
+            
+        } else {
+            console.error("superCosts1AllSuperCostSupprimerData n'existe pas");
+            return
+        }
+
+        const results = await getAllSuperCostReouvertureAfterClose(costARetablir.group_super_cost_1)
+        await Promise.all(
+            results.map(async (result) => {
+                const ticket1 = await getTicket(result.id_ticket)
+                const data = {
+                    cout: result.cout,
+                    modeReouveture: result.mode_reouverture,
+                    ticket: ticket1,
+                    group_super_cost_1_update: result.group_super_cost_1,
+                    id_ticket_update: Number(result.id_ticket),
+                    isUpdate: true,
+                    pourcentage: result.pourcentage
+                }
+                console.log(data)
+                await reouverturChoice(data)
+            })
+        )
+        
     }
 
     if (isModalOpenReouverture) {
@@ -156,6 +202,36 @@ export function ListSupercostReouverture(){
         </Modal>
     }
 
+    if (isModalOpenRetablir) {
+        return <Modal
+            isOpen={isModalOpenRetablir}
+            title="Rétablir Super Cost"
+            onClose={() => {
+                setIsModalOpenRetablir(false)
+                }}
+            >
+            
+            <div className="flex gap-3">
+                <h1>Voulez-vous vraiment rétablir</h1>
+                <Button
+                    type="button"
+                    isWithBackground={false}
+                    className="w-full flex items-center flex-col"
+                    onClick={() => setIsModalOpenRetablir(false)}
+                >
+                    Annuler
+                </Button>
+                <Button type="button" className="w-full flex items-center flex-col"
+                    onClick={() => {
+                        retablirCost(superCost1Update);
+                    }}
+                >
+                    { 'Valider'}
+                </Button>
+            </div>
+        </Modal>
+    }
+
 
     return <div className="p-5 bg-white col-span-12">
         <section>
@@ -207,6 +283,7 @@ export function ListSupercostReouverture(){
                     "cout",
                     "category",
                     "id item",
+                    "pourcentage",
                 "Action"]
                 }
             >
@@ -219,6 +296,7 @@ export function ListSupercostReouverture(){
                         <td className="border border-(--panel-border) px-4 py-4">{superCost1AllReouverture.cout}</td>
                         <td className="border border-(--panel-border) px-4 py-4">{superCost1AllReouverture.category}</td>
                         <td className="border border-(--panel-border) px-4 py-4">{superCost1AllReouverture.id_item}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCost1AllReouverture.pourcentage}</td>
                         <td className="border border-(--panel-border) px-4 py-4">
                             <Button
                                 onClick={() => {
@@ -227,6 +305,45 @@ export function ListSupercostReouverture(){
                                 }}
                             >
                                 Modifier
+                            </Button>
+                        </td>
+                    </tr>
+                })}
+            </DataTable>
+        </section>
+
+
+        <section>
+            <h1>List SuperCost Annuler à Rétablir</h1>
+            <DataTable
+                tableHeads={[
+                    "N° ligne",
+                    "id", 
+                    "id_ticket",
+                    "type cout",
+                    "cout",
+                    "category",
+                    "id item",
+                    "Action"]
+                }
+            >
+                {superCosts1AllSuperCostSupprimerData && superCosts1AllSuperCostSupprimerData.map((superCosts1AllSuperCost, index) => {
+                    return <tr>
+                        <td className="border border-(--panel-border) px-4 py-4">{index + 1}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCosts1AllSuperCost.id}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCosts1AllSuperCost.id_ticket}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCosts1AllSuperCost.type_cout}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCosts1AllSuperCost.cout}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCosts1AllSuperCost.category}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">{superCosts1AllSuperCost.id_item}</td>
+                        <td className="border border-(--panel-border) px-4 py-4">
+                            <Button
+                                onClick={() => {
+                                    setIsModalOpenRetablir(true)
+                                    setsuperCost1Update(superCosts1AllSuperCost)
+                                }}
+                            >
+                                Rétablir
                             </Button>
                         </td>
                     </tr>
