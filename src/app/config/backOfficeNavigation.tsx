@@ -51,13 +51,13 @@ export const backOfficeNavigation: OfficeNavigationItem[] = [
     Icon: RotateCcw,
     // isHorizontalRowDown: true,
   },
-  {
-    id: "user-test",
-    path: "/admin/user-test",
-    label: "User Test",
-    description: "CRUD local user test via SQLite",
-    Icon: Users,
-  },
+  // {
+  //   id: "user-test",
+  //   path: "/admin/user-test",
+  //   label: "User Test",
+  //   description: "CRUD local user test via SQLite",
+  //   Icon: Users,
+  // },
 
   // {
   //   id: "dashboard-other",
