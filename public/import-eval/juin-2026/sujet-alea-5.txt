@@ -1,0 +1,9 @@
+liste annuler et on peut retablir dia miverina t@ ilay placeny t@ fotoana nanaovany annulation(annulation an'ilay supercost)
+
+mamorona parametre vaovao: plafond reouverture (tsy voatery asiana interface) (stocker dans sqlite): valeur en pourcentage le plafond
+
+ex: 
+supercost: 100
+plafond: 20%
+
+total ouverture tsy mahazo miotra ny total supercost rehetra ao ambony

@@ -1,0 +1,28 @@
+plafond: 10%
+close: 100,000
+montant total plafonner: 10,000
+
+
+reouverture: 5%(1) => 5,000
+montant total utiliser: 5,000
+montant total restant qui peut etre utiliser: 5,000
+
+
+
+-------
+close: 0
+montant total plafonner: 10,000
+
+reouverture: 2%(4) => 2,000
+montant total utiliser: 5,000+2,000
+montant total restant qui peut etre utiliser: 5,000-2,000=3,000
+
+
+---------
+
+close: 0
+montant total plafonner: 10,000
+reouverture: 100%(4) => 3,000 (reste à utilise car 100,000 depasse le plafond)
+montant total utiliser: 7,000+3,000
+montant total restant qui peut etre utiliser: 3,000-3,000=0
+
