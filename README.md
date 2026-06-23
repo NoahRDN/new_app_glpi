@@ -13,10 +13,12 @@ The frontend is built with `React + TypeScript + Vite`, and the local backend is
 
 - Frontoffice and backoffice routing separation
 - GLPI OAuth / API integration
-- Asset listing and ticket kanban
+- Asset listing, ticket creation, and ticket kanban workflows
 - CSV import with profiles and rollback logic
 - GLPI reset tools
-- Local SQLite-backed features like kanban settings and `user-test`
+- Backoffice kanban customization stored in SQLite
+- Local SQLite-backed features like `user-test`, super-cost datasets, plafond settings, and local note / cost support
+- Frontoffice pages for local GLPI amount comparison and super-cost analysis
 - Light and dark themes
 
 ## Tech stack
@@ -87,6 +89,18 @@ http://localhost:8081
 
 It is used through the Vite proxy with `/local-api`.
 
+## Local SQLite data
+
+The Spring backend stores project-specific local data in SQLite. Current tables include:
+
+- `kanban_settings`
+- `local_notes`
+- `super_cost`
+- `super_cost_1`
+- `plafond`
+- `user_test`
+- `tickets_test`
+
 ## Build
 
 Frontend production build:
@@ -106,13 +120,18 @@ cd backend/newappglpi
 
 - Frontoffice root: `/`
 - Frontoffice asset list: `/asset-general-element`
+- Frontoffice ticket creation: `/create-ticket`
 - Frontoffice ticket kanban: `/ticket-kanban`
+- Frontoffice local amount page: `/montant-local-glpi-1`
+- Frontoffice super-cost import page: `/import-frontoffice-super-cost`
+- Frontoffice super-cost reopening list: `/list-supercost-reouverture`
 - Backoffice root: `/admin`
 - Backoffice tickets: `/admin/tickets`
 - Backoffice import: `/admin/import-data`
 - Backoffice reset: `/admin/reset-data`
 - Backoffice kanban settings: `/admin/kanban-settings`
 - Backoffice local CRUD example: `/admin/user-test`
+- Backoffice ticket detail: `/admin/tickets/:ticketId`
 
 ## Documentation
 
@@ -125,3 +144,4 @@ cd backend/newappglpi
 - The backoffice remains protected by local auth logic.
 - The frontoffice is currently accessible without login.
 - Some local features depend on the Spring backend being available.
+- The README summarizes the current product surface; for the folder-level map, use [ARCHITECTURE.md](./ARCHITECTURE.md).

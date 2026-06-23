@@ -13,10 +13,12 @@ Le frontend est construit avec `React + TypeScript + Vite`, et le backend local 
 
 - Separation frontoffice / backoffice dans le routing
 - Integration GLPI OAuth / API
-- Liste des assets et kanban tickets
+- Liste des assets, creation de tickets et workflows kanban tickets
 - Import CSV avec profils et logique de rollback
 - Outils de reinitialisation GLPI
-- Fonctionnalites locales basees sur SQLite comme les parametres du kanban et `user-test`
+- Personnalisation du kanban backoffice stockee en SQLite
+- Fonctionnalites locales basees sur SQLite comme `user-test`, les jeux de donnees super-cost, les parametres de plafond et le support de notes / couts locaux
+- Pages frontoffice pour le rapprochement de montant local / GLPI et l’analyse super-cost
 - Themes clair et sombre
 
 ## Stack technique
@@ -87,6 +89,18 @@ http://localhost:8081
 
 Il est consomme via le proxy Vite avec `/local-api`.
 
+## Donnees SQLite locales
+
+Le backend Spring stocke des donnees locales specifiques au projet dans SQLite. Les tables actuellement presentes incluent :
+
+- `kanban_settings`
+- `local_notes`
+- `super_cost`
+- `super_cost_1`
+- `plafond`
+- `user_test`
+- `tickets_test`
+
 ## Build
 
 Build production du frontend :
@@ -106,13 +120,18 @@ cd backend/newappglpi
 
 - Racine frontoffice : `/`
 - Liste frontoffice des assets : `/asset-general-element`
+- Creation de ticket frontoffice : `/create-ticket`
 - Kanban tickets frontoffice : `/ticket-kanban`
+- Page frontoffice de montant local : `/montant-local-glpi-1`
+- Page frontoffice d'import super-cost : `/import-frontoffice-super-cost`
+- Liste frontoffice de reouverture super-cost : `/list-supercost-reouverture`
 - Racine backoffice : `/admin`
 - Tickets backoffice : `/admin/tickets`
 - Import backoffice : `/admin/import-data`
 - Reinitialisation backoffice : `/admin/reset-data`
 - Parametres kanban backoffice : `/admin/kanban-settings`
 - Exemple de CRUD local backoffice : `/admin/user-test`
+- Detail ticket backoffice : `/admin/tickets/:ticketId`
 
 ## Documentation
 
@@ -125,3 +144,4 @@ cd backend/newappglpi
 - Le backoffice reste protege par la logique d’auth locale.
 - Le frontoffice est actuellement accessible sans connexion.
 - Certaines fonctionnalites locales dependent du backend Spring.
+- Ce README resume les fonctionnalites visibles ; pour la cartographie plus detaillee du code, voir [ARCHITECTURE.md](./ARCHITECTURE.md).
