@@ -2052,3 +2052,72 @@ Boolean(0)            // false
 Boolean(false)        // false
 ```
 
+# Pourquoi useEffect et pas useMemo ?
+
+Ton code :
+
+useEffect(() => {
+  document.documentElement.dataset.theme = theme;
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+}, [theme]);
+
+fait deux actions :
+
+1. modifier le DOM
+2. écrire dans localStorage
+
+Ce sont des effets secondaires.
+
+Un effet secondaire, c’est une action qui sort du simple calcul React. Par exemple :
+
+- modifier document
+- écrire dans localStorage
+- appeler une API
+- écouter un événement
+- modifier le titre de la page
+
+Donc ici, useEffect est le bon outil.
+
+useMemo, lui, sert à mémoriser un calcul.
+
+Exemple :
+
+const total = useMemo(() => {
+  return price * quantity;
+}, [price, quantity]);
+
+useMemo doit surtout retourner une valeur calculée. Il ne sert pas à modifier le DOM ou à écrire dans localStorage.
+
+Donc :
+
+useEffect(...)
+
+est correct ici, parce que tu modifies réellement le navigateur après le changement de thème.
+
+# C’est quoi const location = useLocation(); ?
+
+Dans ton code :
+
+const location = useLocation();
+
+useLocation() vient de react-router.
+
+Il donne des informations sur l’URL actuelle.
+
+Par exemple, si tu es sur :
+
+/admin/tickets
+
+alors :
+
+location.pathname
+
+vaut :
+
+"/admin/tickets"
+
+Dans ton code, tu utilises location.pathname pour trouver l’élément de navigation actif :
+
+return location.pathname.startsWith(item.path);
+
+Donc si l’utilisateur est sur /admin/tickets, ton layout peut savoir quel menu doit être considéré actif.

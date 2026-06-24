@@ -76,6 +76,24 @@ export function ListSupercostReouverture(){
             id_ticket_update: ticket.id,
             pourcentage: cout
         })
+
+        const results = await getAllSuperCostReouvertureAfterClose(superCost1ReouvertureUpdateValue.group_super_cost_1)
+        await Promise.all(
+            results.map(async (result) => {
+                const ticket1 = await getTicket(result.id_ticket)
+                const data = {
+                    cout: result.cout,
+                    modeReouveture: result.mode_reouverture,
+                    ticket: ticket1,
+                    group_super_cost_1_update: result.group_super_cost_1,
+                    id_ticket_update: Number(result.id_ticket),
+                    isUpdate: true,
+                    pourcentage: result.pourcentage
+                }
+                console.log(data)
+                await reouverturChoice(data)
+            })
+        )
     }
 
     async function retablirCost(costARetablir: SuperCost1 | null) {

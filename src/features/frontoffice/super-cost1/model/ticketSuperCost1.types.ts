@@ -22,6 +22,7 @@ export type UpdateSuperCost1ReouverturePayload = {
     groupSuperCost1: string
     idTicket: number,
     idItem: number,
+    pourcentage: number,
 }
 
 export type UpdateSuperCost1CoutSaisiePayload = {
