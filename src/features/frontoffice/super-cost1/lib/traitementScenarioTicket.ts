@@ -252,16 +252,13 @@ export async function reouverturChoice({
         if (!isUpdate) {
             await createSuperCost1(createSuperCost1Playload_REOUVERTURE)
         } else {
-            if (modeReouveture === 4) {
-                cout_saisi_final = cout_saisi_final / ticketItems.length
-            }   
             await updateSuperCosts1Reouverture({
                 cout: cout_saisi_final,
                 groupSuperCost1: group_super_cost_1_update,
                 idItem: ticketItem.items_id,
-                idTicket: id_ticket_update
+                idTicket: id_ticket_update,
+                pourcentage: pourcentage
             })
-            
         }
     }
     const ticket1 = await getTicket(ticket.id)

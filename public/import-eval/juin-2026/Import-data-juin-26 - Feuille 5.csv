@@ -1,7 +1,8 @@
 Num_Ticket,mvt,valeur,mode_reouverture
-1,"close",0,0
-1,"open",10,3
+1,"close",30,0
+1,"open",35,3
+2,"close","150",0
 2,"open","7,5",4
-2,"close","60",0
+2,"close","0",0
 2,"open","10",3
 1,"close","100",0

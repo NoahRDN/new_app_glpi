@@ -46,7 +46,8 @@ export function MontantLocalGlpi1(){
         })
     }
 
-    return <div className="p-5 bg-white col-span-12">
+    return <div className="bg-(--panel-strong) rounded-4xl p-5 my-5 col-span-12">
+        <h1 className="font-semibold text-(--text-primary) text-center my-2 mb-4 text-2xl underline">Vue général Total coût</h1>
         <DataTable 
             tableHeads={[
                 "categorie item",

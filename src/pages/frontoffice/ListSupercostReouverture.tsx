@@ -76,6 +76,24 @@ export function ListSupercostReouverture(){
             id_ticket_update: ticket.id,
             pourcentage: cout
         })
+
+        const results = await getAllSuperCostReouvertureAfterClose(superCost1ReouvertureUpdateValue.group_super_cost_1)
+        await Promise.all(
+            results.map(async (result) => {
+                const ticket1 = await getTicket(result.id_ticket)
+                const data = {
+                    cout: result.cout,
+                    modeReouveture: result.mode_reouverture,
+                    ticket: ticket1,
+                    group_super_cost_1_update: result.group_super_cost_1,
+                    id_ticket_update: Number(result.id_ticket),
+                    isUpdate: true,
+                    pourcentage: result.pourcentage
+                }
+                console.log(data)
+                await reouverturChoice(data)
+            })
+        )
     }
 
     async function retablirCost(costARetablir: SuperCost1 | null) {
@@ -233,9 +251,9 @@ export function ListSupercostReouverture(){
     }
 
 
-    return <div className="p-5 bg-white col-span-12">
-        <section>
-            <h1>List SuperCost</h1>
+    return <div className="p-5 col-span-12">
+        <section className="bg-(--panel-strong) rounded-4xl p-5">
+            <h1 className="font-semibold text-(--text-primary) text-center my-2 mb-4 text-2xl underline">List SuperCost</h1>
             <DataTable
                 tableHeads={[
                     "N° ligne",
@@ -272,8 +290,8 @@ export function ListSupercostReouverture(){
             </DataTable>
         </section>
 
-         <section>
-            <h1>List Reouverture</h1>
+         <section className="bg-(--panel-strong) rounded-4xl p-5 my-5">
+            <h1 className="font-semibold text-(--text-primary) text-center my-2 mb-4 text-2xl underline">List Reouverture</h1>
             <DataTable
                 tableHeads={[
                     "N° ligne",
@@ -313,8 +331,8 @@ export function ListSupercostReouverture(){
         </section>
 
 
-        <section>
-            <h1>List SuperCost Annuler à Rétablir</h1>
+        <section className="bg-(--panel-strong) rounded-4xl p-5 my-5">
+            <h1 className="font-semibold text-(--text-primary) text-center my-2 mb-4 text-2xl underline">List SuperCost Annuler à Rétablir</h1>
             <DataTable
                 tableHeads={[
                     "N° ligne",
